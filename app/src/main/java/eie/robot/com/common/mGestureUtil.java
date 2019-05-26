@@ -1,0 +1,158 @@
+package eie.robot.com.common;
+
+import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.GestureDescription;
+import android.graphics.Path;
+
+public class mGestureUtil {
+    /**
+     * 触发一个触摸手势
+     * @param sx 起点 x 轴
+     * @param sy 起点 y 轴
+     * @param dx 终点 x 轴
+     * @param dy 终点 x 轴
+     */
+    private static Boolean dispatchGesture(float sx,float sy,float dx,float dy,long duration){
+        GestureDescription.Builder builder = new GestureDescription.Builder();
+        Path path = new Path();
+        path.moveTo(sx,sy);
+        path.lineTo(dx,dy);
+        GestureDescription.StrokeDescription Gesture = new GestureDescription.StrokeDescription(path, 0, duration);
+        GestureDescription gestureDescription = builder.addStroke(Gesture).build();
+
+        AccessibilityService.GestureResultCallback callback = new AccessibilityService.GestureResultCallback() {
+            @Override
+            public void onCompleted(GestureDescription gestureDescription) {
+                super.onCompleted(gestureDescription);
+            }
+
+            @Override
+            public void onCancelled(GestureDescription gestureDescription) {
+                super.onCancelled(gestureDescription);
+            }
+        };
+        return mGlobal.mAccessibilityService.dispatchGesture(gestureDescription,callback,null);
+    }
+
+    /**
+     * 触发一个触摸手势
+     */
+    private static Boolean dispatchGesture(Path path,long duration){
+        GestureDescription.Builder builder = new GestureDescription.Builder();
+        GestureDescription.StrokeDescription Gesture = new GestureDescription.StrokeDescription(path, 100, duration);
+        GestureDescription gestureDescription = builder.addStroke(Gesture).build();
+
+        AccessibilityService.GestureResultCallback callback = new AccessibilityService.GestureResultCallback() {
+            @Override
+            public void onCompleted(GestureDescription gestureDescription) {
+                super.onCompleted(gestureDescription);
+            }
+
+            @Override
+            public void onCancelled(GestureDescription gestureDescription) {
+                super.onCancelled(gestureDescription);
+            }
+        };
+        return mGlobal.mAccessibilityService.dispatchGesture(gestureDescription,callback,null);
+    }
+
+
+    //点击某个点手势
+    public static Boolean click(float x,float y){
+        GestureDescription.Builder builder = new GestureDescription.Builder();
+        Path path = new Path();
+        path.moveTo(x,y);
+        GestureDescription.StrokeDescription Gesture = new GestureDescription.StrokeDescription(path, 0, 10);
+        GestureDescription gestureDescription = builder.addStroke(Gesture).build();
+
+        AccessibilityService.GestureResultCallback callback = new AccessibilityService.GestureResultCallback() {
+            @Override
+            public void onCompleted(GestureDescription gestureDescription) {
+                super.onCompleted(gestureDescription);
+            }
+
+            @Override
+            public void onCancelled(GestureDescription gestureDescription) {
+                super.onCancelled(gestureDescription);
+            }
+        };
+        boolean res = mGlobal.mAccessibilityService.dispatchGesture(gestureDescription,callback,null);
+        mFunction.sleep(mConfig.clickSleepTime);
+        return res;
+    }
+
+    //向上滑动
+    public static void scroll_up(long duration){
+        float sx = (float) (mGlobal.mScreenWidth/2) + mFunction.getRandom_0_20();
+        float sy = (float) (mGlobal.mScreenHeight/1.3) + mFunction.getRandom_0_50();
+        float dx = (float) (mGlobal.mScreenWidth/2) - mFunction.getRandom_0_20();
+        float dy = (float) (mGlobal.mScreenHeight/3) + mFunction.getRandom_50_100();
+        mGestureUtil.dispatchGesture(sx,sy,dx,dy,duration);
+    }
+    //向上滑动
+    public static void scroll_up_300(){
+        long duration = 30;
+        scroll_up(duration);
+    }
+    //向上滑动
+    public static void scroll_up_1000(){
+        long duration = 500;
+        scroll_up(duration);
+    }
+    //向上滑动
+    public static void scroll_up(){
+
+        long duration = 1000;
+
+        Path path = new Path();
+
+        float dx = (mGlobal.mScreenWidth/3) + mFunction.getRandom_0_50();
+        float dy = (float) (mGlobal.mScreenHeight/1.3) - mFunction.getRandom_0_50();
+        path.moveTo(dx,dy);
+
+        int count = mFunction.getRandom_6_12();
+        int Factor = 1;
+        for (int i=0; i < count; i++){
+            float dxx = dx - Factor*mFunction.getRandom_0_50();
+            dy = dy - mFunction.getRandom_50_100();
+            path.lineTo(dxx,dy);
+
+            Factor = Factor * -1;
+        }
+        dispatchGesture(path,duration);
+        mFunction.sleep(mConfig.clickSleepTime);
+
+    }
+
+    //向左滑动
+    public static void scroll_left(){
+        float sx = (float) (mGlobal.mScreenWidth/1.3) + mFunction.getRandom_0_50();
+        float sy = (float) (mGlobal.mScreenHeight/1.5) + mFunction.getRandom_50_100();
+        float dx = (float) (mGlobal.mScreenWidth/5) + mFunction.getRandom_0_20();
+        float dy = (float) (mGlobal.mScreenHeight/1.5) + mFunction.getRandom_0_50();
+        long duration = 30;
+        mGestureUtil.dispatchGesture(sx,sy,dx,dy,duration);
+    }
+
+    //向上滑动
+    public static Boolean scroll_up_quick(){
+        mGestureUtil.dispatchGesture(mGlobal.mScreenWidth/6,(float) (1100),mGlobal.mScreenWidth/6,950,20);
+        //mGestureUtil.dispatchGesture(mGlobal.mScreenWidth/6,(float) (mGlobal.mScreenHeight/1.5),mGlobal.mScreenWidth/6,mGlobal.mScreenHeight/3,20);
+        return true;
+    }
+    //向上滑动
+    public static Boolean scroll_down(){
+        return mGestureUtil.dispatchGesture(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/2,mGlobal.mScreenWidth/2,mGlobal.mScreenHeight,1500);
+    }
+
+    public static void MultipleScrollUp(int count){
+        int i=0;
+        while (i < count) {
+            mFunction.sleep(mConfig.clickSleepTime);
+            mGestureUtil.scroll_up_quick();
+            i++;
+        }
+    }
+
+
+}

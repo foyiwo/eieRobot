@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">eieRobot</string>
+
+    <string name="accessibility_description">启动该服务，才能启动所有的机器人业务。</string>
+</resources>
