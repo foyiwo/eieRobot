@@ -1,7 +1,6 @@
 package eie.robot.com.task;
 
 import android.graphics.Rect;
-import android.icu.lang.UCharacter;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.vondear.rxtool.view.RxToast;
@@ -14,18 +13,16 @@ import eie.robot.com.common.mGestureUtil;
 import eie.robot.com.common.mGlobal;
 import eie.robot.com.common.mToast;
 
-public class RobTaskJuKanDian extends BaseRobotTask {
+public class RobTaskShuaBao extends BaseRobotTask {
 
     public int SizeOffset = 40;
 
     /**
      * 构造函数
      */
-    public RobTaskJuKanDian() {
+    public RobTaskShuaBao() {
         super();
-        this.AppName = "聚看点";
-        this.TodayMaxIncome = 12000;
-        this.TodayIncomeIsFinsh = false;
+        this.AppName = "刷宝短视频";
     }
 
 
@@ -37,12 +34,6 @@ public class RobTaskJuKanDian extends BaseRobotTask {
         super.StartTask();
         while (mCommonTask.AppTaskOpenStatus){
             try {
-
-                //判断收益是否封顶
-                if(JudgeGoldIncomeIsMax()){
-                    break;
-                }
-
                 //每次进行一项任务时，都先恢复到首页
                 //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
                 if(!returnHome()){
@@ -52,7 +43,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                 //签到
                 //SignIn();
                 //领取时段奖励
-                performTask_ShiDuanJiangLi();
+                //performTask_ShiDuanJiangLi();
 
                 mFunction.openScreen();
 
@@ -60,7 +51,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                 int RefreshCount =   mFunction.getRandom_10_20()+10;
                 while (true){
                     if(!mCommonTask.AppTaskOpenStatus){ break;}
-                    performTask_KanZiXun();
+                    performTask_ShuaXiaoShiPing();
                     RefreshCount -- ;
                 }
             }catch (Exception ex){
@@ -76,17 +67,35 @@ public class RobTaskJuKanDian extends BaseRobotTask {
      * 执行刷单任务（定时刷小视频）
      */
     private boolean performTask_ShuaXiaoShiPing(){
-        //点击视频的间隔
-        int VideoInterval = 6+ mFunction.getRandom_6_12();//3;
 
         //在主界面的情况下，点击底部导航【小视频】按钮，刷新小视频
-        boolean result = mGestureUtil.click(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight-SizeOffset);
-        if(result){
-            RxToast.normal(VideoInterval+"秒");
+        mGestureUtil.click(SizeOffset,mGlobal.mScreenHeight-SizeOffset);
+
+        int VideoCount = mFunction.getRandom_10_20();
+        while (VideoCount > 0){
+            //点击视频的间隔
+            int VideoInterval = 6+ mFunction.getRandom_6_12();//3;
+
+            mGestureUtil.scroll_up_30();
+
+
+            mToast.success("视频任务:浏览"+VideoInterval+"秒");
+            if(VideoInterval > 16){
+                AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText("关注");
+                if(nodeInfo != null){
+                    mGestureUtil.click(nodeInfo);
+                }else {
+                    mGestureUtil.doubleClickInScreenCenter();
+                }
+            }
+            if(VideoInterval == 18){
+                mGestureUtil.doubleClickInScreenCenter();
+            }
+
             mFunction.sleep( VideoInterval * 1000);
-            return true;
+            VideoCount--;
         }
-        return false;
+        return true;
     }
 
     /**
@@ -124,83 +133,13 @@ public class RobTaskJuKanDian extends BaseRobotTask {
 
     //关闭APP弹出的所有可能弹框
     private void CloseDialog(){
-        AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosByText("我知道了");
+        AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosById("com.jm.video:id/imgClose");
         if(node != null){
-            AccessibilityHelper.performClick(node);
+            mGestureUtil.click(node);
         }
 
-        node = AccessibilityHelper.findNodeInfosByText("分享立赚");
-        if(node != null){
-            AccessibilityHelper.performClick(node);
-            mFunction.sleep(mConfig.clickSleepTime);
-            AccessibilityHelper.performBack(mGlobal.mAccessibilityService);
-            mFunction.sleep(mConfig.clickSleepTime);
-        }
-
-        node = AccessibilityHelper.findNodeInfosByText("忽略");
-        if(node != null){
-            AccessibilityHelper.performClick(node);
-        }
-
-        //判断是否点多了，触发了【退出APP确认框】
-        AccessibilityNodeInfo NodeInfo3 = AccessibilityHelper.findNodeInfosByText("确认退出聚看点？");
-        AccessibilityNodeInfo NodeInfo4 = AccessibilityHelper.findNodeInfosByText("继续赚钱");
-        if ( NodeInfo3 != null && NodeInfo4 != null ) {
-            AccessibilityHelper.performClick(NodeInfo4);
-        }
     }
 
-    /**
-     * 判断今日的收益是否已经达到最大值
-     */
-    private Boolean JudgeGoldIncomeIsMax(){
-        mToast.info(this.AppName+"判断今日收益是否封顶");
-        if(!returnHome()){
-            return false;
-        }
-        //点击【我的】列表
-        mGestureUtil.click(mGlobal.mScreenWidth-SizeOffset,mGlobal.mScreenHeight-SizeOffset);
-
-        //再次恢复到首页
-        if(!returnHome()){
-            return false;
-        }
-        AccessibilityNodeInfo IncomeNode = null;
-        try{
-            //利用ID的方式
-            AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById("com.xiangzi.jukandian:id/goldValue");
-            if(nodeInfo != null && nodeInfo.getClassName().equals("android.widget.TextView")){
-                IncomeNode = nodeInfo;
-            }else {
-                //利用文本的方式
-                nodeInfo = AccessibilityHelper.findNodeInfosByText("今日金币");
-                if(nodeInfo != null){
-                    nodeInfo = nodeInfo.getParent();
-                    if(nodeInfo != null && nodeInfo.getClassName().equals("android.widget.LinearLayout")){
-                        nodeInfo = nodeInfo.getParent();
-                        if(nodeInfo != null && nodeInfo.getClassName().equals("android.widget.LinearLayout")){
-                            if(nodeInfo.getChildCount()>0 && nodeInfo.getChild(0).getClassName().equals("android.widget.TextView")){
-                                IncomeNode = nodeInfo.getChild(0);
-                            }
-                        }
-                    }
-                }
-            }
-        }catch (Exception ex){
-            mToast.error(this.AppName+"收益检测错误:"+ex.getMessage());
-        }
-        if(IncomeNode != null){
-            String incomeText = IncomeNode.getText().toString().trim();
-            if(Integer.valueOf(incomeText) > this.TodayMaxIncome){
-                this.TodayIncomeIsFinsh = true;
-                mToast.info(this.AppName+"收益已封顶("+this.TodayMaxIncome+")");
-                return true;
-            }
-        }
-        mToast.info(this.AppName+"收益未封顶("+this.TodayMaxIncome+")，继续工作");
-        mFunction.sleep(mConfig.clickSleepTime);
-        return false;
-    }
 
     /**
      * 执行刷单任务（看资讯）
@@ -339,8 +278,8 @@ public class RobTaskJuKanDian extends BaseRobotTask {
             return false;
         }
         //获取底部导航栏的图标
-        AccessibilityNodeInfo NodeInfo1 = AccessibilityHelper.findNodeInfosByText("任务中心");
-        AccessibilityNodeInfo NodeInfo2 = AccessibilityHelper.findNodeInfosByText("我的");
+        AccessibilityNodeInfo NodeInfo1 = AccessibilityHelper.findNodeInfosByText("任务");
+        AccessibilityNodeInfo NodeInfo2 = AccessibilityHelper.findNodeInfosByText("首页");
 
         if ( NodeInfo1 != null && NodeInfo2 != null ) {
             mToast.success("回应用首页成功");
@@ -353,8 +292,8 @@ public class RobTaskJuKanDian extends BaseRobotTask {
             while (true) {
                 this.CloseDialog();
 
-                NodeInfo1 = AccessibilityHelper.findNodeInfosByText("任务中心");
-                NodeInfo2 = AccessibilityHelper.findNodeInfosByText("我的");
+                NodeInfo1 = AccessibilityHelper.findNodeInfosByText("任务");
+                NodeInfo2 = AccessibilityHelper.findNodeInfosByText("首页");
                 if ( NodeInfo1 != null && NodeInfo2 != null ) {
                     break;
                 }
@@ -367,6 +306,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                 mFunction.sleep(mConfig.loopSleepTime);
             }
             if (NodeInfo1 != null || NodeInfo2 != null) {
+                mToast.success("回应用首页成功");
                 return true;
             } else {
                 mToast.error("回应用首页失败");

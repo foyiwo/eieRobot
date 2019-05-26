@@ -32,29 +32,22 @@ public class RobTaskQiMaoXiaoShuo extends BaseRobotTask {
     public boolean StartTask()  {
         super.StartTask();
         mCommonTask.AppTaskOpenStatus = true;
-        mFunction.runInChildThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    //每次进行一项任务时，都先恢复到首页
-                    //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
-                    if(!returnHome()){
-                        return;
-                    }
-                    //签到
-                    SignIn();
-
-                    mFunction.openScreen();
-
-                    //开始读3个小时小说
-                    Task_KanXiaoShuo();
-
-                }catch (Exception ex){
-                    RxToast.error(ex.getMessage());
-                }
-                CloseTask();
+        try {
+            //每次进行一项任务时，都先恢复到首页
+            //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
+            if(!returnHome()){
+                return false;
             }
-        });
+            //签到
+            SignIn();
+            mFunction.openScreen();
+            //开始读3个小时小说
+            Task_KanXiaoShuo();
+
+        }catch (Exception ex){
+            RxToast.error(ex.getMessage());
+        }
+        CloseTask();
         return false;
     }
     //开始看三个小时小说
@@ -70,6 +63,7 @@ public class RobTaskQiMaoXiaoShuo extends BaseRobotTask {
         if (clickResult) {
             int AmountSleepTime = 0;
             while (true){
+                if(!mCommonTask.AppTaskOpenStatus){ break; }
                 mGestureUtil.scroll_left();
                 int SleepTime = mFunction.getRandom_10_20();
                 mFunction.sleep(SleepTime*1000);

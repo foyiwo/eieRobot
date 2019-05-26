@@ -3,6 +3,8 @@ package eie.robot.com.common;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.GestureDescription;
 import android.graphics.Path;
+import android.graphics.Rect;
+import android.view.accessibility.AccessibilityNodeInfo;
 
 public class mGestureUtil {
     /**
@@ -56,9 +58,32 @@ public class mGestureUtil {
         return mGlobal.mAccessibilityService.dispatchGesture(gestureDescription,callback,null);
     }
 
+    public static Boolean click(AccessibilityNodeInfo nodeInfo){
+        float x = 0;
+        float y = 0;
 
+        Rect rect = new Rect();
+        nodeInfo.getBoundsInScreen(rect);
+
+        x = rect.left+rect.width()/2;
+        y = rect.top+rect.height()/2;
+
+        return click(x,y);
+    }
+
+
+    public static boolean doubleClickInScreenCenter(){
+        float x = mGlobal.mScreenWidth/2;
+        float y = mGlobal.mScreenHeight/2;
+        mGestureUtil.click(x,y,100);
+        mGestureUtil.click(x,y,0);
+        return true;
+    }
+    public static boolean click(float x,float y){
+        return mGestureUtil.click(x,y,mConfig.clickSleepTime);
+    }
     //点击某个点手势
-    public static Boolean click(float x,float y){
+    public static Boolean click(float x,float y,long clicktime){
         GestureDescription.Builder builder = new GestureDescription.Builder();
         Path path = new Path();
         path.moveTo(x,y);
@@ -77,32 +102,32 @@ public class mGestureUtil {
             }
         };
         boolean res = mGlobal.mAccessibilityService.dispatchGesture(gestureDescription,callback,null);
-        mFunction.sleep(mConfig.clickSleepTime);
+        mFunction.sleep(clicktime);
         return res;
     }
 
     //向上滑动
-    public static void scroll_up(long duration){
-        float sx = (float) (mGlobal.mScreenWidth/2) + mFunction.getRandom_0_20();
-        float sy = (float) (mGlobal.mScreenHeight/1.3) + mFunction.getRandom_0_50();
-        float dx = (float) (mGlobal.mScreenWidth/2) - mFunction.getRandom_0_20();
-        float dy = (float) (mGlobal.mScreenHeight/3) + mFunction.getRandom_50_100();
-        mGestureUtil.dispatchGesture(sx,sy,dx,dy,duration);
+    public static void scroll_up(){
+//        float sx = (float) (mGlobal.mScreenWidth/2) + mFunction.getRandom_0_20();
+//        float sy = (float) (mGlobal.mScreenHeight/1.3) + mFunction.getRandom_0_50();
+//        float dx = (float) (mGlobal.mScreenWidth/2) - mFunction.getRandom_0_20();
+//        float dy = (float) (mGlobal.mScreenHeight/3) + mFunction.getRandom_50_100();
+//        mGestureUtil.dispatchGesture(sx,sy,dx,dy,duration);
+        long duration = 1000;
+        mGestureUtil.scroll_up(duration);
     }
     //向上滑动
-    public static void scroll_up_300(){
+    public static void scroll_up_30(){
         long duration = 30;
         scroll_up(duration);
     }
     //向上滑动
-    public static void scroll_up_1000(){
+    public static void scroll_up_500(){
         long duration = 500;
         scroll_up(duration);
     }
     //向上滑动
-    public static void scroll_up(){
-
-        long duration = 1000;
+    public static void scroll_up(long duration){
 
         Path path = new Path();
 

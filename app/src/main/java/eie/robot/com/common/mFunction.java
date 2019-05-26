@@ -147,6 +147,7 @@ public class mFunction {
             mFunction.OpenApp(AppName);
             mFunction.sleep(mConfig.WaitLauncherlTime);
 
+
             //打开后，尝试多次获取
             int count = mConfig.loopCount;
             while (true) {

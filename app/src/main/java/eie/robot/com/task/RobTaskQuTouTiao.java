@@ -34,6 +34,8 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
     public RobTaskQuTouTiao() {
         super();
         this.AppName = "趣头条";
+        this.TodayMaxIncome = 4000;
+        this.TodayIncomeIsFinsh = false;
     }
 
 
@@ -46,6 +48,11 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
         mCommonTask.AppTaskOpenStatus = true;
         while (mCommonTask.AppTaskOpenStatus){
             try {
+
+                //判断今日金币是否已经到达
+                if(JudgeGoldIncomeIsMax()){
+                    break;
+                }
                 //每次进行一项任务时，都先恢复到首页
                 //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
                 if(!returnHome()){
@@ -70,7 +77,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
                 }
 
                 //阅读文章
-                RefreshCount =   mFunction.getRandom_10_20()+10;
+                RefreshCount =   mFunction.getRandom_10_20();
                 while (RefreshCount > 0){
                     if(!mCommonTask.AppTaskOpenStatus){ break; }
                     performTask_KanZiXun();
@@ -227,6 +234,46 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
         return AccessibilityHelper.performClick(nodeInfo);
     }
 
+    //关闭APP弹出的所有可能弹框
+    private void CloseDialog(){
+
+        //开始通知的弹框
+        AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosByText("每天签到不错过，连续签到，送 7500+ 金币");
+        if(node != null){
+            if(node.getClassName().equals("android.widget.TextView")){
+                node = node.getParent();
+                if(node != null){
+                    Rect rect = new Rect();
+                    node.getBoundsInScreen(rect);
+                    float x = rect.left + rect.width() - SizeOffset;
+                    float y = rect.top + SizeOffset;
+                    mGestureUtil.click(x,y);
+                }
+            }
+            AccessibilityHelper.performClick(node);
+        }
+
+        node = AccessibilityHelper.findNodeInfosByText("分享立赚");
+        if(node != null){
+            AccessibilityHelper.performClick(node);
+            mFunction.sleep(mConfig.clickSleepTime);
+            AccessibilityHelper.performBack(mGlobal.mAccessibilityService);
+            mFunction.sleep(mConfig.clickSleepTime);
+        }
+
+        node = AccessibilityHelper.findNodeInfosByText("忽略");
+        if(node != null){
+            AccessibilityHelper.performClick(node);
+        }
+
+        //判断是否点多了，触发了【退出APP确认框】
+        AccessibilityNodeInfo NodeInfo3 = AccessibilityHelper.findNodeInfosByText("确认退出聚看点？");
+        AccessibilityNodeInfo NodeInfo4 = AccessibilityHelper.findNodeInfosByText("继续赚钱");
+        if ( NodeInfo3 != null && NodeInfo4 != null ) {
+            AccessibilityHelper.performClick(NodeInfo4);
+        }
+    }
+
     /**
      * 执行签到任务
      */
@@ -238,6 +285,39 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
             AccessibilityHelper.performClick(nodeInfo);
         }
         mFunction.sleep(mConfig.clickSleepTime);
+    }
+
+
+    /**
+     * 判断今日的收益是否已经达到最大值
+     */
+    private Boolean JudgeGoldIncomeIsMax(){
+        mToast.info("判断今日收益是否封顶");
+        if(!returnHome()){
+            return false;
+        }
+        //点击【我的】列表
+        mGestureUtil.click(mGlobal.mScreenWidth-SizeOffset,mGlobal.mScreenHeight-SizeOffset);
+
+        //再次恢复到首页
+        if(!returnHome()){
+            return false;
+        }
+        try{
+            AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText("今日金币");
+            if(nodeInfo != null){
+                String incomeText = nodeInfo.getText().toString().trim();
+                incomeText = incomeText.replaceAll("今日金币","").trim();
+                if(Integer.valueOf(incomeText) > this.TodayMaxIncome){
+                    this.TodayIncomeIsFinsh = true;
+                    return true;
+                }
+            }
+        }catch (Exception ex){
+            return false;
+        }
+        mToast.info("收益未封顶(4000)，继续工作");
+        return false;
     }
 
     /**
@@ -256,8 +336,8 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
         //确定已经打开应用之后，下面确定是否处于首页。
 
         //获取底部导航栏的图标
-        AccessibilityNodeInfo NodeInfo1 = AccessibilityHelper.loopFindNodeInfoByText("小视频");
-        AccessibilityNodeInfo NodeInfo2 = AccessibilityHelper.loopFindNodeInfoByText("我的");
+        AccessibilityNodeInfo NodeInfo1 = AccessibilityHelper.findNodeInfosByText("小视频");
+        AccessibilityNodeInfo NodeInfo2 = AccessibilityHelper.findNodeInfosByText("我的");
 
         if ( NodeInfo1 != null || NodeInfo2 != null ) {
             return true;
@@ -266,11 +346,10 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
             //采取触发返回键的方式。
             int count = mConfig.loopCount;
             while (true) {
-                AccessibilityHelper.performBack(mGlobal.mAccessibilityService);
-                //停一下，等待反应
-                mFunction.sleep(mConfig.loopSleepTime);
-                NodeInfo1 = AccessibilityHelper.loopFindNodeInfoByText("小视频");
-                NodeInfo2 = AccessibilityHelper.loopFindNodeInfoByText("我的");
+                this.CloseDialog();
+
+                NodeInfo1 = AccessibilityHelper.findNodeInfosByText("小视频");
+                NodeInfo2 = AccessibilityHelper.findNodeInfosByText("我的");
                 if ( NodeInfo1 != null || NodeInfo2 != null ) {
                     break;
                 }
@@ -278,6 +357,9 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
                 if (count < 0) {
                     break;
                 }
+                AccessibilityHelper.performBack(mGlobal.mAccessibilityService);
+                //停一下，等待反应
+                mFunction.sleep(mConfig.loopSleepTime);
             }
             if (NodeInfo1 != null || NodeInfo2 != null) {
                 return true;

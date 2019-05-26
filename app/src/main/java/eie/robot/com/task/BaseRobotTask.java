@@ -14,6 +14,12 @@ import eie.robot.com.common.mToast;
 
 public abstract class BaseRobotTask {
 
+    String AppName = "";        //应用名称
+    float TodayGold = 0;        //今日当前收益
+    float TodayMaxIncome = 0;   //今日最大收益，用于控制是否继续刷金币
+    public boolean TodayIncomeIsFinsh = false;   //今日的收益是否已完成。
+
+
     public boolean StartTask(){
         //APP允许开始的标志，true可继续执行，false即表示准备结束
         mCommonTask.AppTaskOpenStatus = true;
@@ -35,7 +41,7 @@ public abstract class BaseRobotTask {
 
     private String PackageName = null;
 
-    String AppName = "趣头条";
+
 
     BaseRobotTask(){
         PackageName = mFunction.GetAppPackageName(AppName);

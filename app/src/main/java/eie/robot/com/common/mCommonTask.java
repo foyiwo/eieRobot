@@ -14,6 +14,7 @@ import eie.robot.com.task.BaseRobotTask;
 import eie.robot.com.task.RobTaskQiMaoXiaoShuo;
 import eie.robot.com.task.RobTaskJuKanDian;
 import eie.robot.com.task.RobTaskQuTouTiao;
+import eie.robot.com.task.RobTaskShuaBao;
 
 public class mCommonTask {
 
@@ -45,12 +46,15 @@ public class mCommonTask {
                 mCommonTask.ThreadTaskOpenStatus = true;
                 //组装任务列表，通过策略
                 ArrayList<BaseRobotTask> tasks = new ArrayList<BaseRobotTask>();
+                //刷宝
+                tasks.add(new RobTaskShuaBao());
                 //聚看点
                 tasks.add(new RobTaskJuKanDian());
                 //趣头条
                 tasks.add(new RobTaskQuTouTiao());
                 //七猫免费小说
-                //tasks.add(new RobTaskQiMaoXiaoShuo());
+                tasks.add(new RobTaskQiMaoXiaoShuo());
+
 
                 int i = 0;
                 while (ThreadTaskOpenStatus){
@@ -58,22 +62,14 @@ public class mCommonTask {
                         mCommonTask.ClearPhoneCacheTask();
                         i = 0;
                     }
-                    //定时任务
-                    mFunction.runInChildThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            int TaskMin = mFunction.getRandom_10_20();
-                            while (TaskMin > 0){
-                                mFloatWindow.EditRobTaskTimerText(TaskMin+"m");
-                                //休眠一分钟
-                                mFunction.sleep(60*1000);
-                                TaskMin--;
-                            }
-                            mCommonTask.AppTaskOpenStatus = false;
-                        }
-                    });
-                    //执行任务时间
-                    tasks.get(i).StartTask();
+                    //判断该APP是否已经到达最大收益。
+                    if(!tasks.get(i).TodayIncomeIsFinsh){
+                        //定时器，到时间后，设置【退出】标志，让任务退出
+                        mCommonTask.AppTaskTimer();
+
+                        //开启任务，死循环，如果没有上面的定时器，将一直执行
+                        tasks.get(i).StartTask();
+                    }
                     if(!ThreadTaskOpenStatus){ break; }
                     i++;
                 }
@@ -87,6 +83,23 @@ public class mCommonTask {
         mToast.message("总任务开始");
         return "true";
 
+    }
+
+    public static void AppTaskTimer(){
+        //定时任务
+        mFunction.runInChildThread(new Runnable() {
+            @Override
+            public void run() {
+                int TaskMin = mFunction.getRandom_10_20();
+                while (TaskMin > 0){
+                    mFloatWindow.EditRobTaskTimerText(TaskMin+"m");
+                    //休眠一分钟
+                    mFunction.sleep(60*1000);
+                    TaskMin--;
+                }
+                mCommonTask.AppTaskOpenStatus = false;
+            }
+        });
     }
 
     //停止任务
