@@ -23,6 +23,12 @@ public class RobTaskShuaBao extends BaseRobotTask {
     public RobTaskShuaBao() {
         super();
         this.AppName = "刷宝短视频";
+        String packname = mFunction.GetAppPackageName(this.AppName);
+        if(packname.isEmpty()){
+            this.AppName = "刷宝";
+        }
+        this.TodayMaxIncome = 9999;
+        this.TodayIncomeIsFinsh = false;
     }
 
 
@@ -34,6 +40,11 @@ public class RobTaskShuaBao extends BaseRobotTask {
         super.StartTask();
         while (mCommonTask.AppTaskOpenStatus){
             try {
+                //判断收益是否封顶
+                if(JudgeGoldIncomeIsMax()){
+                    break;
+                }
+
                 //每次进行一项任务时，都先恢复到首页
                 //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
                 if(!returnHome()){
@@ -41,19 +52,21 @@ public class RobTaskShuaBao extends BaseRobotTask {
                 }
 
                 //签到
-                //SignIn();
+                SignIn();
                 //领取时段奖励
                 //performTask_ShiDuanJiangLi();
 
                 mFunction.openScreen();
 
                 //阅读文章
-                int RefreshCount =   mFunction.getRandom_10_20()+10;
-                while (true){
+                int RefreshCount =   mFunction.getRandom_10_20()+30;
+                while (RefreshCount > 0){
                     if(!mCommonTask.AppTaskOpenStatus){ break;}
                     performTask_ShuaXiaoShiPing();
                     RefreshCount -- ;
+
                 }
+                if(!mCommonTask.AppTaskOpenStatus){ break;}
             }catch (Exception ex){
                 RxToast.error(ex.getMessage());
             }
@@ -68,17 +81,20 @@ public class RobTaskShuaBao extends BaseRobotTask {
      */
     private boolean performTask_ShuaXiaoShiPing(){
 
+        if(!returnHome()){
+            return false;
+        }
+
         //在主界面的情况下，点击底部导航【小视频】按钮，刷新小视频
         mGestureUtil.click(SizeOffset,mGlobal.mScreenHeight-SizeOffset);
-
         int VideoCount = mFunction.getRandom_10_20();
         while (VideoCount > 0){
             //点击视频的间隔
             int VideoInterval = 6+ mFunction.getRandom_6_12();//3;
 
+            if(!mCommonTask.AppTaskOpenStatus){ break; }
+
             mGestureUtil.scroll_up_30();
-
-
             mToast.success("视频任务:浏览"+VideoInterval+"秒");
             if(VideoInterval > 16){
                 AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText("关注");
@@ -91,7 +107,6 @@ public class RobTaskShuaBao extends BaseRobotTask {
             if(VideoInterval == 18){
                 mGestureUtil.doubleClickInScreenCenter();
             }
-
             mFunction.sleep( VideoInterval * 1000);
             VideoCount--;
         }
@@ -256,13 +271,63 @@ public class RobTaskShuaBao extends BaseRobotTask {
      * 执行签到任务
      */
     private void SignIn(){
-        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText(
-                mGlobal.mAccessibilityService.getRootInActiveWindow(),"去签到");
-        if(nodeInfo != null){
-            AccessibilityHelper.performClick(nodeInfo);
+        if(this.IsSign){
+            return;
         }
-        mFunction.sleep(mConfig.clickSleepTime);
+        mToast.info("开始签到");
+       if(!returnHome()){
+           return;
+       }
+        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText("任务");
+        if(nodeInfo != null){
+            mGestureUtil.click(nodeInfo);
+            if(!returnHome()){
+                return;
+            }
+            mGestureUtil.click(mGlobal.mScreenWidth-2*SizeOffset,(float)(mGlobal.mScreenHeight*0.28));
+            mFunction.sleep(2*mConfig.clickSleepTime);
+        }
     }
+
+
+    /**
+     * 判断今日的收益是否已经达到最大值
+     */
+    private Boolean JudgeGoldIncomeIsMax(){
+        mToast.info("判断今日收益是否封顶");
+        if(!returnHome()){
+            return false;
+        }
+        //点击【我的】列表
+        mGestureUtil.click(mGlobal.mScreenWidth-SizeOffset,mGlobal.mScreenHeight-SizeOffset);
+
+        //再次恢复到首页
+        if(!returnHome()){
+            return false;
+        }
+
+        try{
+            AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById("com.jm.video:id/tv_gold_num");
+            if(nodeInfo != null){
+                String incomeText = nodeInfo.getText().toString().trim();
+                if(Integer.valueOf(incomeText) > this.TodayMaxIncome){
+                    this.TodayIncomeIsFinsh = true;
+                    mToast.info("当前收益("+incomeText+")已封顶("+this.TodayMaxIncome+")");
+                    mFunction.sleep(mConfig.clickSleepTime);
+                    return true;
+                }else {
+                    mToast.info("当前收益("+incomeText+")未封顶("+this.TodayMaxIncome+")，继续工作");
+                    mFunction.sleep(mConfig.clickSleepTime);
+                    return false;
+                }
+            }
+
+        }catch (Exception ex){
+
+        }
+        return false;
+    }
+
 
     /**
      * 回归到首页，如果APP未打开，则会自行打开
@@ -282,7 +347,6 @@ public class RobTaskShuaBao extends BaseRobotTask {
         AccessibilityNodeInfo NodeInfo2 = AccessibilityHelper.findNodeInfosByText("首页");
 
         if ( NodeInfo1 != null && NodeInfo2 != null ) {
-            mToast.success("回应用首页成功");
             return true;
         } else {
 
@@ -306,7 +370,6 @@ public class RobTaskShuaBao extends BaseRobotTask {
                 mFunction.sleep(mConfig.loopSleepTime);
             }
             if (NodeInfo1 != null || NodeInfo2 != null) {
-                mToast.success("回应用首页成功");
                 return true;
             } else {
                 mToast.error("回应用首页失败");

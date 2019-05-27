@@ -88,6 +88,7 @@ public class mFloatWindow {
         mGlobal.viewFloatButton = contentView;
 
         mGlobal.mViewRobTaskTimer = (TextView)mGlobal.viewFloatButton.findViewById(R.id.btnRobTaskTimer);
+        mGlobal.mViewRobNewsOrVideoTaskTimer = (TextView)mGlobal.viewFloatButton.findViewById(R.id.btnRobNewsOrVideoTaskTimer);
 
         FloatWindow
                 .with(mGlobal.mNavigationBarActivity.getApplicationContext())
@@ -216,6 +217,15 @@ public class mFloatWindow {
             @Override
             public void run() {
                 mGlobal.mViewRobTaskTimer.setText(message);
+            }
+        });
+    }
+    //修改APP的剩余时间
+    public static void EditRobNewOrVideoTaskTimerText(final String message){
+        mGlobal.mViewRobNewsOrVideoTaskTimer.post(new Runnable() {
+            @Override
+            public void run() {
+                mGlobal.mViewRobNewsOrVideoTaskTimer.setText(message);
             }
         });
     }

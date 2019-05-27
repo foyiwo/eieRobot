@@ -24,7 +24,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
     public RobTaskJuKanDian() {
         super();
         this.AppName = "聚看点";
-        this.TodayMaxIncome = 12000;
+        this.TodayMaxIncome = 10000;
         this.TodayIncomeIsFinsh = false;
     }
 
@@ -49,7 +49,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                     continue;
                 }
 
-                //签到
+                //签到(聚看点的签到放到了【CloseDialog()】方法里)
                 //SignIn();
                 //领取时段奖励
                 performTask_ShiDuanJiangLi();
@@ -58,7 +58,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
 
                 //阅读文章
                 int RefreshCount =   mFunction.getRandom_10_20()+10;
-                while (true){
+                while (RefreshCount > 0){
                     if(!mCommonTask.AppTaskOpenStatus){ break;}
                     performTask_KanZiXun();
                     RefreshCount -- ;
@@ -124,6 +124,10 @@ public class RobTaskJuKanDian extends BaseRobotTask {
 
     //关闭APP弹出的所有可能弹框
     private void CloseDialog(){
+        //签到
+        SignIn();
+
+
         AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosByText("我知道了");
         if(node != null){
             AccessibilityHelper.performClick(node);
@@ -154,17 +158,18 @@ public class RobTaskJuKanDian extends BaseRobotTask {
      * 判断今日的收益是否已经达到最大值
      */
     private Boolean JudgeGoldIncomeIsMax(){
-        mToast.info(this.AppName+"判断今日收益是否封顶");
+
         if(!returnHome()){
             return false;
         }
         //点击【我的】列表
         mGestureUtil.click(mGlobal.mScreenWidth-SizeOffset,mGlobal.mScreenHeight-SizeOffset);
-
+        mToast.success("判断今日收益是否封顶");
         //再次恢复到首页
         if(!returnHome()){
             return false;
         }
+        mGestureUtil.scroll_down_100();
         AccessibilityNodeInfo IncomeNode = null;
         try{
             //利用ID的方式
@@ -193,12 +198,16 @@ public class RobTaskJuKanDian extends BaseRobotTask {
             String incomeText = IncomeNode.getText().toString().trim();
             if(Integer.valueOf(incomeText) > this.TodayMaxIncome){
                 this.TodayIncomeIsFinsh = true;
-                mToast.info(this.AppName+"收益已封顶("+this.TodayMaxIncome+")");
+                mToast.success("今日收益("+incomeText+")已封顶("+this.TodayMaxIncome+")");
+                mFunction.sleep(mConfig.clickSleepTime);
                 return true;
+            }else {
+                mToast.success("今日收益("+incomeText+")未封顶("+this.TodayMaxIncome+")，继续工作");
+                mFunction.sleep(mConfig.clickSleepTime);
+                return false;
             }
         }
-        mToast.info(this.AppName+"收益未封顶("+this.TodayMaxIncome+")，继续工作");
-        mFunction.sleep(mConfig.clickSleepTime);
+
         return false;
     }
 
@@ -221,10 +230,10 @@ public class RobTaskJuKanDian extends BaseRobotTask {
             if(!returnHome()){
                 continue;
             }
-            mToast.info("首页滑动");
+
+            mToast.info("阅读完毕，首页滑动");
             mGestureUtil.scroll_up();
             NewsCount -- ;
-
         }
         //刷资讯
         return true;
@@ -265,21 +274,35 @@ public class RobTaskJuKanDian extends BaseRobotTask {
 
             //滑动次数(随机10到20)
             int SwiperCount = mFunction.getRandom_6_12();
-            mToast.info("资讯任务:滑动"+SwiperCount+"次");
+            mToast.info("新闻任务:滑动"+SwiperCount+"次");
 
             //开始滑动文章
             while (true) {
+
+                if(!mCommonTask.AppTaskOpenStatus){ break; }
                 if (SwiperCount < 1) {
                     break;
                 }
+                //点开【查看全文，奖励更多】按钮，阅读全文
+                AccessibilityNodeInfo info = AccessibilityHelper.findNodeInfosByClassName("android.support.v4.view.ViewPager");
+                if(info != null){
+                    Rect rect = new Rect();
+                    info.getBoundsInScreen(rect);
+                    if(rect.top > 100){
+                        mGestureUtil.click(mGlobal.mScreenWidth/2,rect.top - 60);
+                    }
+                }
+
                 //向上滑动
                 mGestureUtil.scroll_up();
 
-                //点开【查看全文，奖励更多】按钮，阅读全文
-                AccessibilityNodeInfo info = AccessibilityHelper.findNodeInfosByText("查看全文，奖励更多");
-                if(info != null){
-                    AccessibilityHelper.performClick(info);
+                //判断是否处于文章页，如果不是则退出
+                AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosByText("评论得金币");
+                if(XinWenNode == null){
+                    break;
                 }
+
+
 
                 //判断是否已经下载了某个APP
                 AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosByText("出于安全考虑，已禁止您的手机安装来自此来源的未知应用。");
@@ -294,7 +317,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
             }
         }
         //阅读完返回
-        mToast.success("阅读完毕");
+
         return true;
     }
 
@@ -305,7 +328,8 @@ public class RobTaskJuKanDian extends BaseRobotTask {
         }
 
         //资源ID目前测试每个版本都是一样的，暂且先这样
-        AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosById(nodeInfo,"com.xiangzi.jukandian:id/item_artical_ad_three_bd_flag");
+
+        AccessibilityNodeInfo node = AccessibilityHelper.findChildNodeInfosById(nodeInfo,"com.xiangzi.jukandian:id/item_artical_ad_three_bd_flag");
         if(node != null){
             RxToast.warning(mGlobal.mNavigationBarActivity,"过滤广告").show();
             return true;
@@ -317,12 +341,10 @@ public class RobTaskJuKanDian extends BaseRobotTask {
      * 执行签到任务
      */
     private void SignIn(){
-        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText(
-                mGlobal.mAccessibilityService.getRootInActiveWindow(),"去签到");
+        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText("一键签到");
         if(nodeInfo != null){
-            AccessibilityHelper.performClick(nodeInfo);
+            mGestureUtil.click(nodeInfo);
         }
-        mFunction.sleep(mConfig.clickSleepTime);
     }
 
     /**
@@ -343,7 +365,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
         AccessibilityNodeInfo NodeInfo2 = AccessibilityHelper.findNodeInfosByText("我的");
 
         if ( NodeInfo1 != null && NodeInfo2 != null ) {
-            mToast.success("回应用首页成功");
+            //mToast.success("回应用首页成功");
             return true;
         } else {
 
@@ -369,7 +391,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
             if (NodeInfo1 != null || NodeInfo2 != null) {
                 return true;
             } else {
-                mToast.error("回应用首页失败");
+                //mToast.error("回应用首页失败");
                 //mCommonTask.ClearPhoneCacheTask();
                 return false;
             }

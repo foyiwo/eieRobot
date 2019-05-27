@@ -44,7 +44,12 @@ public class mGlobal {
     @SuppressLint("StaticFieldLeak")
     public static View viewFloatButton = null;
 
+    //每个APP的任务时间
     @SuppressLint("StaticFieldLeak")
     public static TextView mViewRobTaskTimer = null;
+
+    //每个APP里的子任务的任务时间
+    @SuppressLint("StaticFieldLeak")
+    public static TextView mViewRobNewsOrVideoTaskTimer = null;
 
 }

@@ -52,10 +52,7 @@ public class mCommonTask {
                 tasks.add(new RobTaskJuKanDian());
                 //趣头条
                 tasks.add(new RobTaskQuTouTiao());
-                //七猫免费小说
-                tasks.add(new RobTaskQiMaoXiaoShuo());
-
-
+                //tasks.get(2).StartTask();
                 int i = 0;
                 while (ThreadTaskOpenStatus){
                     if(i >= tasks.size()){

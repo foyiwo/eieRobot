@@ -113,7 +113,37 @@ public final class AccessibilityHelper {
         }
         return null;
     }
+    public static AccessibilityNodeInfo findNodeInfosByClassName(String className) {
+        AccessibilityNodeInfo node = mGlobal.mAccessibilityService.getRootInActiveWindow();
+        if(node == null){
+            return null;
+        }
+        return findNodeInfosByClassName(node ,className);
+    }
+    /**
+     * 通过组件名字查找
+     */
+    public static AccessibilityNodeInfo findChildNodeInfosById(AccessibilityNodeInfo nodeInfo, String resId) {
+        if(nodeInfo == null){ return null; }
 
+        if (TextUtils.isEmpty(resId)) {
+            return null;
+        }
+        AccessibilityNodeInfo Info = null;
+        for (int i = 0; i < nodeInfo.getChildCount(); i++) {
+            AccessibilityNodeInfo node = nodeInfo.getChild(i);
+            if (node.getViewIdResourceName() != null && resId.contentEquals(node.getViewIdResourceName())) {
+                return node;
+            }
+            else if(node.getChildCount() > 0) {
+                Info = findChildNodeInfosById(node,resId);
+            }
+            if(Info != null && Info.getViewIdResourceName().equals(resId)){
+                break;
+            }
+        }
+        return Info;
+    }
     /**
      * 通过组件名字查找
      */

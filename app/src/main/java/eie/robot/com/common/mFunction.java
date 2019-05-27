@@ -86,10 +86,10 @@ public class mFunction {
         //for循环遍历ResolveInfo对象获取包名和类名
         for (int i = 0; i < apps.size(); i++) {
             ResolveInfo info = apps.get(i);
-            packageName = info.activityInfo.packageName;
             CharSequence cls = info.activityInfo.name;
             CharSequence name = info.activityInfo.loadLabel(mGlobal.mNavigationBarActivity.getPackageManager());
             if(name.equals(AppName)){
+                packageName = info.activityInfo.packageName;
                 break;
             }
         }
@@ -215,7 +215,12 @@ public class mFunction {
         }
     }
 
-
+    /**
+     * 所在线程休眠所给的时间
+     */
+    public static void click_sleep()  {
+        mFunction.sleep(mConfig.clickSleepTime);
+    }
     /**
      * 点亮手机屏幕
      */

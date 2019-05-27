@@ -165,11 +165,16 @@ public class mGestureUtil {
         //mGestureUtil.dispatchGesture(mGlobal.mScreenWidth/6,(float) (mGlobal.mScreenHeight/1.5),mGlobal.mScreenWidth/6,mGlobal.mScreenHeight/3,20);
         return true;
     }
-    //向上滑动
+    //向下滑动
     public static Boolean scroll_down(){
         return mGestureUtil.dispatchGesture(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/2,mGlobal.mScreenWidth/2,mGlobal.mScreenHeight,1500);
     }
-
+    //向下滑动
+    public static Boolean scroll_down_100(){
+        mGestureUtil.dispatchGesture(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/2,mGlobal.mScreenWidth/2,mGlobal.mScreenHeight,100);
+        mFunction.click_sleep();
+        return true;
+    }
     public static void MultipleScrollUp(int count){
         int i=0;
         while (i < count) {

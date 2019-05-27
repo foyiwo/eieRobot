@@ -14,6 +14,7 @@ import eie.robot.com.common.mToast;
 
 public abstract class BaseRobotTask {
 
+    Boolean IsSign = false;        //是否已经签到
     String AppName = "";        //应用名称
     float TodayGold = 0;        //今日当前收益
     float TodayMaxIncome = 0;   //今日最大收益，用于控制是否继续刷金币
