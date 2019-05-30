@@ -71,8 +71,8 @@ public class mFunction {
     /**
      *打开趣头条
      */
-    public  static void  openQuTouTiao(){
-        mFunction.openLocalAPP(mGlobal.mNavigationBarActivity,"com.jifen.qukan","com.jifen.qkbase.main.MainActivity");
+    public  static void  openQuKanTianXia(){
+        mFunction.openLocalAPP(mGlobal.mNavigationBarActivity,"com.yanhui.qktx","com.yanhui.qktx.activity.MainActivity");
     }
 
 
@@ -97,8 +97,74 @@ public class mFunction {
         return packageName;
     }
 
+    public static void OpenAppInDesktop(String AppName){
+        AccessibilityHelper.performHome();
+        mFunction.click_sleep();
+
+        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText(AppName);
+        if(nodeInfo!=null){
+            mGestureUtil.click(nodeInfo);
+        }
+        String packageName = mFunction.GetAppPackageName(AppName);
+        int i = 5;
+        while (i > 0){
+
+            String CurrentPackageName = mGlobal.mAccessibilityService.getRootInActiveWindow().getPackageName().toString();
+
+            String PhoneDeskPackageName = "com.miui.home,com.huawei.android.launcher,com.zui.launcher";
+            if(!PhoneDeskPackageName.contains(CurrentPackageName)){
+                //不在桌面，直接返回
+                return;
+            }
+            if(mGlobal.mAccessibilityService.getRootInActiveWindow().getPackageName().equals(packageName)){
+                return;
+            }
+
+            mGestureUtil.scroll_left();
+            mFunction.click_sleep();
+            nodeInfo = AccessibilityHelper.findNodeInfosByText(AppName);
+            if(nodeInfo!=null){
+                mGestureUtil.click(nodeInfo);
+                return;
+            }
+            i--;
+        }
+        i = 5;
+        while (i > 0){
+            if(!mGlobal.mAccessibilityService.getRootInActiveWindow().getPackageName().equals("com.miui.home")){
+                //不在桌面，直接返回
+                return;
+            }
+            if(!mGlobal.mAccessibilityService.getRootInActiveWindow().getPackageName().equals("com.huawei.android.launcher")){
+                //不在桌面，直接返回
+                return;
+            }
+            if(!mGlobal.mAccessibilityService.getRootInActiveWindow().getPackageName().equals("com.zui.launcher")){
+                //不在桌面，直接返回
+                return;
+            }
+            if(mGlobal.mAccessibilityService.getRootInActiveWindow().getPackageName().equals(packageName)){
+                return;
+            }
+
+            mGestureUtil.scroll_right();
+            mFunction.click_sleep();
+            nodeInfo = AccessibilityHelper.findNodeInfosByText(AppName);
+            if(nodeInfo != null){
+                mGestureUtil.click(nodeInfo);
+                return;
+            }
+            i--;
+        }
+    }
+
     //根据APP名字打开应用
     public static void OpenApp(String AppName){
+
+        if(!AppName.equals("所有APP")){
+            OpenAppInDesktop(AppName);
+            return;
+        }
         String packageName = mFunction.GetAppPackageName(AppName);
         Intent intent = mGlobal.mNavigationBarActivity
                         .getPackageManager().getLaunchIntentForPackage(packageName);
@@ -106,8 +172,10 @@ public class mFunction {
         if(intent == null){
             RxToast.error(mGlobal.mNavigationBarActivity, "未安装", Toast.LENGTH_LONG).show();
         }else{
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            mGlobal.mAccessibilityService.startActivity(intent);
+//            int includeBackground = Reflect.on(Intent.class).field("FLAG_RECEIVER_INCLUDE_BACKGROUND").get();
+//            intent.setFlags(intent.getFlags()| includeBackground);com.hsh.wyguaji
+            //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_HISTORY);
+            mGlobal.mNavigationBarActivity.startActivity(intent);
         }
     }
 
@@ -147,13 +215,12 @@ public class mFunction {
             mFunction.OpenApp(AppName);
             mFunction.sleep(mConfig.WaitLauncherlTime);
 
-
             //打开后，尝试多次获取
             int count = mConfig.loopCount;
             while (true) {
                 rootWindow = mGlobal.mAccessibilityService.getRootInActiveWindow();
                 if(rootWindow == null){
-                    mFunction.sleep(mConfig.loopSleepTime);
+                    mFunction.sleep(mConfig.loopSleepTime*3);
                     continue;
                 }
                 if (rootWindow.getPackageName().equals(PackageName)) {
@@ -163,7 +230,8 @@ public class mFunction {
                 if (count < 0) {
                     break;
                 }
-                mFunction.sleep(mConfig.loopSleepTime);
+                AccessibilityHelper.performBack();
+                mFunction.sleep(mConfig.loopSleepTime*3);
             }
         }
         //尝试过后，还不是，则结束

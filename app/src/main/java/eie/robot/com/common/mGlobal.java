@@ -52,4 +52,7 @@ public class mGlobal {
     @SuppressLint("StaticFieldLeak")
     public static TextView mViewRobNewsOrVideoTaskTimer = null;
 
+
+
+
 }

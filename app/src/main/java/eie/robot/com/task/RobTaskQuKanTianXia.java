@@ -1,7 +1,7 @@
 package eie.robot.com.task;
 
+import android.graphics.Path;
 import android.graphics.Rect;
-import android.icu.lang.UCharacter;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.vondear.rxtool.view.RxToast;
@@ -14,17 +14,17 @@ import eie.robot.com.common.mGestureUtil;
 import eie.robot.com.common.mGlobal;
 import eie.robot.com.common.mToast;
 
-public class RobTaskJuKanDian extends BaseRobotTask {
+public class RobTaskQuKanTianXia extends BaseRobotTask {
 
     public int SizeOffset = 40;
 
     /**
      * 构造函数
      */
-    public RobTaskJuKanDian() {
+    public RobTaskQuKanTianXia() {
         super();
-        this.AppName = "聚看点";
-        this.TodayMaxIncome = 5000;
+        this.AppName = "趣看天下";
+        this.TodayMaxIncome = 6000;
         this.TodayIncomeIsFinsh = false;
     }
 
@@ -37,28 +37,35 @@ public class RobTaskJuKanDian extends BaseRobotTask {
         super.StartTask();
         while (mCommonTask.AppTaskOpenStatus){
             try {
-                //每次进行一项任务时，都先恢复到首页
-                //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
-                if(!returnHome()){
-                    continue;
-                }
                 //领取时段奖励
                 performTask_ShiDuanJiangLi();
+
                 //判断收益是否封顶
                 if(JudgeGoldIncomeIsMax()){
                     break;
                 }
 
-
+                //每次进行一项任务时，都先恢复到首页
+                //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
+                if(!returnHome()){
+                    continue;
+                }
 
                 //签到(聚看点的签到放到了【CloseDialog()】方法里)
-                //SignIn();
+                SignIn();
 
 
                 mFunction.openScreen();
 
-                //阅读文章
-                int RefreshCount =   mFunction.getRandom_10_20()+10;
+                //看视频
+                int RefreshCount =  0;// mFunction.getRandom_4_8();
+                while (RefreshCount > 0){
+                    if(!mCommonTask.AppTaskOpenStatus){ break;}
+                    performTask_KanShiPing();
+                    RefreshCount -- ;
+                }
+                //看新闻
+                RefreshCount =   mFunction.getRandom_4_8();
                 while (RefreshCount > 0){
                     if(!mCommonTask.AppTaskOpenStatus){ break;}
                     performTask_KanZiXun();
@@ -94,13 +101,14 @@ public class RobTaskJuKanDian extends BaseRobotTask {
      * 执行刷单任务（领取时段奖励）
      */
     private boolean performTask_ShiDuanJiangLi(){
+        mToast.success("时段奖励任务");
         if(!returnHome()){
             return false;
         }
         //点击第一个功能列表
         mGestureUtil.click(SizeOffset,mGlobal.mScreenHeight-SizeOffset);
 
-        mToast.success("时段奖励任务");
+
         AccessibilityNodeInfo ScrollViewNodeInfo = AccessibilityHelper.findNodeInfosByClassName(
                 mGlobal.mAccessibilityService.getRootInActiveWindow()
                 ,"android.widget.HorizontalScrollView");
@@ -109,12 +117,12 @@ public class RobTaskJuKanDian extends BaseRobotTask {
         }
         Rect rect = new Rect();
         ScrollViewNodeInfo.getBoundsInScreen(rect);
-        if(rect.left < 1 || rect.top < 1){
+        if(rect.width() < 1 || rect.top < 1){
             return false;
         }
 
         //点击时段按钮
-        mGestureUtil.click(rect.left + SizeOffset,rect.top - SizeOffset);
+        mGestureUtil.click(rect.width() - SizeOffset,rect.top - SizeOffset);
 
         this.CloseDialog();
 
@@ -125,41 +133,24 @@ public class RobTaskJuKanDian extends BaseRobotTask {
     //关闭APP弹出的所有可能弹框
     private void CloseDialog(){
         //签到
-        SignIn();
-
-
-        AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosByText("我知道了");
+        //判断是否处于弹框，但是却无法利用【返回键】取消的状态
+        AccessibilityNodeInfo node = mGlobal.mAccessibilityService.getRootInActiveWindow();
         if(node != null){
-            AccessibilityHelper.performClick(node);
-        }
-
-        node = AccessibilityHelper.findNodeInfosByText("分享立赚");
-        if(node != null){
-            AccessibilityHelper.performClick(node);
-            mFunction.sleep(mConfig.clickSleepTime);
-            AccessibilityHelper.performBack(mGlobal.mAccessibilityService);
-            mFunction.sleep(mConfig.clickSleepTime);
-        }
-
-        node = AccessibilityHelper.findNodeInfosByText("忽略");
-        if(node != null){
-            AccessibilityHelper.performClick(node);
-        }
-
-        //判断是否点多了，触发了【退出APP确认框】
-        AccessibilityNodeInfo NodeInfo3 = AccessibilityHelper.findNodeInfosByText("确认退出聚看点？");
-        AccessibilityNodeInfo NodeInfo4 = AccessibilityHelper.findNodeInfosByText("继续赚钱");
-        if ( NodeInfo3 != null && NodeInfo4 != null ) {
-            AccessibilityHelper.performClick(NodeInfo4);
-        }
-        node = AccessibilityHelper.findNodeInfosByText("分享奖励领取成功");
-        if(node != null){
-            node = AccessibilityHelper.findNodeInfosById("com.xiangzi.jukandian:id/close_img_layout");
-            if(node != null){
-                mGestureUtil.click(node);
+            Rect rect = new Rect();
+            node.getBoundsInScreen(rect);
+            int viewHeight = rect.height();
+            if(viewHeight < mGlobal.mScreenHeight-100){
+                mGestureUtil.click(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/2);
             }
-
         }
+        //提示开启通知框的弹窗
+        node = AccessibilityHelper.findNodeInfosByText("开启推送可获得大量金币");
+        if(node != null){
+            node = AccessibilityHelper.findNodeInfosByText("取消");
+            mGestureUtil.click(node);
+        }
+
+
     }
 
     /**
@@ -172,32 +163,19 @@ public class RobTaskJuKanDian extends BaseRobotTask {
         }
         //点击【我的】列表
         mGestureUtil.click(mGlobal.mScreenWidth-SizeOffset,mGlobal.mScreenHeight-SizeOffset);
-        mToast.success("判断今日收益是否封顶");
+
         //再次恢复到首页
         if(!returnHome()){
             return false;
         }
+        mToast.success("判断今日收益是否封顶");
         mGestureUtil.scroll_down_100();
         AccessibilityNodeInfo IncomeNode = null;
         try{
             //利用ID的方式
-            AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById("com.xiangzi.jukandian:id/goldValue");
+            AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById("com.yanhui.qktx:id/tv_money_count");
             if(nodeInfo != null && nodeInfo.getClassName().equals("android.widget.TextView")){
                 IncomeNode = nodeInfo;
-            }else {
-                //利用文本的方式
-                nodeInfo = AccessibilityHelper.findNodeInfosByText("今日金币");
-                if(nodeInfo != null){
-                    nodeInfo = nodeInfo.getParent();
-                    if(nodeInfo != null && nodeInfo.getClassName().equals("android.widget.LinearLayout")){
-                        nodeInfo = nodeInfo.getParent();
-                        if(nodeInfo != null && nodeInfo.getClassName().equals("android.widget.LinearLayout")){
-                            if(nodeInfo.getChildCount()>0 && nodeInfo.getChild(0).getClassName().equals("android.widget.TextView")){
-                                IncomeNode = nodeInfo.getChild(0);
-                            }
-                        }
-                    }
-                }
             }
         }catch (Exception ex){
             mToast.error(this.AppName+"收益检测错误:"+ex.getMessage());
@@ -217,6 +195,34 @@ public class RobTaskJuKanDian extends BaseRobotTask {
         }
 
         return false;
+    }
+    /**
+     * 执行刷单任务（看资讯）
+     */
+    private boolean performTask_KanShiPing(){
+        mToast.success("新闻任务");
+        if(!returnHome()){
+            return false;
+        }
+        //点击第二个功能列表
+        mGestureUtil.click((mGlobal.mScreenWidth/5)*2-SizeOffset,mGlobal.mScreenHeight-SizeOffset);
+
+        mGestureUtil.scroll_up();
+        int NewsCount =   mFunction.getRandom_4_8();
+        while (NewsCount > 0){
+            if(!mCommonTask.AppTaskOpenStatus){break;}
+            Task_KanShiPing();
+            if(!returnHome()){
+                continue;
+            }
+
+            mToast.info("阅读完毕，首页滑动");
+            mGestureUtil.scroll_up();
+            mGestureUtil.scroll_up();
+            NewsCount -- ;
+        }
+        //刷资讯
+        return true;
     }
 
     /**
@@ -239,7 +245,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                 continue;
             }
 
-            mToast.info("阅读完毕，首页滑动");
+            mToast.info("新闻看完，首页滑动");
             mGestureUtil.scroll_up();
             NewsCount -- ;
         }
@@ -248,74 +254,101 @@ public class RobTaskJuKanDian extends BaseRobotTask {
     }
 
 
-    private boolean Task_KanZiXun() {
-        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByClassName(
-                mGlobal.mAccessibilityService.getRootInActiveWindow()
-                ,"android.support.v7.widget.RecyclerView");
-        if (nodeInfo == null) {
-            return false;
-        }
-        int CountNews = (nodeInfo.getChildCount()/2);
-
-        AccessibilityNodeInfo childNodeInfo = nodeInfo.getChild(CountNews);
-        if(childNodeInfo == null){
-            mToast.error("新闻为空，重新选择文章");
-            return false;
-        }
-
-        mToast.success("阅读当页第"+CountNews+"条新闻");
-        //过滤广告
-        if(filterAdvertisement(childNodeInfo)){
-            return false;
-        }
-
+    private boolean Task_KanShiPing() {
         //点击新闻进行阅读。
-        boolean clickResult = mGestureUtil.click(childNodeInfo);
+        boolean clickResult = mGestureUtil.clickInScreenCenter();
         if(!clickResult){
-            mToast.error("点击失效，重新选择文章");
+            mToast.error("点击失效，重新选择视频");
             return false;
         }
         //开始阅读新闻
         if (clickResult) {
-
-            //设置收益的最新时间
-            mCommonTask.setLastIncomeTime();
-
             //等待反应
             mFunction.sleep(mConfig.clickSleepTime);
 
             //滑动次数(随机10到20)
             int SwiperCount = mFunction.getRandom_6_12();
-            mToast.info("新闻任务:滑动"+SwiperCount+"次");
+            mToast.info("开始看视频");
 
             //开始滑动文章
-            while (true) {
+            while (SwiperCount > 0) {
+
 
                 if(!mCommonTask.AppTaskOpenStatus){ break; }
-                if (SwiperCount < 1) {
-                    break;
-                }
-                //点开【查看全文，奖励更多】按钮，阅读全文
-                AccessibilityNodeInfo info = AccessibilityHelper.findNodeInfosByClassName("android.support.v4.view.ViewPager");
-                if(info != null){
-                    Rect rect = new Rect();
-                    info.getBoundsInScreen(rect);
-                    if(rect.top > 100){
-                        mGestureUtil.click(mGlobal.mScreenWidth/2,rect.top - 60);
-                    }
-                }
 
-                //向上滑动
-                mGestureUtil.scroll_up();
-
+                //判断是否处于视频播放页，如果不是则退出
                 //判断是否处于文章页，如果不是则退出
                 AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosByText("评论得金币");
                 if(XinWenNode == null){
                     break;
                 }
 
+                //设置收益的最新时间
+                mCommonTask.setLastIncomeTime();
 
+                XinWenNode = AccessibilityHelper.findNodeInfosByText("转发给好友观看每次奖励500金币");
+                if(XinWenNode != null){
+                    break;
+                }
 
+                mFunction.sleep(mConfig.WaitLauncherlTime);
+                SwiperCount--;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean Task_KanZiXun() {
+
+        //点击新闻进行阅读。
+        boolean clickResult = mGestureUtil.clickInScreenCenter();
+        //开始阅读新闻
+        if (clickResult) {
+            //等待反应
+            mFunction.sleep(mConfig.clickSleepTime);
+
+            //滑动次数(随机10到20)
+            int SwiperCount = mFunction.getRandom_6_12();
+            mToast.info("新闻任务:滑动"+SwiperCount+"次");
+            int SwiperCountCopy = SwiperCount;
+            //开始滑动文章
+            while (true) {
+
+                if(!mCommonTask.AppTaskOpenStatus){ break; }
+
+                if (SwiperCount < 1) {
+                    break;
+                }
+                AccessibilityNodeInfo info = AccessibilityHelper.findNodeInfosByText("评论得金币");
+                //判断是否处于文章页或者视频页，如果不是则退出
+                if(info == null){
+                    break;
+                }
+                //设置收益的最新时间
+                mCommonTask.setLastIncomeTime();
+                //判断是处于视频页还是文章页，info为空，说明是文章页，不为空，则为视频页，不进行滑动
+                AccessibilityNodeInfo VideoInfos = AccessibilityHelper.findNodeInfosById("com.yanhui.qktx:id/surface_container");
+
+                Rect rect = new Rect();
+                info.getBoundsInScreen(rect);
+                //第一次进来的时候，尝试点击【展开查看全文】，因为这个是webView,目前我没找到办法可以获取到该Node
+                if(SwiperCountCopy == SwiperCount && VideoInfos == null){
+                    int TestCount = 3;
+                    while (TestCount > 0){
+                        mGestureUtil.scroll_up(100,1000);
+                        mGestureUtil.click(mGlobal.mScreenWidth/2,rect.top - 55);
+                        info = AccessibilityHelper.findNodeInfosByText("保存");
+                        if(info != null){
+                            AccessibilityHelper.performBack();
+                            mFunction.click_sleep();
+                        }
+                        TestCount--;
+                    }
+                }
+                if(VideoInfos == null){
+                    mGestureUtil.scroll_up();
+                }
                 //判断是否已经下载了某个APP
                 AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosByText("出于安全考虑，已禁止您的手机安装来自此来源的未知应用。");
                 if(node != null){
@@ -332,6 +365,8 @@ public class RobTaskJuKanDian extends BaseRobotTask {
 
         return true;
     }
+
+
 
     //过来广告
     private boolean filterAdvertisement( AccessibilityNodeInfo nodeInfo ){
@@ -353,19 +388,16 @@ public class RobTaskJuKanDian extends BaseRobotTask {
      * 执行签到任务
      */
     private void SignIn(){
-        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText("一键签到");
-        if(nodeInfo != null){
-            mGestureUtil.click(nodeInfo);
-        }
+        mToast.success("签到");
+        mGestureUtil.click((mGlobal.mScreenWidth/5)*4-SizeOffset,mGlobal.mScreenHeight-SizeOffset);
     }
-
 
     /**
      * 回归到首页，如果APP未打开，则会自行打开
      * @return
      */
     private boolean returnHome(){
-        return returnHome("任务中心","我的",new Runnable() {
+        return returnHome("每日金币","我的",new Runnable() {
             @Override
             public void run() {
                 CloseDialog();

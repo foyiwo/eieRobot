@@ -9,6 +9,7 @@ import eie.robot.com.accessibilityservice.AccessibilityHelper;
 import eie.robot.com.common.mCommonTask;
 import eie.robot.com.common.mConfig;
 import eie.robot.com.common.mFunction;
+import eie.robot.com.common.mGestureUtil;
 import eie.robot.com.common.mGlobal;
 import eie.robot.com.common.mToast;
 
@@ -49,12 +50,50 @@ public abstract class BaseRobotTask {
     }
 
 
-
-    public boolean returnHome(){
-        if(mCommonTask.AppTaskOpenStatus && mCommonTask.ThreadTaskOpenStatus){
-            return true;
+    public boolean returnHome(String Nav1,String Nav2 ,Runnable runnable){
+        if(!mCommonTask.AppTaskOpenStatus && !mCommonTask.ThreadTaskOpenStatus){
+            return false;
         }
-        return false;
+        if(!mFunction.loopOpenApp(AppName)){
+            return false;
+        }
+
+        //确定已经打开应用之后，下面确定是否处于首页。
+
+        //获取底部导航栏的图标
+        AccessibilityNodeInfo NodeInfo1 = AccessibilityHelper.findNodeInfosByText(Nav1);
+        AccessibilityNodeInfo NodeInfo2 = AccessibilityHelper.findNodeInfosByText(Nav2);
+
+        if ( NodeInfo1 != null || NodeInfo2 != null ) {
+            //设置收益的最新时间
+            //mCommonTask.setLastIncomeTime();
+            return true;
+        } else {
+            //到此，虽然不是主界面，但却是处于打开状态，目前可能是处于，内页，至于哪个内页，无法确定，
+            //采取触发返回键的方式。
+            int count = mConfig.loopCount+5;
+            while (count > 0) {
+
+                runnable.run();//this.CloseDialog();
+
+                NodeInfo1 = AccessibilityHelper.findNodeInfosByText(Nav1);
+                NodeInfo2 = AccessibilityHelper.findNodeInfosByText(Nav2);
+                if ( NodeInfo1 != null || NodeInfo2 != null ) {
+                    break;
+                }
+                count--;
+                AccessibilityHelper.performBack(mGlobal.mAccessibilityService);
+                //停一下，等待反应
+                mFunction.click_sleep();
+            }
+            if (NodeInfo1 != null || NodeInfo2 != null) {
+                return true;
+            } else {
+                //如果一直没反应，尝试着点击一下屏幕中心。
+                mGestureUtil.click(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/2);
+                return false;
+            }
+        }
     }
 
 

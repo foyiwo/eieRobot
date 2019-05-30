@@ -7,6 +7,7 @@ import android.content.Context;
 import android.os.Build;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Toast;
 
 import java.util.Iterator;
@@ -25,8 +26,6 @@ public class mAccessibilityService extends AccessibilityService {
     //  AccessibilityService    事件回调
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-//        CharSequence packageName = event.getPackageName();
-//        int eventType = event.getEventType();
     }
 
     @Override

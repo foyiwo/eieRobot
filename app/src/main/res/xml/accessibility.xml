@@ -4,13 +4,10 @@
     android:description="@string/accessibility_description"
     android:accessibilityEventTypes="typeAllMask"
     android:accessibilityFeedbackType="feedbackGeneric"
-    android:notificationTimeout="100"
-    android:accessibilityFlags="flagDefault"
+    android:accessibilityFlags="flagDefault|flagRequestEnhancedWebAccessibility"
+    android:canRequestEnhancedWebAccessibility="true"
+    android:canRequestFilterKeyEvents="true"
     android:canRetrieveWindowContent="true"
     android:canPerformGestures="true"
-    android:canRequestTouchExplorationMode="true"
-    android:packageNames="me.firesun.wechat.enhancement,com.tencent.mm,io.va.exposed"
-
-
 
     />

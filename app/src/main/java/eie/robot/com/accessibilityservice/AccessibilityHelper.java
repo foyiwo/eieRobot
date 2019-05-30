@@ -90,6 +90,41 @@ public final class AccessibilityHelper {
         return findNodeInfosByText(mGlobal.mAccessibilityService.getRootInActiveWindow(),text);
     }
 
+
+    /**
+     * 通过文本查找
+     */
+    public static AccessibilityNodeInfo findChildNodeInfosByText(String text) {
+        if(mGlobal.mAccessibilityService.getRootInActiveWindow() == null){
+            return null;
+        }
+        return findChildNodeInfosByText(mGlobal.mAccessibilityService.getRootInActiveWindow(),text);
+
+    }
+    /**
+     * 通过文本查找
+     */
+    public static AccessibilityNodeInfo findChildNodeInfosByText( AccessibilityNodeInfo nodeInfo, String text) {
+        if (TextUtils.isEmpty(text) || nodeInfo == null) {
+            return null;
+        }
+        AccessibilityNodeInfo Info = null;
+        int childCount = nodeInfo.getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            AccessibilityNodeInfo node = nodeInfo.getChild(i);
+            if (node.getText() != null && node.getText().toString().contains(text)) {
+                return node;
+            }
+            else if(node.getChildCount() > 0) {
+                int count = node.getChildCount();
+                Info = findChildNodeInfosByText(node,text);
+            }
+            if(Info != null && Info.getText() != null && Info.getText().toString().contains(text)){
+                break;
+            }
+        }
+        return Info;
+    }
     /**
      * 通过文本查找
      */
@@ -120,6 +155,7 @@ public final class AccessibilityHelper {
         }
         return findNodeInfosByClassName(node ,className);
     }
+
     /**
      * 通过组件名字查找
      */
@@ -249,7 +285,12 @@ public final class AccessibilityHelper {
         }
         service.performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME);
     }
-
+    public static void performHome() {
+        if (mGlobal.mAccessibilityService == null) {
+            return;
+        }
+        mGlobal.mAccessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME);
+    }
     /**
      * 返回事件
      */
@@ -260,7 +301,13 @@ public final class AccessibilityHelper {
         }
         service.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);
     }
-
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    public static void performBack() {
+        if (mGlobal.mAccessibilityService == null) {
+            return;
+        }
+        mGlobal.mAccessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);
+    }
     /**
      * 点击事件
      */

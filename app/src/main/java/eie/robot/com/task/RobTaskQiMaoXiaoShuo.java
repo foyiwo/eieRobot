@@ -88,44 +88,11 @@ public class RobTaskQiMaoXiaoShuo extends BaseRobotTask {
      * 回归到首页，如果APP未打开，则会自行打开
      * @return
      */
-    @Override
-    public boolean returnHome(){
-        if(!super.returnHome()){
-            return false;
-        }
-        if(!mFunction.loopOpenApp(AppName)){
-            return false;
-        }
-
-        //确定已经打开应用之后，下面确定是否处于首页。
-        String IndexText_ShuJia = "书架";
-        //获取底部导航栏的图标
-        AccessibilityNodeInfo NodeInfo1 = AccessibilityHelper.loopFindNodeInfoByText(IndexText_ShuJia);
-
-        if ( NodeInfo1 != null ) {
-            return true;
-        } else {
-            //到此，虽然不是主界面，但却是处于打开状态，目前可能是处于，内页，至于哪个内页，无法确定，
-            //采取触发返回键的方式。
-            int count = mConfig.loopCount;
-            while (true) {
-                AccessibilityHelper.performBack(mGlobal.mAccessibilityService);
-                //停一下，等待反应
-                mFunction.sleep(mConfig.loopSleepTime);
-                NodeInfo1 = AccessibilityHelper.loopFindNodeInfoByText(IndexText_ShuJia);
-                if ( NodeInfo1 != null  ) {
-                    break;
-                }
-                count--;
-                if (count < 0) {
-                    break;
-                }
+    private boolean returnHome(){
+        return returnHome("任务中心","我的",new Runnable() {
+            @Override
+            public void run() {
             }
-            if (NodeInfo1 != null) {
-                return true;
-            } else {
-                return false;
-            }
-        }
+        });
     }
 }

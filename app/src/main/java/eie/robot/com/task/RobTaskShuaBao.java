@@ -27,7 +27,7 @@ public class RobTaskShuaBao extends BaseRobotTask {
         if(packname.isEmpty()){
             this.AppName = "刷宝";
         }
-        this.TodayMaxIncome = 9999;
+        this.TodayMaxIncome = 11888;
         this.TodayIncomeIsFinsh = false;
     }
 
@@ -96,15 +96,17 @@ public class RobTaskShuaBao extends BaseRobotTask {
 
             mGestureUtil.scroll_up_30();
             mToast.success("视频任务:浏览"+VideoInterval+"秒");
-            if(VideoInterval > 16){
+
+            //设置收益的最新时间
+            mCommonTask.setLastIncomeTime();
+
+            if(VideoInterval == 18){
                 AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText("关注");
                 if(nodeInfo != null){
                     mGestureUtil.click(nodeInfo);
                 }else {
                     mGestureUtil.doubleClickInScreenCenter();
                 }
-            }
-            if(VideoInterval == 18){
                 mGestureUtil.doubleClickInScreenCenter();
             }
             mFunction.sleep( VideoInterval * 1000);
@@ -333,49 +335,12 @@ public class RobTaskShuaBao extends BaseRobotTask {
      * 回归到首页，如果APP未打开，则会自行打开
      * @return
      */
-    @Override
-    public boolean returnHome(){
-
-        if(!super.returnHome()){
-            return false;
-        }
-        if(!mFunction.loopOpenApp(AppName)){
-            return false;
-        }
-        //获取底部导航栏的图标
-        AccessibilityNodeInfo NodeInfo1 = AccessibilityHelper.findNodeInfosByText("任务");
-        AccessibilityNodeInfo NodeInfo2 = AccessibilityHelper.findNodeInfosByText("首页");
-
-        if ( NodeInfo1 != null && NodeInfo2 != null ) {
-            return true;
-        } else {
-
-            //到此，虽然不是主界面，但却是处于打开状态，目前可能是处于，内页，至于哪个内页，无法确定，
-            //采取触发返回键的方式。
-            int count = mConfig.loopCount;
-            while (true) {
-                this.CloseDialog();
-
-                NodeInfo1 = AccessibilityHelper.findNodeInfosByText("任务");
-                NodeInfo2 = AccessibilityHelper.findNodeInfosByText("首页");
-                if ( NodeInfo1 != null && NodeInfo2 != null ) {
-                    break;
-                }
-                count--;
-                if (count < 0) {
-                    break;
-                }
-                AccessibilityHelper.performBack(mGlobal.mAccessibilityService);
-                //停一下，等待反应
-                mFunction.sleep(mConfig.loopSleepTime);
+    private boolean returnHome(){
+        return returnHome("任务","首页",new Runnable() {
+            @Override
+            public void run() {
+                CloseDialog();
             }
-            if (NodeInfo1 != null || NodeInfo2 != null) {
-                return true;
-            } else {
-                mToast.error("回应用首页失败");
-                //mCommonTask.ClearPhoneCacheTask();
-                return false;
-            }
-        }
+        });
     }
 }

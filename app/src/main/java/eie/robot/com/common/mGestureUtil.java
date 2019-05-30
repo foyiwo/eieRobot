@@ -39,7 +39,7 @@ public class mGestureUtil {
     /**
      * 触发一个触摸手势
      */
-    private static Boolean dispatchGesture(Path path,long duration){
+    public static Boolean dispatchGesture(Path path,long duration){
         GestureDescription.Builder builder = new GestureDescription.Builder();
         GestureDescription.StrokeDescription Gesture = new GestureDescription.StrokeDescription(path, 100, duration);
         GestureDescription gestureDescription = builder.addStroke(Gesture).build();
@@ -77,6 +77,12 @@ public class mGestureUtil {
         float y = mGlobal.mScreenHeight/2;
         mGestureUtil.click(x,y,100);
         mGestureUtil.click(x,y,0);
+        return true;
+    }
+    public static boolean clickInScreenCenter(){
+        float x = mGlobal.mScreenWidth/2;
+        float y = mGlobal.mScreenHeight/2;
+        mGestureUtil.click(x,y,mConfig.clickSleepTime);
         return true;
     }
     public static boolean click(float x,float y){
@@ -148,7 +154,15 @@ public class mGestureUtil {
         mFunction.sleep(mConfig.clickSleepTime);
 
     }
+    public static void scroll_up(long distance ,long duration){
 
+        Path path = new Path();
+        path.moveTo(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/2);
+        path.lineTo(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/2-distance);
+        mGestureUtil.dispatchGesture(path,duration);
+        mFunction.sleep(mConfig.clickSleepTime);
+
+    }
     //向左滑动
     public static void scroll_left(){
         float sx = (float) (mGlobal.mScreenWidth/1.3) + mFunction.getRandom_0_50();
@@ -158,7 +172,15 @@ public class mGestureUtil {
         long duration = 30;
         mGestureUtil.dispatchGesture(sx,sy,dx,dy,duration);
     }
-
+    //向左滑动
+    public static void scroll_right(){
+        float sx = (float) (mGlobal.mScreenWidth/1.3) + mFunction.getRandom_0_50();
+        float sy = (float) (mGlobal.mScreenHeight/1.5) + mFunction.getRandom_50_100();
+        float dx = (float) (mGlobal.mScreenWidth/5) + mFunction.getRandom_0_20();
+        float dy = (float) (mGlobal.mScreenHeight/1.5) + mFunction.getRandom_0_50();
+        long duration = 30;
+        mGestureUtil.dispatchGesture(dx,dy,sx,sy,duration);
+    }
     //向上滑动
     public static Boolean scroll_up_quick(){
         mGestureUtil.dispatchGesture(mGlobal.mScreenWidth/6,(float) (1100),mGlobal.mScreenWidth/6,950,20);
@@ -171,7 +193,7 @@ public class mGestureUtil {
     }
     //向下滑动
     public static Boolean scroll_down_100(){
-        mGestureUtil.dispatchGesture(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/2,mGlobal.mScreenWidth/2,mGlobal.mScreenHeight,100);
+        mGestureUtil.dispatchGesture(mGlobal.mScreenWidth/5,mGlobal.mScreenHeight/2,mGlobal.mScreenWidth/2,mGlobal.mScreenHeight,100);
         mFunction.click_sleep();
         return true;
     }

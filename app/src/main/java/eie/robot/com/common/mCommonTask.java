@@ -8,11 +8,13 @@ import com.vondear.rxtool.RxDeviceTool;
 import com.vondear.rxtool.view.RxToast;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import eie.robot.com.accessibilityservice.AccessibilityHelper;
 import eie.robot.com.task.BaseRobotTask;
 import eie.robot.com.task.RobTaskQiMaoXiaoShuo;
 import eie.robot.com.task.RobTaskJuKanDian;
+import eie.robot.com.task.RobTaskQuKanTianXia;
 import eie.robot.com.task.RobTaskQuTouTiao;
 import eie.robot.com.task.RobTaskShuaBao;
 
@@ -30,6 +32,17 @@ public class mCommonTask {
     //这个状态表示总任务结束成功(之所有有这个，是因为结束任务有时间差)
     public static boolean ThreadTaskCloseSuccessStatus = false;
 
+    //APP任务定时器的计数器，同一时间，只允许一个计数器存在
+    public static int AppTaskCounter = 0;
+
+    //最后收益的时间，如果超过五分钟没有更新，则在定时器里结束该应用
+    public static Date LastIncomeTime = new Date();
+
+
+    public static String WorkStartTime  = "08:00:00";
+    public static String WorkEndTime    = "00:30:00";
+
+
     public static String StartTask(){
         //打开无障碍服务
         if(!mFunction.openAccessibilityService()){
@@ -46,13 +59,18 @@ public class mCommonTask {
                 mCommonTask.ThreadTaskOpenStatus = true;
                 //组装任务列表，通过策略
                 ArrayList<BaseRobotTask> tasks = new ArrayList<BaseRobotTask>();
-                //刷宝
-                tasks.add(new RobTaskShuaBao());
-                //聚看点
-                tasks.add(new RobTaskJuKanDian());
+
                 //趣头条
                 tasks.add(new RobTaskQuTouTiao());
+                //刷宝
+                tasks.add(new RobTaskShuaBao());
+                //趣看天下
+                tasks.add(new RobTaskQuKanTianXia());
+                //聚看点
+                tasks.add(new RobTaskJuKanDian());
                 //tasks.get(2).StartTask();
+
+                int TaskSize = tasks.size();
                 int i = 0;
                 while (ThreadTaskOpenStatus){
                     if(i >= tasks.size()){
@@ -60,10 +78,18 @@ public class mCommonTask {
                         i = 0;
                     }
                     //判断该APP是否已经到达最大收益。
-                    if(!tasks.get(i).TodayIncomeIsFinsh){
+                    if(tasks.get(i).TodayIncomeIsFinsh){
+                        TaskSize = TaskSize - 1;
+                        if(TaskSize == 0){
+                            mFunction.sleep(60*60*1000);
+                            for (BaseRobotTask task : tasks){
+                                task.TodayIncomeIsFinsh = false;
+                            }
+                            TaskSize = tasks.size();
+                        }
+                    }else {
                         //定时器，到时间后，设置【退出】标志，让任务退出
                         mCommonTask.AppTaskTimer();
-
                         //开启任务，死循环，如果没有上面的定时器，将一直执行
                         tasks.get(i).StartTask();
                     }
@@ -87,14 +113,35 @@ public class mCommonTask {
         mFunction.runInChildThread(new Runnable() {
             @Override
             public void run() {
-                int TaskMin = mFunction.getRandom_10_20();
-                while (TaskMin > 0){
-                    mFloatWindow.EditRobTaskTimerText(TaskMin+"m");
-                    //休眠一分钟
-                    mFunction.sleep(60*1000);
-                    TaskMin--;
+                try{
+                    int TaskMin =  mFunction.getRandom_10_20()+10;
+                    if(mCommonTask.AppTaskCounter >= 1){
+                        return;
+                    }
+                    mCommonTask.AppTaskCounter ++;
+                    while (TaskMin >= 0){
+                        if(mCommonTask.AppTaskCounter > 1){
+                            return;
+                        }
+                        mFloatWindow.EditRobTaskTimerText(TaskMin+"m");
+
+                        if(!isNormalForIncome()){
+                            break;
+                        }
+
+                        //休眠一分钟
+                        mFunction.sleep(60*1000);
+                        TaskMin--;
+                    }
+                    mCommonTask.AppTaskOpenStatus = false;
+                    mCommonTask.AppTaskCounter = 0;
+
+                }catch (Exception ex){
+                    mCommonTask.AppTaskOpenStatus = false;
+                    mCommonTask.AppTaskCounter = 0;
                 }
-                mCommonTask.AppTaskOpenStatus = false;
+
+
             }
         });
     }
@@ -115,11 +162,11 @@ public class mCommonTask {
             if(!mCommonTask.ThreadTaskOpenStatus){
                 return;
             }
-            while (true){
-                if(mCommonTask.AppTaskCloseSuccessStatus){
-                    break;
-                }
-            }
+//            while (true){
+//                if(mCommonTask.AppTaskCloseSuccessStatus){
+//                    break;
+//                }
+//            }
             mFunction.sleep(mConfig.clickSleepTime);
             String UniqueSerialNumber = RxDeviceTool.getUniqueSerialNumber().toLowerCase();
             int index = -1;
@@ -136,7 +183,7 @@ public class mCommonTask {
 
 
     }
-
+    //清楚小米手机的内存
     private static void ClearXiaoMiPhoneCache(){
         RxToast.success("开始清理手机内存");
         ComponentName componetName = new ComponentName(
@@ -168,6 +215,41 @@ public class mCommonTask {
         }
         RxToast.success("清理手机内存完成");
     }
+    //判断收益是否在正常运行
+    public static Boolean isNormalForIncome(){
+
+        String currentTime = mDateUtil.formatDate(new Date(),"datetime");
+
+        String lastTime = mDateUtil.formatDate(mCommonTask.LastIncomeTime,"datetime");
+        lastTime = mDateUtil.dateAdd(lastTime,"mm",3,"datetime");
+
+        int res = mDateUtil.compareDate(lastTime,currentTime);
+        if(res > 0){
+            return true;
+        }
+        return false;
+    }
+
+    public static Boolean isAppStopingTime(){
+
+        String currentTime = mDateUtil.formatDate(new Date(),"datetime");
+        String currentTimeDay = mDateUtil.formatDate(new Date(),"date");
+        String EndTime = currentTimeDay+" "  + WorkEndTime;
+        String StartTime = currentTimeDay+" "+ WorkStartTime;
+
+        int res1 = mDateUtil.compareDate(currentTime,EndTime);
+        int res2 = mDateUtil.compareDate(StartTime,currentTime);
+        if(res1 > 0 && res2 >0){
+            return true;
+        }
+        return false;
+    }
+    //将收益的时间更新到最近
+    public static void setLastIncomeTime(){
+        mCommonTask.LastIncomeTime = new Date();
+    }
+
+
 
 
 
