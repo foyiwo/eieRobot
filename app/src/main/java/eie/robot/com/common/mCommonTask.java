@@ -55,19 +55,23 @@ public class mCommonTask {
         mThread.mTaskThread = new Thread(new Runnable() {
             @Override
             public void run() {
+                //3分钟点亮一次屏幕
+                mCommonTask.AppTaskOpenScreenTimer();
                 mCommonTask.ThreadTaskCloseSuccessStatus = false;
                 mCommonTask.ThreadTaskOpenStatus = true;
                 //组装任务列表，通过策略
                 ArrayList<BaseRobotTask> tasks = new ArrayList<BaseRobotTask>();
 
-                //趣头条
-                tasks.add(new RobTaskQuTouTiao());
+                //聚看点
+                tasks.add(new RobTaskJuKanDian());
                 //刷宝
                 tasks.add(new RobTaskShuaBao());
                 //趣看天下
                 tasks.add(new RobTaskQuKanTianXia());
-                //聚看点
-                tasks.add(new RobTaskJuKanDian());
+                //趣头条
+                tasks.add(new RobTaskQuTouTiao());
+
+
                 //tasks.get(2).StartTask();
 
                 int TaskSize = tasks.size();
@@ -81,6 +85,7 @@ public class mCommonTask {
                     if(tasks.get(i).TodayIncomeIsFinsh){
                         TaskSize = TaskSize - 1;
                         if(TaskSize == 0){
+                            mToast.success("所有APP已经达最大收益，休眠一小时");
                             mFunction.sleep(60*60*1000);
                             for (BaseRobotTask task : tasks){
                                 task.TodayIncomeIsFinsh = false;
@@ -115,14 +120,14 @@ public class mCommonTask {
             public void run() {
                 try{
                     int TaskMin =  mFunction.getRandom_10_20()+10;
-                    if(mCommonTask.AppTaskCounter >= 1){
-                        return;
-                    }
+//                    if(mCommonTask.AppTaskCounter >= 1){
+//                        return;
+//                    }
                     mCommonTask.AppTaskCounter ++;
                     while (TaskMin >= 0){
-                        if(mCommonTask.AppTaskCounter > 1){
-                            return;
-                        }
+//                        if(mCommonTask.AppTaskCounter > 1){
+//                            return;
+//                        }
                         mFloatWindow.EditRobTaskTimerText(TaskMin+"m");
 
                         if(!isNormalForIncome()){
@@ -146,6 +151,23 @@ public class mCommonTask {
         });
     }
 
+    public static void AppTaskOpenScreenTimer(){
+        //定时任务
+        mFunction.runInChildThread(new Runnable() {
+            @Override
+            public void run() {
+                try{
+                    while (true){
+                        mFunction.openScreen();
+                        mFunction.sleep(3*60*1000);
+                    }
+
+                }catch (Exception ex){
+
+                }
+            }
+        });
+    }
     //停止任务
     public static void StopTask(){
         try {
@@ -218,15 +240,19 @@ public class mCommonTask {
     //判断收益是否在正常运行
     public static Boolean isNormalForIncome(){
 
+        int StopTime = 5;
         String currentTime = mDateUtil.formatDate(new Date(),"datetime");
 
         String lastTime = mDateUtil.formatDate(mCommonTask.LastIncomeTime,"datetime");
-        lastTime = mDateUtil.dateAdd(lastTime,"mm",3,"datetime");
+        lastTime = mDateUtil.dateAdd(lastTime,"mm",StopTime,"datetime");
 
         int res = mDateUtil.compareDate(lastTime,currentTime);
         if(res > 0){
             return true;
         }
+        mToast.error("超过"+StopTime+"分钟没有手机，取消该APP资格");
+        mCommonTask.setLastIncomeTime();
+        mFunction.click_sleep();
         return false;
     }
 

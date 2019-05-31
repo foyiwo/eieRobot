@@ -24,7 +24,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
     public RobTaskJuKanDian() {
         super();
         this.AppName = "聚看点";
-        this.TodayMaxIncome = 5000;
+        this.TodayMaxIncome = 6000;
         this.TodayIncomeIsFinsh = false;
     }
 
@@ -44,12 +44,11 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                 }
                 //领取时段奖励
                 performTask_ShiDuanJiangLi();
+
                 //判断收益是否封顶
                 if(JudgeGoldIncomeIsMax()){
                     break;
                 }
-
-
 
                 //签到(聚看点的签到放到了【CloseDialog()】方法里)
                 //SignIn();
@@ -62,6 +61,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                 while (RefreshCount > 0){
                     if(!mCommonTask.AppTaskOpenStatus){ break;}
                     performTask_KanZiXun();
+                    mFunction.click_sleep();
                     RefreshCount -- ;
                 }
             }catch (Exception ex){
@@ -100,13 +100,15 @@ public class RobTaskJuKanDian extends BaseRobotTask {
         //点击第一个功能列表
         mGestureUtil.click(SizeOffset,mGlobal.mScreenHeight-SizeOffset);
 
-        mToast.success("时段奖励任务");
+
         AccessibilityNodeInfo ScrollViewNodeInfo = AccessibilityHelper.findNodeInfosByClassName(
                 mGlobal.mAccessibilityService.getRootInActiveWindow()
                 ,"android.widget.HorizontalScrollView");
         if(ScrollViewNodeInfo == null){
             return false;
         }
+        mToast.success("时段奖励任务");
+
         Rect rect = new Rect();
         ScrollViewNodeInfo.getBoundsInScreen(rect);
         if(rect.left < 1 || rect.top < 1){
@@ -311,6 +313,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                 //判断是否处于文章页，如果不是则退出
                 AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosByText("评论得金币");
                 if(XinWenNode == null){
+                    mGestureUtil.click(SizeOffset,SizeOffset);
                     break;
                 }
 

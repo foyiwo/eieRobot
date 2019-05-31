@@ -100,18 +100,23 @@ public class mFunction {
     public static void OpenAppInDesktop(String AppName){
         AccessibilityHelper.performHome();
         mFunction.click_sleep();
-
         AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText(AppName);
-        if(nodeInfo!=null){
+        if(nodeInfo != null){
             mGestureUtil.click(nodeInfo);
+            return;
         }
+        if(mGlobal.mAccessibilityService.getRootInActiveWindow() == null){
+            mGestureUtil.scroll_left();
+            if(mGlobal.mAccessibilityService.getRootInActiveWindow() == null){
+                return;
+            }
+        }
+
         String packageName = mFunction.GetAppPackageName(AppName);
+        String CurrentPackageName = mGlobal.mAccessibilityService.getRootInActiveWindow().getPackageName().toString();
+        String PhoneDeskPackageName = "com.miui.home,com.huawei.android.launcher,com.zui.launcher";
         int i = 5;
         while (i > 0){
-
-            String CurrentPackageName = mGlobal.mAccessibilityService.getRootInActiveWindow().getPackageName().toString();
-
-            String PhoneDeskPackageName = "com.miui.home,com.huawei.android.launcher,com.zui.launcher";
             if(!PhoneDeskPackageName.contains(CurrentPackageName)){
                 //不在桌面，直接返回
                 return;
@@ -131,15 +136,7 @@ public class mFunction {
         }
         i = 5;
         while (i > 0){
-            if(!mGlobal.mAccessibilityService.getRootInActiveWindow().getPackageName().equals("com.miui.home")){
-                //不在桌面，直接返回
-                return;
-            }
-            if(!mGlobal.mAccessibilityService.getRootInActiveWindow().getPackageName().equals("com.huawei.android.launcher")){
-                //不在桌面，直接返回
-                return;
-            }
-            if(!mGlobal.mAccessibilityService.getRootInActiveWindow().getPackageName().equals("com.zui.launcher")){
+            if(!PhoneDeskPackageName.contains(CurrentPackageName)){
                 //不在桌面，直接返回
                 return;
             }
@@ -213,7 +210,7 @@ public class mFunction {
         //如果抓取到的界面的包名不是【趣头条】的包名，则尝试打开【APP】
         if (!rootWindow.getPackageName().equals(PackageName)) {
             mFunction.OpenApp(AppName);
-            mFunction.sleep(mConfig.WaitLauncherlTime);
+            mFunction.sleep(mConfig.WaitLauncherlTime*3);
 
             //打开后，尝试多次获取
             int count = mConfig.loopCount;

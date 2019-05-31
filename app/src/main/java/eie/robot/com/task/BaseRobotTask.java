@@ -28,6 +28,7 @@ public abstract class BaseRobotTask {
         //这个状态表示APP任务结束成功(之所有有这个，是因为结束任务有时间差)
         mCommonTask.AppTaskCloseSuccessStatus = false;
         RxToast.success(mGlobal.mNavigationBarActivity,"准备运行"+AppName).show();
+        mCommonTask.setLastIncomeTime();
         return true;
     }
 
@@ -71,9 +72,8 @@ public abstract class BaseRobotTask {
         } else {
             //到此，虽然不是主界面，但却是处于打开状态，目前可能是处于，内页，至于哪个内页，无法确定，
             //采取触发返回键的方式。
-            int count = mConfig.loopCount+5;
+            int count = mConfig.loopCount*2;
             while (count > 0) {
-
                 runnable.run();//this.CloseDialog();
 
                 NodeInfo1 = AccessibilityHelper.findNodeInfosByText(Nav1);
@@ -82,14 +82,20 @@ public abstract class BaseRobotTask {
                     break;
                 }
                 count--;
-                AccessibilityHelper.performBack(mGlobal.mAccessibilityService);
+                AccessibilityHelper.performBack();
                 //停一下，等待反应
                 mFunction.click_sleep();
+                if(count < (count/2)){
+                    //如果超过了多次仍然没有成功，可能是无法获取到Window，尝试点击一下屏幕中间
+                    mToast.error("多次没反应，尝试着点击一下屏幕中心");
+                    mGestureUtil.clickInScreenCenter();
+                }
             }
             if (NodeInfo1 != null || NodeInfo2 != null) {
                 return true;
             } else {
                 //如果一直没反应，尝试着点击一下屏幕中心。
+                mToast.error("一直没反应，尝试着点击一下屏幕中心");
                 mGestureUtil.click(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/2);
                 return false;
             }

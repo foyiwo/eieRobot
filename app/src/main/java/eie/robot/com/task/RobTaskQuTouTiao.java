@@ -48,6 +48,9 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
         mCommonTask.AppTaskOpenStatus = true;
         while (mCommonTask.AppTaskOpenStatus){
             try {
+                if(!returnHome()){
+                    continue;
+                }
                 //领取时段奖励
                 performTask_ShiDuanJiangLi();
 
@@ -128,8 +131,6 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
      * 执行刷单任务（领取时段奖励）
      */
     private boolean performTask_ShiDuanJiangLi(){
-
-        mToast.success("时段奖励任务");
         if(!returnHome()){
             return false;
         }
@@ -140,6 +141,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
         //点击头条列表
         mGestureUtil.click(SizeOffset,mGlobal.mScreenHeight-SizeOffset);
 
+        mToast.success("时段奖励任务");
 
         /**
          * 第二步：点击【时段奖励】按钮。

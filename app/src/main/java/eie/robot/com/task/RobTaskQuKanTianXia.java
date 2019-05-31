@@ -37,6 +37,9 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
         super.StartTask();
         while (mCommonTask.AppTaskOpenStatus){
             try {
+                if(!returnHome()){
+                    continue;
+                }
                 //领取时段奖励
                 performTask_ShiDuanJiangLi();
 
@@ -101,7 +104,7 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
      * 执行刷单任务（领取时段奖励）
      */
     private boolean performTask_ShiDuanJiangLi(){
-        mToast.success("时段奖励任务");
+
         if(!returnHome()){
             return false;
         }
@@ -115,6 +118,7 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
         if(ScrollViewNodeInfo == null){
             return false;
         }
+        mToast.success("时段奖励任务");
         Rect rect = new Rect();
         ScrollViewNodeInfo.getBoundsInScreen(rect);
         if(rect.width() < 1 || rect.top < 1){
@@ -132,9 +136,21 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
 
     //关闭APP弹出的所有可能弹框
     private void CloseDialog(){
+        AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosById("com.yanhui.qktx:id/img_close");
+        if(node != null){
+            mGestureUtil.click(node);
+        }
+        node = AccessibilityHelper.findNodeInfosByText("继续阅读");
+        if(node != null){
+            mGestureUtil.click(node);
+        }
+        node = AccessibilityHelper.findNodeInfosByText("我知道了");
+        if(node != null){
+            mGestureUtil.click(node);
+        }
         //签到
         //判断是否处于弹框，但是却无法利用【返回键】取消的状态
-        AccessibilityNodeInfo node = mGlobal.mAccessibilityService.getRootInActiveWindow();
+        node = mGlobal.mAccessibilityService.getRootInActiveWindow();
         if(node != null){
             Rect rect = new Rect();
             node.getBoundsInScreen(rect);
@@ -147,6 +163,13 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
         node = AccessibilityHelper.findNodeInfosByText("开启推送可获得大量金币");
         if(node != null){
             node = AccessibilityHelper.findNodeInfosByText("取消");
+            if(node != null){
+                mGestureUtil.click(node);
+            }
+
+        }
+        node = AccessibilityHelper.findNodeInfosByText("去阅读");
+        if(node != null){
             mGestureUtil.click(node);
         }
 

@@ -27,7 +27,7 @@ public class RobTaskShuaBao extends BaseRobotTask {
         if(packname.isEmpty()){
             this.AppName = "刷宝";
         }
-        this.TodayMaxIncome = 11888;
+        this.TodayMaxIncome = 18888;
         this.TodayIncomeIsFinsh = false;
     }
 
@@ -40,6 +40,9 @@ public class RobTaskShuaBao extends BaseRobotTask {
         super.StartTask();
         while (mCommonTask.AppTaskOpenStatus){
             try {
+                if(!returnHome()){
+                    continue;
+                }
                 //判断收益是否封顶
                 if(JudgeGoldIncomeIsMax()){
                     break;
@@ -154,7 +157,10 @@ public class RobTaskShuaBao extends BaseRobotTask {
         if(node != null){
             mGestureUtil.click(node);
         }
-
+        node = AccessibilityHelper.findNodeInfosByText("邀请好友最高可得");
+        if(node != null){
+            mGestureUtil.click(node);
+        }
     }
 
 
