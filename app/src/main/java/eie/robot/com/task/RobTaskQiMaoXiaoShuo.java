@@ -31,7 +31,7 @@ public class RobTaskQiMaoXiaoShuo extends BaseRobotTask {
     @Override
     public boolean StartTask()  {
         super.StartTask();
-        mCommonTask.AppTaskOpenStatus = true;
+        mCommonTask.setAppTaskOpen();
         try {
             //每次进行一项任务时，都先恢复到首页
             //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
@@ -63,7 +63,7 @@ public class RobTaskQiMaoXiaoShuo extends BaseRobotTask {
         if (clickResult) {
             int AmountSleepTime = 0;
             while (true){
-                if(!mCommonTask.AppTaskOpenStatus){ break; }
+                if(mCommonTask.isCloseAppTask()){ break; }
                 mGestureUtil.scroll_left();
                 int SleepTime = mFunction.getRandom_10_20();
                 mFunction.sleep(SleepTime*1000);

@@ -97,71 +97,78 @@ public class mFunction {
         return packageName;
     }
 
-    public static void OpenAppInDesktop(String AppName){
+    //完全模拟人工，在桌面打开APP
+    private static boolean OpenAppInDesktop(String AppName){
+        //回到桌面
         AccessibilityHelper.performHome();
         mFunction.click_sleep();
+
+        if(AccessibilityHelper.getRootInActiveWindow() == null){
+            mFunction.recoverRootWindow();
+            mToast.error("OpenAppInDesktop报错：RootInActiveWindow为空");
+            return false;
+        }
         AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText(AppName);
         if(nodeInfo != null){
             mGestureUtil.click(nodeInfo);
-            return;
-        }
-        if(mGlobal.mAccessibilityService.getRootInActiveWindow() == null){
-            mGestureUtil.scroll_left();
-            if(mGlobal.mAccessibilityService.getRootInActiveWindow() == null){
-                return;
-            }
+            return true;
         }
 
+        //获取应用的包名
         String packageName = mFunction.GetAppPackageName(AppName);
-        String CurrentPackageName = mGlobal.mAccessibilityService.getRootInActiveWindow().getPackageName().toString();
-        String PhoneDeskPackageName = "com.miui.home,com.huawei.android.launcher,com.zui.launcher";
+
+        //获取当前界面的包名
+        String CurrentPackageName = AccessibilityHelper.getRootInActiveWindow().getPackageName().toString();
+
+        //该列表是华为、小米、联想手机的桌面的包名
+        String PhoneDeskPackageName = "com.miui.home,com.huawei.android.launcher,com.zui.launcher,eie.robot.com";
+
+        //开始左右滑动来查找应用进行点击
+        //左滑五次
         int i = 5;
         while (i > 0){
             if(!PhoneDeskPackageName.contains(CurrentPackageName)){
                 //不在桌面，直接返回
-                return;
+                return false;
             }
-            if(mGlobal.mAccessibilityService.getRootInActiveWindow().getPackageName().equals(packageName)){
-                return;
+            if(AccessibilityHelper.getRootInActiveWindow().getPackageName().equals(packageName)){
+                //当前界面包名和应用包名一直，说明正处于该APP内
+                return true;
             }
-
             mGestureUtil.scroll_left();
-            mFunction.click_sleep();
-            nodeInfo = AccessibilityHelper.findNodeInfosByText(AppName);
-            if(nodeInfo!=null){
-                mGestureUtil.click(nodeInfo);
-                return;
-            }
-            i--;
-        }
-        i = 5;
-        while (i > 0){
-            if(!PhoneDeskPackageName.contains(CurrentPackageName)){
-                //不在桌面，直接返回
-                return;
-            }
-            if(mGlobal.mAccessibilityService.getRootInActiveWindow().getPackageName().equals(packageName)){
-                return;
-            }
-
-            mGestureUtil.scroll_right();
             mFunction.click_sleep();
             nodeInfo = AccessibilityHelper.findNodeInfosByText(AppName);
             if(nodeInfo != null){
                 mGestureUtil.click(nodeInfo);
-                return;
+                return true;
             }
             i--;
         }
+
+        //右滑五次
+        i = 5;
+        while (i > 0){
+            if(!PhoneDeskPackageName.contains(CurrentPackageName)){
+                //不在桌面，直接返回
+                return true;
+            }
+            if(AccessibilityHelper.getRootInActiveWindow().getPackageName().equals(packageName)){
+                //当前界面包名和应用包名一直，说明正处于该APP内
+                return true;
+            }
+            mGestureUtil.scroll_right();
+            mFunction.click_sleep();
+            nodeInfo = AccessibilityHelper.findNodeInfosByText(AppName);
+            if(nodeInfo != null){;
+                return mGestureUtil.click(nodeInfo);
+            }
+            i--;
+        }
+        return false;
     }
 
-    //根据APP名字打开应用
-    public static void OpenApp(String AppName){
-
-        if(!AppName.equals("所有APP")){
-            OpenAppInDesktop(AppName);
-            return;
-        }
+    //根据APP的包名打开APP
+    private static void OpenAppByPackage(String AppName){
         String packageName = mFunction.GetAppPackageName(AppName);
         Intent intent = mGlobal.mNavigationBarActivity
                         .getPackageManager().getLaunchIntentForPackage(packageName);
@@ -171,9 +178,14 @@ public class mFunction {
         }else{
 //            int includeBackground = Reflect.on(Intent.class).field("FLAG_RECEIVER_INCLUDE_BACKGROUND").get();
 //            intent.setFlags(intent.getFlags()| includeBackground);com.hsh.wyguaji
-            //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_HISTORY);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_HISTORY);
             mGlobal.mNavigationBarActivity.startActivity(intent);
         }
+    }
+
+    //根据APP名字打开应用
+    private static boolean OpenApp(String AppName){
+        return OpenAppInDesktop(AppName);
     }
 
     //根据APP名字关闭应用
@@ -195,49 +207,58 @@ public class mFunction {
     //循环时间打开APP，以保证正确打开了。
     public static Boolean loopOpenApp(String AppName){
         if (mGlobal.mAccessibilityService == null) {
+            mFunction.recoverRootWindow();
             RxToast.error(mConfig.AccessibilityServiceIsNoOpen+",无法回到首页");
             return false;
         }
 
-        AccessibilityNodeInfo rootWindow = mGlobal.mAccessibilityService.getRootInActiveWindow();
-        if (rootWindow == null) return false;
-        String PackageName = mFunction.GetAppPackageName(AppName);
-
-        if(PackageName == null || PackageName.isEmpty() || PackageName.equals("")){
-            RxToast.warning(mGlobal.mNavigationBarActivity,"找不到"+AppName+"，或许未安装").show();
+        AccessibilityNodeInfo rootWindow = AccessibilityHelper.getRootInActiveWindow();
+        if (rootWindow == null){
+            mFunction.recoverRootWindow();
+            mToast.error("loopOpenApp出错：rootWindow为空");
             return false;
         }
-        //如果抓取到的界面的包名不是【趣头条】的包名，则尝试打开【APP】
+
+        String PackageName = mFunction.GetAppPackageName(AppName);
+        if(PackageName == null || PackageName.isEmpty() || PackageName.equals("")){
+            mToast.error("找不到"+AppName+"，或许未安装");
+            return false;
+        }
+        //如果抓取到的界面的包名不是【当前运行APP】的包名，则尝试打开【当前运行APP】
         if (!rootWindow.getPackageName().equals(PackageName)) {
-            mFunction.OpenApp(AppName);
-            mFunction.sleep(mConfig.WaitLauncherlTime*3);
+            if(!mFunction.OpenApp(AppName)){
+                //打开APP失败
+                return false;
+            }
+            //休眠等待
+            mFunction.sleep(mConfig.WaitLauncherlTime*2);
 
             //打开后，尝试多次获取
             int count = mConfig.loopCount;
-            while (true) {
-                rootWindow = mGlobal.mAccessibilityService.getRootInActiveWindow();
+            while (count > 0) {
+                rootWindow = AccessibilityHelper.getRootInActiveWindow();
                 if(rootWindow == null){
-                    mFunction.sleep(mConfig.loopSleepTime*3);
+                    mFunction.click_sleep();
                     continue;
                 }
                 if (rootWindow.getPackageName().equals(PackageName)) {
                     break;
                 }
-                count--;
-                if (count < 0) {
-                    break;
-                }
                 AccessibilityHelper.performBack();
-                mFunction.sleep(mConfig.loopSleepTime*3);
+                mFunction.click_sleep();
+                count--;
             }
         }
         //尝试过后，还不是，则结束
-        if (!rootWindow.getPackageName().equals(PackageName)) {
-            return false;
-        }
-        return true;
+        return rootWindow.getPackageName().equals(PackageName);
     }
 
+
+    public static boolean recoverRootWindow(){
+        mGestureUtil.scroll_down_screen();
+        mGestureUtil.scroll_up_screen();
+        return true;
+    }
 
     //根据APP名字获取
 
@@ -275,6 +296,11 @@ public class mFunction {
             try {
                 Thread.sleep(time);
             } catch (InterruptedException e) {
+                try {
+                    Thread.interrupted();
+                }catch (Exception ex){
+
+                }
                 e.printStackTrace();
             }
         }

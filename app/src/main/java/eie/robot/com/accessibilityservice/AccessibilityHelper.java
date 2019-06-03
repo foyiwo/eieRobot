@@ -5,6 +5,7 @@ import android.annotation.TargetApi;
 import android.os.Build;
 import android.text.TextUtils;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityWindowInfo;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -43,7 +44,7 @@ public final class AccessibilityHelper {
      * 通过id查找
      */
     public static AccessibilityNodeInfo findNodeInfosById( String resId) {
-        return findNodeInfosById(mGlobal.mAccessibilityService.getRootInActiveWindow(),resId);
+        return findNodeInfosById(AccessibilityHelper.getRootInActiveWindow(),resId);
     }
     /**
      * 通过id查找
@@ -84,10 +85,14 @@ public final class AccessibilityHelper {
      * 通过文本查找
      */
     public static AccessibilityNodeInfo findNodeInfosByText( String text) {
-        if(mGlobal.mAccessibilityService.getRootInActiveWindow() == null){
+        if(AccessibilityHelper.getRootInActiveWindow() == null){
+            mFunction.recoverRootWindow();
+
+        }
+        if(AccessibilityHelper.getRootInActiveWindow() == null){
             return null;
         }
-        return findNodeInfosByText(mGlobal.mAccessibilityService.getRootInActiveWindow(),text);
+        return findNodeInfosByText(AccessibilityHelper.getRootInActiveWindow(),text);
     }
 
 
@@ -95,10 +100,14 @@ public final class AccessibilityHelper {
      * 通过文本查找
      */
     public static AccessibilityNodeInfo findChildNodeInfosByText(String text) {
-        if(mGlobal.mAccessibilityService.getRootInActiveWindow() == null){
+        if(AccessibilityHelper.getRootInActiveWindow() == null){
+            mFunction.recoverRootWindow();
             return null;
         }
-        return findChildNodeInfosByText(mGlobal.mAccessibilityService.getRootInActiveWindow(),text);
+        if(AccessibilityHelper.getRootInActiveWindow() == null){
+            return null;
+        }
+        return findChildNodeInfosByText(AccessibilityHelper.getRootInActiveWindow(),text);
 
     }
     /**
@@ -129,7 +138,7 @@ public final class AccessibilityHelper {
      * 通过文本查找
      */
     public static List<AccessibilityNodeInfo> findNodeInfoByText(String text) {
-        List<AccessibilityNodeInfo> list = mGlobal.mAccessibilityService.getRootInActiveWindow().findAccessibilityNodeInfosByText(text);
+        List<AccessibilityNodeInfo> list = AccessibilityHelper.getRootInActiveWindow().findAccessibilityNodeInfosByText(text);
         if (list == null || list.isEmpty()) {
             return null;
         }
@@ -149,7 +158,14 @@ public final class AccessibilityHelper {
         return null;
     }
     public static AccessibilityNodeInfo findNodeInfosByClassName(String className) {
-        AccessibilityNodeInfo node = mGlobal.mAccessibilityService.getRootInActiveWindow();
+        if(AccessibilityHelper.getRootInActiveWindow() == null){
+            mFunction.recoverRootWindow();
+            return null;
+        }
+        if(AccessibilityHelper.getRootInActiveWindow() == null){
+            return null;
+        }
+        AccessibilityNodeInfo node = AccessibilityHelper.getRootInActiveWindow();
         if(node == null){
             return null;
         }
@@ -371,7 +387,7 @@ public final class AccessibilityHelper {
         AccessibilityNodeInfo rootWindow = null;
         AccessibilityNodeInfo node = null;
         while (true) {
-            rootWindow = mGlobal.mAccessibilityService.getRootInActiveWindow();
+            rootWindow = AccessibilityHelper.getRootInActiveWindow();
             for (String text : Texts) {
                 node = AccessibilityHelper.findNodeInfosByText(rootWindow, text);
                 if (node != null) {
@@ -394,13 +410,19 @@ public final class AccessibilityHelper {
      * 由于手机存在卡顿的可能，这个方法，会尝试多次获取对应的Node
      */
     public static AccessibilityNodeInfo loopFindNodeInfoByText(String text)  {
-
+        if(AccessibilityHelper.getRootInActiveWindow() == null){
+            mFunction.recoverRootWindow();
+            return null;
+        }
+        if(AccessibilityHelper.getRootInActiveWindow() == null){
+            return null;
+        }
         //尝试多次获取
         int count = 2;
         AccessibilityNodeInfo rootWindow = null;
         AccessibilityNodeInfo node = null;
         while (true) {
-            rootWindow = mGlobal.mAccessibilityService.getRootInActiveWindow();
+            rootWindow = AccessibilityHelper.getRootInActiveWindow();
             node = AccessibilityHelper.findNodeInfosByText(rootWindow, text);
             if (node != null) {
                 break;
@@ -415,9 +437,31 @@ public final class AccessibilityHelper {
     }
 
     public static List<AccessibilityNodeInfo> findNodeInfosByIds( String resId) {
+        if(AccessibilityHelper.getRootInActiveWindow() == null){
+            mFunction.recoverRootWindow();
+            return null;
+        }
+        if(AccessibilityHelper.getRootInActiveWindow() == null){
+            return null;
+        }
         if(mGlobal.mAccessibilityService == null){
             return null;
         }
-        return AccessibilityHelper.findNodeInfosByIds(mGlobal.mAccessibilityService.getRootInActiveWindow(),resId);
+        return AccessibilityHelper.findNodeInfosByIds(AccessibilityHelper.getRootInActiveWindow(),resId);
+    }
+
+    public static AccessibilityNodeInfo getRootInActiveWindow(){
+        AccessibilityNodeInfo node = mGlobal.mAccessibilityService.getRootInActiveWindow();
+        if(node != null){
+            return node;
+        }
+
+        List<AccessibilityWindowInfo> windows = mGlobal.mAccessibilityService.getWindows();
+        for (AccessibilityWindowInfo info : windows){
+            if(info.getType() == AccessibilityWindowInfo.TYPE_APPLICATION){
+                return info.getRoot();
+            }
+        }
+        return mGlobal.mAccessibilityService.getRootInActiveWindow();
     }
 }

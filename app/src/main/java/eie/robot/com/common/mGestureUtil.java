@@ -160,9 +160,24 @@ public class mGestureUtil {
         path.moveTo(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/2);
         path.lineTo(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/2-distance);
         mGestureUtil.dispatchGesture(path,duration);
-        mFunction.sleep(mConfig.clickSleepTime);
+        mFunction.sleep(mConfig.clickSleepTime/2);
 
     }
+    public static void scroll_down(long distance ,long duration){
+
+        Path path = new Path();
+        path.moveTo(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/3);
+        path.lineTo(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/3+distance);
+        mGestureUtil.dispatchGesture(path,duration);
+        mFunction.sleep(mConfig.clickSleepTime/2);
+
+    }
+    public static void scroll_down_half_screen(){
+
+        mGestureUtil.scroll_down(mGlobal.mScreenHeight/2,1000);
+
+    }
+
     //向左滑动
     public static void scroll_left(){
         float sx = (float) (mGlobal.mScreenWidth/1.3) + mFunction.getRandom_0_50();
@@ -193,7 +208,18 @@ public class mGestureUtil {
     }
     //向下滑动
     public static Boolean scroll_down_100(){
-        mGestureUtil.dispatchGesture(mGlobal.mScreenWidth/5,mGlobal.mScreenHeight/2,mGlobal.mScreenWidth/2,mGlobal.mScreenHeight,100);
+        mGestureUtil.dispatchGesture(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/2,mGlobal.mScreenWidth/2,mGlobal.mScreenHeight,100);
+        mFunction.click_sleep();
+        return true;
+    }
+
+    public static boolean scroll_down_screen(){
+        mGestureUtil.dispatchGesture(mGlobal.mScreenWidth/2,0,mGlobal.mScreenWidth/2,mGlobal.mScreenHeight,1000);
+        mFunction.click_sleep();
+        return true;
+    }
+    public static boolean scroll_up_screen(){
+        mGestureUtil.dispatchGesture(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight,mGlobal.mScreenWidth/2,0,1000);
         mFunction.click_sleep();
         return true;
     }

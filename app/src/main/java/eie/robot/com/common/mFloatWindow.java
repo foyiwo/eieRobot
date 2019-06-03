@@ -87,8 +87,8 @@ public class mFloatWindow {
 
         mGlobal.viewFloatButton = contentView;
 
-        mGlobal.mViewRobTaskTimer = (TextView)mGlobal.viewFloatButton.findViewById(R.id.btnRobTaskTimer);
-        mGlobal.mViewRobNewsOrVideoTaskTimer = (TextView)mGlobal.viewFloatButton.findViewById(R.id.btnRobNewsOrVideoTaskTimer);
+        mGlobal.mViewRobTaskTimerMin = (TextView)mGlobal.viewFloatButton.findViewById(R.id.btnRobTaskTimerMin);
+        mGlobal.mViewRobTaskTimerSecond = (TextView)mGlobal.viewFloatButton.findViewById(R.id.btnRobNewsOrVideoTaskTimerSecond);
 
         FloatWindow
                 .with(mGlobal.mNavigationBarActivity.getApplicationContext())
@@ -212,20 +212,30 @@ public class mFloatWindow {
 
 
     //修改APP的剩余时间
-    public static void EditRobTaskTimerText(final String message){
-        mGlobal.mViewRobTaskTimer.post(new Runnable() {
+    public static void EditRobTaskTimerMinText(final String message){
+        mGlobal.mViewRobTaskTimerMin.post(new Runnable() {
             @Override
             public void run() {
-                mGlobal.mViewRobTaskTimer.setText(message);
+                try{
+                    mGlobal.mViewRobTaskTimerMin.setText(message);
+                }catch (Exception ex){
+                    mGlobal.mViewRobTaskTimerMin.setText("ex1");
+                }
+
             }
         });
     }
     //修改APP的剩余时间
-    public static void EditRobNewOrVideoTaskTimerText(final String message){
-        mGlobal.mViewRobNewsOrVideoTaskTimer.post(new Runnable() {
+    public static void EditRobTaskTimerSecondText(final String message){
+        mGlobal.mViewRobTaskTimerSecond.post(new Runnable() {
             @Override
             public void run() {
-                mGlobal.mViewRobNewsOrVideoTaskTimer.setText(message);
+                try{
+                    mGlobal.mViewRobTaskTimerSecond.setText(message);
+                }catch (Exception ex){
+                    mGlobal.mViewRobTaskTimerSecond.setText("ex1");
+                }
+
             }
         });
     }

@@ -12,7 +12,8 @@ public class mToast {
         toast.show();
     }
     public static void success(String message){
-        RxToast.success(mGlobal.mApplication, message, Toast.LENGTH_SHORT, true).show();
+        RxToast.success(mGlobal.mAccessibilityService, message, Toast.LENGTH_SHORT, true).show();
+
     }
     public static void info(String message){
         RxToast.info(mGlobal.mNavigationBarActivity, message, Toast.LENGTH_SHORT, true).show();

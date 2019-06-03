@@ -11,6 +11,7 @@ import eie.robot.com.common.mConfig;
 import eie.robot.com.common.mFunction;
 import eie.robot.com.common.mGestureUtil;
 import eie.robot.com.common.mGlobal;
+import eie.robot.com.common.mIncomeTask;
 import eie.robot.com.common.mToast;
 
 public class RobTaskShuaBao extends BaseRobotTask {
@@ -27,7 +28,7 @@ public class RobTaskShuaBao extends BaseRobotTask {
         if(packname.isEmpty()){
             this.AppName = "刷宝";
         }
-        this.TodayMaxIncome = 18888;
+        this.TodayMaxIncome = 14000;
         this.TodayIncomeIsFinsh = false;
     }
 
@@ -38,7 +39,7 @@ public class RobTaskShuaBao extends BaseRobotTask {
     @Override
     public boolean StartTask()  {
         super.StartTask();
-        while (mCommonTask.AppTaskOpenStatus){
+        while (mCommonTask.isOpenAppTask()){
             try {
                 if(!returnHome()){
                     continue;
@@ -64,12 +65,11 @@ public class RobTaskShuaBao extends BaseRobotTask {
                 //阅读文章
                 int RefreshCount =   mFunction.getRandom_10_20()+30;
                 while (RefreshCount > 0){
-                    if(!mCommonTask.AppTaskOpenStatus){ break;}
+                    if(mCommonTask.isCloseAppTask()){ break; }
                     performTask_ShuaXiaoShiPing();
                     RefreshCount -- ;
-
                 }
-                if(!mCommonTask.AppTaskOpenStatus){ break;}
+                if(mCommonTask.isCloseAppTask()){ break; }
             }catch (Exception ex){
                 RxToast.error(ex.getMessage());
             }
@@ -95,13 +95,13 @@ public class RobTaskShuaBao extends BaseRobotTask {
             //点击视频的间隔
             int VideoInterval = 6+ mFunction.getRandom_6_12();//3;
 
-            if(!mCommonTask.AppTaskOpenStatus){ break; }
+            if(mCommonTask.isCloseAppTask()){ break; }
 
             mGestureUtil.scroll_up_30();
             mToast.success("视频任务:浏览"+VideoInterval+"秒");
 
             //设置收益的最新时间
-            mCommonTask.setLastIncomeTime();
+            mIncomeTask.setLastIncomeTime();
 
             if(VideoInterval == 18){
                 AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText("关注");
@@ -131,7 +131,7 @@ public class RobTaskShuaBao extends BaseRobotTask {
 
 
         AccessibilityNodeInfo ScrollViewNodeInfo = AccessibilityHelper.findNodeInfosByClassName(
-                mGlobal.mAccessibilityService.getRootInActiveWindow()
+                AccessibilityHelper.getRootInActiveWindow()
                 ,"android.widget.HorizontalScrollView");
         if(ScrollViewNodeInfo == null){
             return false;
@@ -178,7 +178,7 @@ public class RobTaskShuaBao extends BaseRobotTask {
         mGestureUtil.scroll_up();
         int NewsCount =   mFunction.getRandom_4_8();
         while (NewsCount > 0){
-            if(!mCommonTask.AppTaskOpenStatus){break;}
+            if(mCommonTask.isCloseAppTask()){ break; }
             Task_KanZiXun();
             if(!returnHome()){
                 continue;
@@ -195,7 +195,7 @@ public class RobTaskShuaBao extends BaseRobotTask {
 
     private boolean Task_KanZiXun() {
         AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByClassName(
-                mGlobal.mAccessibilityService.getRootInActiveWindow()
+                AccessibilityHelper.getRootInActiveWindow()
                 ,"android.support.v7.widget.RecyclerView");
         if (nodeInfo == null) {
             return false;

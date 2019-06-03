@@ -20,6 +20,7 @@ import eie.robot.com.common.mConfig;
 import eie.robot.com.common.mFunction;
 import eie.robot.com.common.mGestureUtil;
 import eie.robot.com.common.mGlobal;
+import eie.robot.com.common.mIncomeTask;
 import eie.robot.com.common.mToast;
 
 import static eie.robot.com.common.mFunction.getRandom_1_20;
@@ -45,8 +46,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
     @Override
     public boolean StartTask()  {
         super.StartTask();
-        mCommonTask.AppTaskOpenStatus = true;
-        while (mCommonTask.AppTaskOpenStatus){
+        while (mCommonTask.isOpenAppTask()){
             try {
                 if(!returnHome()){
                     continue;
@@ -79,7 +79,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
                     if(nodeInfo != null){
                         break;
                     }
-                    if(!mCommonTask.AppTaskOpenStatus){ break; }
+                    if(mCommonTask.isCloseAppTask()){ break; }
                     performTask_ShuaXiaoShiPing();
                     RefreshCount -- ;
                 }
@@ -87,7 +87,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
                 //阅读文章
                 RefreshCount =   mFunction.getRandom_10_20();
                 while (RefreshCount > 0){
-                    if(!mCommonTask.AppTaskOpenStatus){ break; }
+                    if(mCommonTask.isCloseAppTask()){ break; }
                     performTask_KanZiXun();
                     RefreshCount -- ;
                 }
@@ -116,7 +116,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
         if(result){
             mToast.info("视频任务:阅读"+VideoInterval+"秒");
             //设置收益的最新时间
-            mCommonTask.setLastIncomeTime();
+            mIncomeTask.setLastIncomeTime();
 
             if(VideoInterval == 18){
                 mGestureUtil.doubleClickInScreenCenter();
@@ -176,7 +176,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
 
         while (NewsCount > 0){
             mGestureUtil.scroll_up();
-            if(!mCommonTask.AppTaskOpenStatus){break;}
+            if(mCommonTask.isCloseAppTask()){ break; }
             Task_KanZiXun();
             if(!returnHome()){
                 continue;
@@ -192,7 +192,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
 
     private boolean Task_KanZiXun() {
         AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByClassName(
-                mGlobal.mAccessibilityService.getRootInActiveWindow()
+                AccessibilityHelper.getRootInActiveWindow()
                 ,"android.support.v7.widget.RecyclerView");
         if (nodeInfo == null) {
             return false;
@@ -221,15 +221,15 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
                 if (SwiperCount < 1) {
                     break;
                 }
-                if(!mCommonTask.AppTaskOpenStatus){break;}
+                if(mCommonTask.isCloseAppTask()){ break; }
                 //过滤政治文章
-                AccessibilityNodeInfo info = AccessibilityHelper.findNodeInfosByText(mGlobal.mAccessibilityService.getRootInActiveWindow(),"根据平台规则，阅读时政类资讯不可领取金币");
+                AccessibilityNodeInfo info = AccessibilityHelper.findNodeInfosByText(AccessibilityHelper.getRootInActiveWindow(),"根据平台规则，阅读时政类资讯不可领取金币");
                 if(info != null){
                     break;
                 }
 
                 //
-                info = AccessibilityHelper.findNodeInfosByText(mGlobal.mAccessibilityService.getRootInActiveWindow(),"小视频");
+                info = AccessibilityHelper.findNodeInfosByText(AccessibilityHelper.getRootInActiveWindow(),"小视频");
                 if(info != null){
                     break;
                 }
@@ -239,7 +239,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
                     break;
                 }
                 //设置收益的最新时间
-                mCommonTask.setLastIncomeTime();
+                mIncomeTask.setLastIncomeTime();
                 //向上滑动
                 mGestureUtil.scroll_up();
 
@@ -287,7 +287,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
             AccessibilityHelper.performClick(node);
         }
         //判断是否处于弹框，但是却无法利用【返回键】取消的状态
-        node = mGlobal.mAccessibilityService.getRootInActiveWindow();
+        node = AccessibilityHelper.getRootInActiveWindow();
         if(node != null){
             Rect rect = new Rect();
             node.getBoundsInScreen(rect);
@@ -306,7 +306,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
     private void SignIn(){
         mToast.success("签到任务");
         AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText(
-                mGlobal.mAccessibilityService.getRootInActiveWindow(),"去签到");
+                AccessibilityHelper.getRootInActiveWindow(),"去签到");
         if(nodeInfo != null){
             AccessibilityHelper.performClick(nodeInfo);
         }

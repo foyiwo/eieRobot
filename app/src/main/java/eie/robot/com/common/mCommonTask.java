@@ -17,6 +17,7 @@ import eie.robot.com.task.RobTaskJuKanDian;
 import eie.robot.com.task.RobTaskQuKanTianXia;
 import eie.robot.com.task.RobTaskQuTouTiao;
 import eie.robot.com.task.RobTaskShuaBao;
+import eie.robot.com.task.RobTaskZhongQingKanDian;
 
 public class mCommonTask {
 
@@ -24,24 +25,10 @@ public class mCommonTask {
     public static boolean ThreadTaskOpenStatus = false;
 
     //APP允许开始的标志，true可继续执行，false即表示准备结束
-    public static boolean AppTaskOpenStatus = false;
+    private static boolean AppTaskOpenStatus = false;
 
-    //这个状态表示APP任务结束成功(之所有有这个，是因为结束任务有时间差)
-    public static boolean AppTaskCloseSuccessStatus = false;
-
-    //这个状态表示总任务结束成功(之所有有这个，是因为结束任务有时间差)
-    public static boolean ThreadTaskCloseSuccessStatus = false;
-
-    //APP任务定时器的计数器，同一时间，只允许一个计数器存在
-    public static int AppTaskCounter = 0;
-
-    //最后收益的时间，如果超过五分钟没有更新，则在定时器里结束该应用
-    public static Date LastIncomeTime = new Date();
-
-
-    public static String WorkStartTime  = "08:00:00";
-    public static String WorkEndTime    = "00:30:00";
-
+    //APP完成了所有的任务，处于休眠状态
+    private static boolean AppTaskSleepStatus = false;
 
     public static String StartTask(){
         //打开无障碍服务
@@ -51,57 +38,55 @@ public class mCommonTask {
 
         //初始化设备信息
         mDeviceUtil.initDeviceInfo();
-
+        mCommonTask.ThreadTaskOpenStatus = true;
         mThread.mTaskThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                //3分钟点亮一次屏幕
-                mCommonTask.AppTaskOpenScreenTimer();
-                mCommonTask.ThreadTaskCloseSuccessStatus = false;
-                mCommonTask.ThreadTaskOpenStatus = true;
-                //组装任务列表，通过策略
-                ArrayList<BaseRobotTask> tasks = new ArrayList<BaseRobotTask>();
 
-                //聚看点
-                tasks.add(new RobTaskJuKanDian());
-                //刷宝
-                tasks.add(new RobTaskShuaBao());
+                //定时器，到时间后，设置【退出】标志，让任务退出
+                mTaskTimer.AppTaskTimer();
+                //定时器，不断点亮屏幕
+                mTaskTimer.AppTaskOpenScreenTimer();
+
+                //组装任务列表，通过策略
+                ArrayList<BaseRobotTask> tasks = new ArrayList<>();
+
+                //趣看天下
+                tasks.add(new RobTaskZhongQingKanDian());
                 //趣看天下
                 tasks.add(new RobTaskQuKanTianXia());
+                //刷宝
+                tasks.add(new RobTaskShuaBao());
                 //趣头条
                 tasks.add(new RobTaskQuTouTiao());
+                //聚看点
+                tasks.add(new RobTaskJuKanDian());
 
-
-                //tasks.get(2).StartTask();
-
-                int TaskSize = tasks.size();
                 int i = 0;
+
                 while (ThreadTaskOpenStatus){
+                    if(mIncomeTask.isAppTaskAllFinish(tasks)){
+                        mToast.success("所有任务已完成，休眠一分钟再说");
+                        mFunction.sleep(60*1000);
+                        continue;
+                    }
+
                     if(i >= tasks.size()){
-                        mCommonTask.ClearPhoneCacheTask();
                         i = 0;
                     }
+                    if( i == 3){
+                        mCacheTask.ClearPhoneCacheTask();
+                    }
+
                     //判断该APP是否已经到达最大收益。
-                    if(tasks.get(i).TodayIncomeIsFinsh){
-                        TaskSize = TaskSize - 1;
-                        if(TaskSize == 0){
-                            mToast.success("所有APP已经达最大收益，休眠一小时");
-                            mFunction.sleep(60*60*1000);
-                            for (BaseRobotTask task : tasks){
-                                task.TodayIncomeIsFinsh = false;
-                            }
-                            TaskSize = tasks.size();
-                        }
-                    }else {
-                        //定时器，到时间后，设置【退出】标志，让任务退出
-                        mCommonTask.AppTaskTimer();
-                        //开启任务，死循环，如果没有上面的定时器，将一直执行
+                    if(tasks.get(i).isTodayIncomeNoFinsh()){
+                        //开启任务，死循环，如果全局定时器，将一直执行
                         tasks.get(i).StartTask();
                     }
                     if(!ThreadTaskOpenStatus){ break; }
                     i++;
                 }
-                mCommonTask.ThreadTaskCloseSuccessStatus = true;
+                AccessibilityHelper.performHome();
                 mToast.success("总任务停止");
             }
         });
@@ -113,61 +98,6 @@ public class mCommonTask {
 
     }
 
-    public static void AppTaskTimer(){
-        //定时任务
-        mFunction.runInChildThread(new Runnable() {
-            @Override
-            public void run() {
-                try{
-                    int TaskMin =  mFunction.getRandom_10_20()+10;
-//                    if(mCommonTask.AppTaskCounter >= 1){
-//                        return;
-//                    }
-                    mCommonTask.AppTaskCounter ++;
-                    while (TaskMin >= 0){
-//                        if(mCommonTask.AppTaskCounter > 1){
-//                            return;
-//                        }
-                        mFloatWindow.EditRobTaskTimerText(TaskMin+"m");
-
-                        if(!isNormalForIncome()){
-                            break;
-                        }
-
-                        //休眠一分钟
-                        mFunction.sleep(60*1000);
-                        TaskMin--;
-                    }
-                    mCommonTask.AppTaskOpenStatus = false;
-                    mCommonTask.AppTaskCounter = 0;
-
-                }catch (Exception ex){
-                    mCommonTask.AppTaskOpenStatus = false;
-                    mCommonTask.AppTaskCounter = 0;
-                }
-
-
-            }
-        });
-    }
-
-    public static void AppTaskOpenScreenTimer(){
-        //定时任务
-        mFunction.runInChildThread(new Runnable() {
-            @Override
-            public void run() {
-                try{
-                    while (true){
-                        mFunction.openScreen();
-                        mFunction.sleep(3*60*1000);
-                    }
-
-                }catch (Exception ex){
-
-                }
-            }
-        });
-    }
     //停止任务
     public static void StopTask(){
         try {
@@ -178,108 +108,31 @@ public class mCommonTask {
         }
 
     }
-    //清理手机缓存
-    public static void ClearPhoneCacheTask(){
-        try{
-            if(!mCommonTask.ThreadTaskOpenStatus){
-                return;
-            }
-//            while (true){
-//                if(mCommonTask.AppTaskCloseSuccessStatus){
-//                    break;
-//                }
-//            }
-            mFunction.sleep(mConfig.clickSleepTime);
-            String UniqueSerialNumber = RxDeviceTool.getUniqueSerialNumber().toLowerCase();
-            int index = -1;
-            index = UniqueSerialNumber.toLowerCase().indexOf("xiaomi");
-            //小米手机版清理数据
-            if(index > -1){
-                ClearXiaoMiPhoneCache();
-            }
-            index = UniqueSerialNumber.toLowerCase().indexOf("lenovo");
-            index = UniqueSerialNumber.toLowerCase().indexOf("huawei");
-        }catch (Exception ex){
-            RxToast.success("清理内存报错:"+ex.getMessage());
-        }
 
-
+    public static void setAppTaskClose(){
+        mCommonTask.AppTaskOpenStatus = false;
     }
-    //清楚小米手机的内存
-    private static void ClearXiaoMiPhoneCache(){
-        RxToast.success("开始清理手机内存");
-        ComponentName componetName = new ComponentName(
-                "com.miui.cleanmaster",//主包名
-                "com.miui.optimizecenter.MainActivity");//小米安全中心首页Activity包名
-        try {
-            Intent intent = new Intent();
-            intent.setComponent(componetName);
-            mGlobal.mApplication.startActivity(intent);
-        } catch (Exception e) {
-            mToast.message("错误："+e.getMessage());
-        }
-        AccessibilityNodeInfo nodeInfo = null;
-        int count = 3 * mConfig.loopCount;
-        while (true) {
-            nodeInfo = AccessibilityHelper.findNodeInfosByText("清理选中垃圾");
-            if ( nodeInfo != null ) {
-                break;
-            }
-            count--;
-            if (count < 0) {
-                break;
-            }
-            mFunction.sleep(mConfig.clickSleepTime);
-        }
-        if(nodeInfo != null){
-            AccessibilityHelper.performClick(nodeInfo);
-            mFunction.sleep(15*1000);
-        }
-        RxToast.success("清理手机内存完成");
+    public static void setAppTaskOpen(){
+        mCommonTask.AppTaskOpenStatus = true;
     }
-    //判断收益是否在正常运行
-    public static Boolean isNormalForIncome(){
-
-        int StopTime = 5;
-        String currentTime = mDateUtil.formatDate(new Date(),"datetime");
-
-        String lastTime = mDateUtil.formatDate(mCommonTask.LastIncomeTime,"datetime");
-        lastTime = mDateUtil.dateAdd(lastTime,"mm",StopTime,"datetime");
-
-        int res = mDateUtil.compareDate(lastTime,currentTime);
-        if(res > 0){
-            return true;
-        }
-        mToast.error("超过"+StopTime+"分钟没有手机，取消该APP资格");
-        mCommonTask.setLastIncomeTime();
-        mFunction.click_sleep();
-        return false;
+    public static boolean isCloseAppTask(){
+        return !mCommonTask.AppTaskOpenStatus ||  !mCommonTask.ThreadTaskOpenStatus;
     }
-
-    public static Boolean isAppStopingTime(){
-
-        String currentTime = mDateUtil.formatDate(new Date(),"datetime");
-        String currentTimeDay = mDateUtil.formatDate(new Date(),"date");
-        String EndTime = currentTimeDay+" "  + WorkEndTime;
-        String StartTime = currentTimeDay+" "+ WorkStartTime;
-
-        int res1 = mDateUtil.compareDate(currentTime,EndTime);
-        int res2 = mDateUtil.compareDate(StartTime,currentTime);
-        if(res1 > 0 && res2 >0){
-            return true;
-        }
-        return false;
+    public static boolean isCloseThreadTask(){
+        return !mCommonTask.ThreadTaskOpenStatus;
     }
-    //将收益的时间更新到最近
-    public static void setLastIncomeTime(){
-        mCommonTask.LastIncomeTime = new Date();
+    public static boolean isOpenAppTask(){
+        return mCommonTask.AppTaskOpenStatus;
     }
-
-
-
-
-
-
+    public static boolean isSleepApp(){
+        return mCommonTask.AppTaskSleepStatus;
+    }
+    public static void setAppSleep(){
+        mCommonTask.AppTaskSleepStatus = true;
+    }
+    public static void setAppNoSleep(){
+        mCommonTask.AppTaskSleepStatus = false;
+    }
 }
 
 

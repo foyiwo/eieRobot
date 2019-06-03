@@ -14,6 +14,9 @@ import android.view.ViewConfiguration;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.vondear.rxtool.RxBarTool;
+import com.vondear.rxtool.RxDeviceTool;
+import com.vondear.rxtool.RxTool;
 import com.vondear.rxtool.view.RxToast;
 
 import java.lang.reflect.Method;
@@ -62,6 +65,10 @@ public class mDeviceUtil {
             return context.getResources().getDisplayMetrics().heightPixels;
         }
         return 0;
+    }
+
+    public static int getStatusBarHeight(){
+        return RxBarTool.getStatusBarHeight(mGlobal.mAccessibilityService);
     }
 
     private volatile static boolean mHasCheckAllScreen;
@@ -155,12 +162,17 @@ public class mDeviceUtil {
 
     //初始化资源
     public static  void initDeviceInfo(){
-        mToast.message("初始化设备信息");
-        int[] location = new  int[2] ;
-        mGlobal.mNavigationBars.getLocationOnScreen(location);
-        if(location[1] > 0){
-            mGlobal.mScreenHeight = location[1] + mGlobal.mNavigationBars.getMeasuredHeight();
+        try{
+            //mToast.message("初始化设备信息");
+            int[] location = new  int[2] ;
+            mGlobal.mNavigationBars.getLocationOnScreen(location);
+            if(location[1] > 0){
+                mGlobal.mScreenHeight = location[1] + mGlobal.mNavigationBars.getMeasuredHeight();
+            }
+            mToast.success( "宽度:"+mGlobal.mScreenWidth+" 高度:"+mGlobal.mScreenHeight);
+        }catch (Exception ex){
+
         }
-        mToast.message( "宽度:"+mGlobal.mScreenWidth+" 高度:"+mGlobal.mScreenHeight);
+
     }
 }
