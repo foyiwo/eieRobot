@@ -17,6 +17,7 @@ import eie.robot.com.task.RobTaskJuKanDian;
 import eie.robot.com.task.RobTaskQuKanTianXia;
 import eie.robot.com.task.RobTaskQuTouTiao;
 import eie.robot.com.task.RobTaskShuaBao;
+import eie.robot.com.task.RobTaskSouHuZiXun;
 import eie.robot.com.task.RobTaskZhongQingKanDian;
 
 public class mCommonTask {
@@ -51,6 +52,9 @@ public class mCommonTask {
                 //组装任务列表，通过策略
                 ArrayList<BaseRobotTask> tasks = new ArrayList<>();
 
+
+                //搜狐资讯
+                tasks.add(new RobTaskSouHuZiXun());
                 //趣看天下
                 tasks.add(new RobTaskZhongQingKanDian());
                 //趣看天下

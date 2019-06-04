@@ -157,7 +157,7 @@ public class mGestureUtil {
     public static void scroll_up(long distance ,long duration){
 
         Path path = new Path();
-        path.moveTo(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/2);
+        path.moveTo(mGlobal.mScreenWidth/2,(float) (mGlobal.mScreenHeight/2));
         path.lineTo(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/2-distance);
         mGestureUtil.dispatchGesture(path,duration);
         mFunction.sleep(mConfig.clickSleepTime/2);
