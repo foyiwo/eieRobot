@@ -25,7 +25,7 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
     public RobTaskQuKanTianXia() {
         super();
         this.AppName = "趣看天下";
-        this.TodayMaxIncome = 6000;
+        this.TodayMaxIncome = 100000;
         this.TodayIncomeIsFinsh = false;
     }
 
@@ -62,12 +62,13 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
                 mFunction.openScreen();
 
                 //看视频
-                int RefreshCount =   mFunction.getRandom_1_3();
+                int RefreshCount =   1;//mFunction.getRandom_1_3();
                 while (RefreshCount > 0){
                     if(mCommonTask.isCloseAppTask()){ break;}
                     performTask_KanShiPing();
                     RefreshCount -- ;
                 }
+
                 //看新闻
                 RefreshCount =   mFunction.getRandom_4_8();
                 while (RefreshCount > 0){
@@ -191,7 +192,6 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
         if(!returnHome()){
             return false;
         }
-        mToast.success("判断今日收益是否封顶");
         mGestureUtil.scroll_down_100();
         AccessibilityNodeInfo IncomeNode = null;
         try{
@@ -223,20 +223,18 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
      * 执行刷单任务（看资讯）
      */
     private boolean performTask_KanShiPing(){
-        mToast.success("新闻任务");
+
         if(!returnHome()){
             return false;
         }
         //点击第二个功能列表
         mGestureUtil.click((mGlobal.mScreenWidth/5)*2-SizeOffset,mGlobal.mScreenHeight-SizeOffset);
-
+        mToast.success("新闻任务");
         int NewsCount =   mFunction.getRandom_1_3();
         while (NewsCount > 0){
             if(mCommonTask.isCloseAppTask()){ break;}
-
             //看视频
             Task_KanShiPing();
-
             if(!returnHome()){
                 continue;
             }
@@ -355,7 +353,7 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
                 if(SwiperCountCopy == SwiperCount && VideoInfos == null){
                     int TestCount = 3;
                     while (TestCount > 0){
-                        mGestureUtil.scroll_up(400,1000);
+                        mGestureUtil.scroll_up(100,1000);
                         mGestureUtil.click(mGlobal.mScreenWidth/2,rect.top - 55);
                         info = AccessibilityHelper.findNodeInfosByText("保存");
                         if(info != null){

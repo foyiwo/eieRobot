@@ -25,7 +25,7 @@ public class RobTaskZhongQingKanDian extends BaseRobotTask {
     public RobTaskZhongQingKanDian() {
         super();
         this.AppName = "中青看点";
-        this.TodayMaxIncome = 10000;
+        this.TodayMaxIncome = 5000;
         this.TodayIncomeIsFinsh = false;
     }
 
@@ -54,24 +54,25 @@ public class RobTaskZhongQingKanDian extends BaseRobotTask {
 
                 //签到(聚看点的签到放到了【CloseDialog()】方法里)
                 SignIn();
+                //阅读文章
+                int RefreshCount =   mFunction.getRandom_4_8();
+                while (RefreshCount > 0){
+                    if(mCommonTask.isCloseAppTask()){ break;}
+                    performTask_KanZiXun();
+                    mToast.success("倒数第"+RefreshCount+"轮新闻任务");
+                    mFunction.sleep(1500);
+                    RefreshCount -- ;
+                }
 
                 //看视频
-                int RefreshCount =   mFunction.getRandom_1_3();
+                RefreshCount =   mFunction.getRandom_1_3();
                 while (RefreshCount > 0){
                     if(mCommonTask.isCloseAppTask()){ break;}
                     performTask_KanShiPing();
                     RefreshCount -- ;
                 }
 
-                //阅读文章
-                RefreshCount =   mFunction.getRandom_4_8();
-                while (RefreshCount > 0){
-                    if(mCommonTask.isCloseAppTask()){ break;}
-                    performTask_KanZiXun();
-                    mToast.success("倒数第"+RefreshCount+"轮新闻任务");
-                    mFunction.click_sleep();
-                    RefreshCount -- ;
-                }
+
 
             }
             catch (Exception ex){
@@ -182,7 +183,7 @@ public class RobTaskZhongQingKanDian extends BaseRobotTask {
         }
 
         //我的界面往上滑动了，先向下滑动一次
-        mGestureUtil.scroll_down(mGlobal.mScreenHeight/2,1000);
+        mGestureUtil.scroll_down(mGlobal.mScreenHeight/2,10);
 
         AccessibilityNodeInfo IncomeNode = null;
 
@@ -212,11 +213,9 @@ public class RobTaskZhongQingKanDian extends BaseRobotTask {
             if(Integer.valueOf(incomeText) > this.TodayMaxIncome){
                 this.TodayIncomeIsFinsh = true;
                 mToast.success("今日收益("+incomeText+")已封顶("+this.TodayMaxIncome+")");
-                mFunction.sleep(mConfig.clickSleepTime);
                 return true;
             }else {
                 mToast.success("今日收益("+incomeText+")未封顶("+this.TodayMaxIncome+")，继续工作");
-                mFunction.sleep(mConfig.clickSleepTime);
                 return false;
             }
         }

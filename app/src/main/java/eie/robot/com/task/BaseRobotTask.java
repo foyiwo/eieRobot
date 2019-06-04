@@ -62,7 +62,7 @@ public abstract class BaseRobotTask {
         AccessibilityNodeInfo NodeInfo1 = AccessibilityHelper.findNodeInfosByText(Nav1);
         AccessibilityNodeInfo NodeInfo2 = AccessibilityHelper.findNodeInfosByText(Nav2);
 
-        if ( NodeInfo1 != null || NodeInfo2 != null ) {
+        if ( (NodeInfo1 != null && NodeInfo1.getText().equals(Nav1)) || (NodeInfo2 != null && NodeInfo2.getText().equals(Nav2) )) {
            //说明正处于首页
             return true;
         } else {

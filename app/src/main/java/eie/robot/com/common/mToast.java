@@ -15,6 +15,10 @@ public class mToast {
         RxToast.success(mGlobal.mAccessibilityService, message, Toast.LENGTH_SHORT, true).show();
 
     }
+    public static void success_sleep(String message){
+        RxToast.success(mGlobal.mAccessibilityService, message, Toast.LENGTH_SHORT, true).show();
+        mFunction.click_sleep();
+    }
     public static void info(String message){
         RxToast.info(mGlobal.mNavigationBarActivity, message, Toast.LENGTH_SHORT, true).show();
     }

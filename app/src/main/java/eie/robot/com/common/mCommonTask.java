@@ -52,13 +52,12 @@ public class mCommonTask {
                 //组装任务列表，通过策略
                 ArrayList<BaseRobotTask> tasks = new ArrayList<>();
 
-
-                //搜狐资讯
-                tasks.add(new RobTaskSouHuZiXun());
-                //趣看天下
-                tasks.add(new RobTaskZhongQingKanDian());
                 //趣看天下
                 tasks.add(new RobTaskQuKanTianXia());
+                //中青看点
+                tasks.add(new RobTaskZhongQingKanDian());
+                //搜狐资讯
+                tasks.add(new RobTaskSouHuZiXun());
                 //刷宝
                 tasks.add(new RobTaskShuaBao());
                 //趣头条
