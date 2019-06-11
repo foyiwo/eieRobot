@@ -1,0 +1,131 @@
+package eie.robot.com.common;
+
+import android.accessibilityservice.AccessibilityService;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.os.Looper;
+import android.support.v7.widget.WithHint;
+import android.view.accessibility.AccessibilityNodeInfo;
+
+import eie.robot.com.accessibilityservice.AccessibilityHelper;
+
+public class mCommonFunctionTask {
+
+    //根据文字判断是否处于文章页
+    public static Boolean judgeIsNoWenZhangPageByText(String desc){
+
+        //判断是否处于文章页，如果不是则退出
+        AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosByText(desc);
+        if(XinWenNode == null){
+            AccessibilityHelper.performBack();
+            mFunction.click_sleep();
+            XinWenNode = AccessibilityHelper.findNodeInfosByText("写评论得红钻");
+            if(XinWenNode == null){
+                mGestureUtil.click(40,mDeviceUtil.getStatusBarHeight()+40);
+                return true;
+            }
+        }
+        return false;
+
+    }
+
+    //根据文字判断是否处于文章页
+    public static Boolean judgeIsNoShiPingPageByResId(String ResId){
+        return judgeNodeIsHavingByResId(ResId);
+    }
+
+    //根据文字判断是否处于文章页
+    public static Boolean judgeNodeIsHavingByText(String desc){
+
+        //判断是否处于文章页，如果不是则退出
+        AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosByText(desc);
+        return XinWenNode != null;
+    }
+
+    public static boolean judgeNodeIsHavingByResId(String ResId){
+
+        //判断是否处于文章页，如果不是则退出
+        AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosById(ResId);
+        return XinWenNode != null;
+    }
+
+    /**
+     * 粘贴数据进对应的Node位置
+     * @param node
+     * @param content
+     * @return
+     * @throws InterruptedException
+     */
+    public static boolean pasteTextToNode(AccessibilityNodeInfo node, String content){
+        //让搜索框获取到焦点，这点很重要，否则无法复制
+        node.performAction(AccessibilityNodeInfo.ACTION_FOCUS);
+
+        mFunction.click_sleep();
+
+        ClipData clip = ClipData.newPlainText("label", content);
+        if(Looper.myLooper() == null){
+            Looper.prepare();
+        }
+        ClipboardManager clipboardManager = (ClipboardManager) mGlobal.mAccessibilityService.getSystemService(Context.CLIPBOARD_SERVICE);
+
+        assert clipboardManager != null;
+        clipboardManager.setPrimaryClip(clip);
+
+        return node.performAction(AccessibilityNodeInfo.ACTION_PASTE);
+    }
+
+
+    public static boolean loopJudgeNodeIsHavingByResId(String ResId){
+        int TestCount = 10;
+        while (TestCount > 0){
+            AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosById(ResId);
+            if(XinWenNode != null){
+                return true;
+            }
+            mFunction.sleep(1000);
+            TestCount --;
+        }
+        return false;
+    }
+    public static boolean loopJudgeNodeIsHavingByText(int TestCount,String Text){
+        while (TestCount > 0){
+            AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosByText(Text);
+            if(XinWenNode != null){
+                return true;
+            }
+            mFunction.sleep(1000);
+            TestCount --;
+        }
+        return false;
+    }
+    public static boolean loopJudgeNodeIsHavingByText(String Text){
+        int TestCount = 10;
+        return loopJudgeNodeIsHavingByText(TestCount,Text);
+    }
+
+
+    //清理系统的各种弹框
+    public static void CloseSystemBulletBox(){
+
+        //调用微信
+        AccessibilityNodeInfo rootWindow = AccessibilityHelper.getRootInActiveWindow();
+        if (rootWindow != null && rootWindow.getPackageName().equals("com.miui.securitycenter")){
+            mGestureUtil.clickByText("拒绝");
+        }
+        //取消软件安装
+        if (rootWindow != null && rootWindow.getPackageName().equals("com.miui.packageinstaller")){
+            mGestureUtil.clickByResourceId("com.miui.packageinstaller:id/cancel_button");
+            mGestureUtil.clickByResourceId("android:id/button2");
+            mGestureUtil.clickByText("取消");
+        }
+
+        if(mCommonFunctionTask.judgeNodeIsHavingByText("没有响应")){
+            mGestureUtil.clickByText("确定");
+        }
+
+    }
+
+
+
+}

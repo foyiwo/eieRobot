@@ -6,6 +6,8 @@ import android.graphics.Path;
 import android.graphics.Rect;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import eie.robot.com.accessibilityservice.AccessibilityHelper;
+
 public class mGestureUtil {
     /**
      * 触发一个触摸手势
@@ -59,6 +61,10 @@ public class mGestureUtil {
     }
 
     public static Boolean click(AccessibilityNodeInfo nodeInfo){
+        if(nodeInfo == null){
+            return false;
+        }
+
         float x = 0;
         float y = 0;
 
@@ -88,6 +94,9 @@ public class mGestureUtil {
     public static boolean click(float x,float y){
         return mGestureUtil.click(x,y,mConfig.clickSleepTime);
     }
+    public static void clickTab(int TabCount,int Number){
+        mGestureUtil.click((mGlobal.mScreenWidth/TabCount)*Number-40,mGlobal.mScreenHeight-40);
+    }
     //点击某个点手势
     public static Boolean click(float x,float y,long clicktime){
         GestureDescription.Builder builder = new GestureDescription.Builder();
@@ -110,6 +119,44 @@ public class mGestureUtil {
         boolean res = mGlobal.mAccessibilityService.dispatchGesture(gestureDescription,callback,null);
         mFunction.sleep(clicktime);
         return res;
+    }
+
+    //点击某个点手势
+    public static Boolean clickByText(String text){
+        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText(text);
+        if(nodeInfo != null){
+            Rect rect = new Rect();
+            nodeInfo.getBoundsInScreen(rect);
+            if(rect.top < mGlobal.mScreenHeight-10 && rect.top > 10){
+                return mGestureUtil.click(nodeInfo);
+            }
+        }
+        return false;
+    }
+
+    //点击某个元素的上面一点
+    public static Boolean clickNodeOffsizeTopById(String resid){
+        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById(resid);
+        if(nodeInfo != null){
+            Rect rect = new Rect();
+            nodeInfo.getBoundsInScreen(rect);
+            if(rect.top < mGlobal.mScreenHeight-100 && rect.top > 100){
+                return mGestureUtil.click(mGlobal.mScreenWidth/2,rect.top-100);
+            }
+        }
+        return false;
+    }
+    //点击某个点手势
+    public static Boolean clickByResourceId(String id){
+        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById(id);
+        if(nodeInfo != null){
+            Rect rect = new Rect();
+            nodeInfo.getBoundsInScreen(rect);
+            if(rect.top < mGlobal.mScreenHeight-10 && rect.top > 10){
+                return mGestureUtil.click(nodeInfo);
+            }
+        }
+        return false;
     }
 
     //向上滑动
@@ -138,7 +185,7 @@ public class mGestureUtil {
         Path path = new Path();
 
         float dx = (mGlobal.mScreenWidth/3) + mFunction.getRandom_0_50();
-        float dy = (float) (mGlobal.mScreenHeight/1.3) - mFunction.getRandom_0_50();
+        float dy = (float) (mGlobal.mScreenHeight/1.35) - mFunction.getRandom_0_50();
         path.moveTo(dx,dy);
 
         int count = mFunction.getRandom_6_12();
@@ -146,6 +193,12 @@ public class mGestureUtil {
         for (int i=0; i < count; i++){
             float dxx = dx - Factor*mFunction.getRandom_0_50();
             dy = dy - mFunction.getRandom_50_100();
+            if(dxx <= 0){
+                dxx = 50;
+            }
+            if(dy <= 0){
+                dy = 50;
+            }
             path.lineTo(dxx,dy);
 
             Factor = Factor * -1;

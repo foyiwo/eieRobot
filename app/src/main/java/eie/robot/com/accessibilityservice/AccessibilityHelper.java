@@ -13,6 +13,7 @@ import java.util.List;
 import eie.robot.com.common.mConfig;
 import eie.robot.com.common.mFunction;
 import eie.robot.com.common.mGlobal;
+import eie.robot.com.common.mToast;
 
 /**
  * <p>Created 16/2/4 上午9:49.</p>
@@ -204,18 +205,24 @@ public final class AccessibilityHelper {
             return null;
         }
         AccessibilityNodeInfo Info = null;
-        for (int i = 0; i < nodeInfo.getChildCount(); i++) {
-            AccessibilityNodeInfo node = nodeInfo.getChild(i);
-            if (className.contentEquals(node.getClassName())) {
-                return node;
+        try{
+            for (int i = 0; i < nodeInfo.getChildCount(); i++) {
+                AccessibilityNodeInfo node = nodeInfo.getChild(i);
+
+                if (className.contentEquals(node.getClassName())) {
+                    return node;
+                }
+                else if(node.getChildCount() > 0) {
+                    Info = findNodeInfosByClassName(node,className);
+                }
+                if(Info != null && Info.getClassName().equals(className)){
+                    break;
+                }
             }
-            else if(node.getChildCount() > 0) {
-                Info = findNodeInfosByClassName(node,className);
-            }
-            if(Info != null && Info.getClassName().equals(className)){
-                break;
-            }
+        }catch (Exception ex){
+            Info = null;
         }
+
         return Info;
     }
 
@@ -323,6 +330,12 @@ public final class AccessibilityHelper {
             return;
         }
         mGlobal.mAccessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);
+    }
+    public static void performRecents() {
+        if (mGlobal.mAccessibilityService == null) {
+            return;
+        }
+        mGlobal.mAccessibilityService.performGlobalAction(AccessibilityService.GLOBAL_ACTION_RECENTS);
     }
     /**
      * 点击事件
@@ -452,10 +465,13 @@ public final class AccessibilityHelper {
 
     public static AccessibilityNodeInfo getRootInActiveWindow(){
         AccessibilityNodeInfo node = mGlobal.mAccessibilityService.getRootInActiveWindow();
+        if(node == null){
+            mFunction.recoverRootWindow();
+        }
+        node = mGlobal.mAccessibilityService.getRootInActiveWindow();
         if(node != null){
             return node;
         }
-
         List<AccessibilityWindowInfo> windows = mGlobal.mAccessibilityService.getWindows();
         for (AccessibilityWindowInfo info : windows){
             if(info.getType() == AccessibilityWindowInfo.TYPE_APPLICATION){

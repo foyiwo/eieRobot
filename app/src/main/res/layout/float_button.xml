@@ -72,5 +72,15 @@
             android:text=""
             android:textColor="@color/white"
             />
+        <TextView
+            android:id="@+id/btnNextAPP"
+            android:layout_width="wrap_content"
+            android:visibility="visible"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:paddingTop="5dp"
+            android:text="Next"
+            android:textColor="@color/white"
+            />
     </LinearLayout>
 </LinearLayout>

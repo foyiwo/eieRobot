@@ -25,5 +25,9 @@ public class mToast {
     public static void error(String message){
         RxToast.error(mGlobal.mNavigationBarActivity, message, Toast.LENGTH_SHORT, true).show();
     }
+    public static void error_sleep(String message){
+        RxToast.error(mGlobal.mNavigationBarActivity, message, Toast.LENGTH_SHORT, true).show();
+        mFunction.click_sleep();
+    }
 
 }

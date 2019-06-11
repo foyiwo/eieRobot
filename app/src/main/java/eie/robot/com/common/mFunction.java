@@ -231,10 +231,10 @@ public class mFunction {
                 return false;
             }
             //休眠等待
-            mFunction.sleep(mConfig.WaitLauncherlTime*2);
+            mFunction.sleep(mConfig.WaitLauncherlTime);
 
             //打开后，尝试多次获取
-            int count = mConfig.loopCount;
+            int count = mConfig.loopCount*2;
             while (count > 0) {
                 rootWindow = AccessibilityHelper.getRootInActiveWindow();
                 if(rootWindow == null){
@@ -255,6 +255,9 @@ public class mFunction {
 
 
     public static boolean recoverRootWindow(){
+        if(mCommonTask.isCloseAppTask()){
+            return true;
+        }
         mGestureUtil.scroll_down_screen();
         mGestureUtil.scroll_up_screen();
         return true;
@@ -353,15 +356,38 @@ public class mFunction {
         return ((int) Math.random()/2+1)*10;
     }
     public static int getRandom_4_8(){
-        return ((int) Math.random()+1)*4;
+        return (int) (Math.random()+1)*4;
+    }
+    public static int getRandom_3_6(){
+       int count = (int) ((Math.random()+1)*3);
+       return count;
+    }
+    public static int getRandom_2_5(){
+        int count = (int) ((Math.random()*2)+2);
+        if(count > 4){
+            count = 4;
+        }
+        return count;
+    }
+    public static int getRandom_2_4(){
+        int count = (int) ((Math.random()*2)+2);
+        if(count > 4){
+            count = 4;
+        }
+        return count;
     }
     public static int getRandom_6_12(){
         int count =(int)  ((Math.random()+1)*6);//6 ~ 12
 
         return count;
     }
+    public static int getRandom_8_14(){
+        int count =(int)  ((Math.random()+1)*6)+2;//6 ~ 12
+
+        return count;
+    }
     public static int getRandom_1_3(){
-        return ((int) Math.random()*2)+1;
+        return (int)( Math.random()*2)+1;
     }
 
     public static boolean openAccessibilityService(){
@@ -372,5 +398,22 @@ public class mFunction {
             return false;
         }
         return true;
+    }
+
+    public static boolean judgeAppIsHome(String nav1,String nav2){
+        //判断是否处于文章页，如果不是则退出
+        AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosByText(nav1);
+        AccessibilityNodeInfo VideoNode = AccessibilityHelper.findNodeInfosByText(nav2);
+        if((XinWenNode != null && XinWenNode.getText().toString().equals(nav1))
+                && (VideoNode != null && VideoNode.getText().toString().equals(nav2))){
+           return true;
+        }
+        return false;
+    }
+    public static boolean judgeAppIsHomeById(String nav1,String nav2){
+        //判断是否处于文章页，如果不是则退出
+        AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosById(nav1);
+        AccessibilityNodeInfo VideoNode = AccessibilityHelper.findNodeInfosById(nav2);
+        return XinWenNode != null && VideoNode != null;
     }
 }

@@ -2,6 +2,8 @@ package eie.robot.com.common;
 
 import java.util.Date;
 
+import eie.robot.com.task.BaseRobotTask;
+
 public class mTaskTimer {
 
     //任务的时间
@@ -73,7 +75,7 @@ public class mTaskTimer {
                                 mFunction.sleep(5*1000);
                                 continue;
                             }
-                            mTaskTimer.TaskMin =  mFunction.getRandom_10_20()+5;
+                            mTaskTimer.TaskMin =  mFunction.getRandom_10_20()+15;
                             mTaskTimer.AppTaskCounter ++;
                             while (mTaskTimer.TaskMin >= 0){
                                 mFloatWindow.EditRobTaskTimerMinText(mTaskTimer.TaskMin+"m");
@@ -109,7 +111,7 @@ public class mTaskTimer {
         });
     }
 
-    //定时打开手机屏幕
+    //定时打开手机屏幕和在每天晚上六点后，重置
     public static void AppTaskOpenScreenTimer(){
         //定时任务
         mFunction.runInChildThread(new Runnable() {
@@ -131,7 +133,43 @@ public class mTaskTimer {
             }
         });
     }
+    public static void ResetingAppFinishStatus(){
+        //定时任务
+        mFunction.runInChildThread(new Runnable() {
+            @Override
+            public void run() {
+                try{
+                    while (true){
+                        try {
+                            int StopTime = 1;
+                            mFunction.sleep(StopTime*60*1000);
+                            //获取当前时间
+                            String currentTime = mDateUtil.formatDate(new Date(),"datetime");
 
+                            String currentDate = mDateUtil.formatDate(new Date(),"date");
+                            String startTime = currentDate+" 02:30:00";
+                            String endTime = currentDate+" 06:00:00";
+
+                            //比较时间，如果当前时间已经超过了收益时差最大值。
+                            int start   = mDateUtil.compareDate(currentTime,startTime);
+                            int end     = mDateUtil.compareDate(endTime,currentTime);
+                            if(start > 0 && end > 0){
+                                for (BaseRobotTask task : mCommonTask.mTasks){
+                                    task.setTodayIncomeIsNoFinsh();
+                                }
+                            }
+
+                        }catch (Exception ex){
+
+                        }
+
+                    }
+                }catch (Exception ex){
+
+                }
+            }
+        });
+    }
     //判断定时器是否在正常运行
     private static Boolean isNormalForAppTimer(){
         try {

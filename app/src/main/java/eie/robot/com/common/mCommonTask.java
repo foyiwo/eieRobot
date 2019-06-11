@@ -16,8 +16,13 @@ import eie.robot.com.task.RobTaskQiMaoXiaoShuo;
 import eie.robot.com.task.RobTaskJuKanDian;
 import eie.robot.com.task.RobTaskQuKanTianXia;
 import eie.robot.com.task.RobTaskQuTouTiao;
+import eie.robot.com.task.RobTaskShanDianHeZi;
 import eie.robot.com.task.RobTaskShuaBao;
 import eie.robot.com.task.RobTaskSouHuZiXun;
+import eie.robot.com.task.RobTaskTouTiaoJingXuan;
+import eie.robot.com.task.RobTaskWeiLiKanKan;
+import eie.robot.com.task.RobTaskWeiQuKan;
+import eie.robot.com.task.RobTaskYouKanDian;
 import eie.robot.com.task.RobTaskZhongQingKanDian;
 
 public class mCommonTask {
@@ -30,6 +35,8 @@ public class mCommonTask {
 
     //APP完成了所有的任务，处于休眠状态
     private static boolean AppTaskSleepStatus = false;
+
+    public static ArrayList<BaseRobotTask> mTasks = null;
 
     public static String StartTask(){
         //打开无障碍服务
@@ -49,47 +56,59 @@ public class mCommonTask {
                 //定时器，不断点亮屏幕
                 mTaskTimer.AppTaskOpenScreenTimer();
 
-                //组装任务列表，通过策略
-                ArrayList<BaseRobotTask> tasks = new ArrayList<>();
+                //在夜间重置
+                mTaskTimer.ResetingAppFinishStatus();
 
-                //趣看天下
-                tasks.add(new RobTaskQuKanTianXia());
-                //中青看点
-                tasks.add(new RobTaskZhongQingKanDian());
+                //组装任务列表，通过策略
+                mTasks = new ArrayList<>();
+
+                //优看点
+                mTasks.add(new RobTaskYouKanDian());
+                //微趣看
+                mTasks.add(new RobTaskWeiQuKan());
+                //微鲤看看
+                mTasks.add(new RobTaskWeiLiKanKan());
                 //搜狐资讯
-                tasks.add(new RobTaskSouHuZiXun());
+                mTasks.add(new RobTaskSouHuZiXun());
+                //闪电盒子
+                mTasks.add(new RobTaskShanDianHeZi());
+                //趣看天下
+                mTasks.add(new RobTaskQuKanTianXia());
+                //中青看点
+                mTasks.add(new RobTaskZhongQingKanDian());
                 //刷宝
-                tasks.add(new RobTaskShuaBao());
+                mTasks.add(new RobTaskShuaBao());
                 //趣头条
-                tasks.add(new RobTaskQuTouTiao());
+                mTasks.add(new RobTaskQuTouTiao());
                 //聚看点
-                tasks.add(new RobTaskJuKanDian());
+                mTasks.add(new RobTaskJuKanDian());
+                //头条精选
+                mTasks.add(new RobTaskTouTiaoJingXuan());
 
                 int i = 0;
 
                 while (ThreadTaskOpenStatus){
-                    if(mIncomeTask.isAppTaskAllFinish(tasks)){
-                        mToast.success("所有任务已完成，休眠一分钟再说");
-                        mFunction.sleep(60*1000);
-                        continue;
-                    }
-
-                    if(i >= tasks.size()){
+                    //清楚手机内存
+                    if(i >= mTasks.size()){
                         i = 0;
                     }
-                    if( i == 3){
+                    if( i == 3 || i == 7 || i == 11){
                         mCacheTask.ClearPhoneCacheTask();
                     }
 
                     //判断该APP是否已经到达最大收益。
-                    if(tasks.get(i).isTodayIncomeNoFinsh()){
+                    if(mTasks.get(i).isTodayIncomeNoFinsh()){
                         //开启任务，死循环，如果全局定时器，将一直执行
-                        tasks.get(i).StartTask();
+                        mTasks.get(i).StartTask();
                     }
+
+                    //清楚手机内存
+                    mCacheTask.ClearPhoneROMTask();
+
                     if(!ThreadTaskOpenStatus){ break; }
                     i++;
                 }
-                AccessibilityHelper.performHome();
+                //AccessibilityHelper.performHome();
                 mToast.success("总任务停止");
             }
         });

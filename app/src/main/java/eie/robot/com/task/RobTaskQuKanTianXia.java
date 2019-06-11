@@ -25,7 +25,7 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
     public RobTaskQuKanTianXia() {
         super();
         this.AppName = "趣看天下";
-        this.TodayMaxIncome = 100000;
+        this.TodayMaxIncome = 6000;
         this.TodayIncomeIsFinsh = false;
     }
 

@@ -85,6 +85,16 @@ public class mFloatWindow {
 //        //停止任务
         contentView.findViewById(R.id.btnStopRobTaskButton).setOnClickListener(StopRobTask);
 
+        //下一个APP
+        contentView.findViewById(R.id.btnNextAPP).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mToast.message("下一个APP");
+                mCommonTask.setAppTaskClose();
+            }
+        });
+
+
         mGlobal.viewFloatButton = contentView;
 
         mGlobal.mViewRobTaskTimerMin = (TextView)mGlobal.viewFloatButton.findViewById(R.id.btnRobTaskTimerMin);

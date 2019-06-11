@@ -43,7 +43,6 @@ public class RobTaskZhongQingKanDian extends BaseRobotTask {
                 if(!returnHome()){
                     continue;
                 }
-
                 //领取时段奖励，中青看点没有这个
                 //performTask_ShiDuanJiangLi();
 

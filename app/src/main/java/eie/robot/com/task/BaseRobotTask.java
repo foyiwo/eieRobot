@@ -6,6 +6,7 @@ import com.vondear.rxtool.RxDeviceTool;
 import com.vondear.rxtool.view.RxToast;
 
 import eie.robot.com.accessibilityservice.AccessibilityHelper;
+import eie.robot.com.common.mCommonFunctionTask;
 import eie.robot.com.common.mCommonTask;
 import eie.robot.com.common.mConfig;
 import eie.robot.com.common.mFunction;
@@ -16,6 +17,7 @@ import eie.robot.com.common.mToast;
 
 public abstract class BaseRobotTask {
 
+    int SizeOffset = 40;
     Boolean IsSign = false;        //是否已经签到
     String AppName = "";        //应用名称
     float TodayGold = 0;        //今日当前收益
@@ -36,9 +38,8 @@ public abstract class BaseRobotTask {
     boolean CloseTask(){
         //设置APP的运行状态为停止
         mCommonTask.setAppTaskClose();
-
         mToast.success("【"+this.AppName+"】已停止");
-        mFunction.sleep(2 * mConfig.clickSleepTime);
+        mFunction.click_sleep();
         return true;
     }
 
@@ -76,7 +77,7 @@ public abstract class BaseRobotTask {
                 //再次获取底部导航栏
                 NodeInfo1 = AccessibilityHelper.findNodeInfosByText(Nav1);
                 NodeInfo2 = AccessibilityHelper.findNodeInfosByText(Nav2);
-                if ( NodeInfo1 != null || NodeInfo2 != null ) {
+                if ( (NodeInfo1 != null && NodeInfo1.getText().equals(Nav1)) || (NodeInfo2 != null && NodeInfo2.getText().equals(Nav2) )) {
                     break;
                 }
                 //尝试点击一次返回键
@@ -92,7 +93,7 @@ public abstract class BaseRobotTask {
                 }
                 count--;
             }
-            if (NodeInfo1 != null || NodeInfo2 != null) {
+            if ( (NodeInfo1 != null && NodeInfo1.getText().equals(Nav1)) || (NodeInfo2 != null && NodeInfo2.getText().equals(Nav2) )) {
                 return true;
             } else {
                 //如果一直没反应，尝试着点击一下屏幕中心。
@@ -170,4 +171,14 @@ public abstract class BaseRobotTask {
         this.TodayIncomeIsFinsh = false;
     }
 
+    public void mCloseSystem(){
+        mCommonFunctionTask.CloseSystemBulletBox();
+    }
+
+    Boolean performTask_WatchVideo(){
+        return true;
+    }
+    Boolean performTask_LookNews(){
+        return true;
+    }
 }
