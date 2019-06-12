@@ -21,8 +21,6 @@ import eie.robot.com.common.mToast;
 
 public class RobTaskYouKanDian extends BaseRobotTask {
 
-    private int SizeOffset = 40;
-
     private String HomeNavTitle1 = "com.memory.online:id/tab_textview";
     private String HomeNavTitle2 = "com.memory.online:id/tab_textview";
     /**
@@ -31,7 +29,7 @@ public class RobTaskYouKanDian extends BaseRobotTask {
     public RobTaskYouKanDian() {
         super();
         this.AppName = "优看点";
-        this.TodayMaxIncome = 5000;
+        this.TodayMaxIncome = 915000;
         this.TodayIncomeIsFinsh = false;
     }
 
@@ -198,7 +196,7 @@ public class RobTaskYouKanDian extends BaseRobotTask {
         mGestureUtil.scroll_up();
 
         //随机获取在本首页的滑动的次数
-        int NewsCount =   mFunction.getRandom_8_14();
+        int NewsCount =   mFunction.getRandom_4_8();
         while (NewsCount > 0){
             if(mCommonTask.isCloseAppTask()){ return false; }
             //进入文章页看新闻
@@ -277,6 +275,7 @@ public class RobTaskYouKanDian extends BaseRobotTask {
 
     private boolean IncomeSure(){
         if(mCommonFunctionTask.judgeNodeIsHavingByText("双倍奖励阅读")){
+            mToast.success("双倍奖励阅读");
             mFunction.sleep(2 * mConfig.clickSleepTime);
             mGestureUtil.clickInScreenCenter();
             int LoopCounter = 15;
@@ -304,9 +303,11 @@ public class RobTaskYouKanDian extends BaseRobotTask {
             }
         }
 
-        if(mCommonFunctionTask.judgeNodeIsHavingByText("请按照下方提示步骤，逐一完成之后,即可领取奖励红包")){
+        if(mCommonFunctionTask.judgeNodeIsHavingByText("获得系统奖励红包")){
+            mToast.success("获得系统奖励红包");
+            mFunction.click_sleep();
             mGestureUtil.clickByResourceId("com.memory.online:id/x_recycler_view");
-            int SlideCount = 5;
+            int SlideCount = 10;
             while (SlideCount > 0){
                 mGestureUtil.scroll_up();
                 mFunction.sleep(3000);
@@ -336,7 +337,7 @@ public class RobTaskYouKanDian extends BaseRobotTask {
         }
 
         //点击【我的】列表
-        mGestureUtil.click(4,2);
+        mGestureUtil.clickTab(4,4);
 
         //再次恢复到首页
         if(!returnHome()){
@@ -409,7 +410,7 @@ public class RobTaskYouKanDian extends BaseRobotTask {
         if(!returnHome()){
             return;
         }
-        mGestureUtil.click(mGlobal.mScreenWidth-SizeOffset,mGlobal.mScreenHeight-SizeOffset);
+        mGestureUtil.click(4,4);
         //我的界面往上滑动了，先向下滑动一次
         mGestureUtil.scroll_down_half_screen();
         AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosById("com.memory.online:id/ll_feature2");

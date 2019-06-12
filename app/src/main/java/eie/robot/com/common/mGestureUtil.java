@@ -182,30 +182,33 @@ public class mGestureUtil {
     //向上滑动
     public static void scroll_up(long duration){
 
-        Path path = new Path();
+        try{
+            Path path = new Path();
 
-        float dx = (mGlobal.mScreenWidth/3) + mFunction.getRandom_0_50();
-        float dy = (float) (mGlobal.mScreenHeight/1.35) - mFunction.getRandom_0_50();
-        path.moveTo(dx,dy);
+            float dx = (mGlobal.mScreenWidth/3) + mFunction.getRandom_0_50();
+            float dy = (float) (mGlobal.mScreenHeight/1.35) - mFunction.getRandom_0_50();
+            path.moveTo(dx,dy);
 
-        int count = mFunction.getRandom_6_12();
-        int Factor = 1;
-        for (int i=0; i < count; i++){
-            float dxx = dx - Factor*mFunction.getRandom_0_50();
-            dy = dy - mFunction.getRandom_50_100();
-            if(dxx <= 0){
-                dxx = 50;
+            int count = mFunction.getRandom_6_12();
+            int Factor = 1;
+            for (int i=0; i < count; i++){
+                float dxx = dx - Factor*mFunction.getRandom_0_50();
+                dy = dy - mFunction.getRandom_50_100();
+                if(dxx <= 0){
+                    dxx = 50;
+                }
+                if(dy <= 0){
+                    dy = 50;
+                }
+                path.lineTo(dxx,dy);
+
+                Factor = Factor * -1;
             }
-            if(dy <= 0){
-                dy = 50;
-            }
-            path.lineTo(dxx,dy);
+            dispatchGesture(path,duration);
+            mFunction.sleep(mConfig.clickSleepTime);
+        }catch (Exception ex){
 
-            Factor = Factor * -1;
         }
-        dispatchGesture(path,duration);
-        mFunction.sleep(mConfig.clickSleepTime);
-
     }
     public static void scroll_up(long distance ,long duration){
 

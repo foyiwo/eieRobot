@@ -55,35 +55,40 @@ public class mCommonTask {
                 mTaskTimer.AppTaskTimer();
                 //定时器，不断点亮屏幕
                 mTaskTimer.AppTaskOpenScreenTimer();
-
                 //在夜间重置
                 mTaskTimer.ResetingAppFinishStatus();
+                //清楚手机内存
+                mCacheTask.ClearPhoneROMTask();
 
                 //组装任务列表，通过策略
                 mTasks = new ArrayList<>();
 
-                //优看点
-                mTasks.add(new RobTaskYouKanDian());
-                //微趣看
-                mTasks.add(new RobTaskWeiQuKan());
-                //微鲤看看
-                mTasks.add(new RobTaskWeiLiKanKan());
+
                 //搜狐资讯
-                mTasks.add(new RobTaskSouHuZiXun());
+                mTasks.add(new RobTaskSouHuZiXun());     //已重构
+                //微鲤看看
+                mTasks.add(new RobTaskWeiLiKanKan());    //已重构
+                //头条精选
+                mTasks.add(new RobTaskTouTiaoJingXuan());//已重构
+                //优看点
+                mTasks.add(new RobTaskYouKanDian());     //已重构
+                //微趣看
+                mTasks.add(new RobTaskWeiQuKan());       //已重构
+
+                //聚看点
+                mTasks.add(new RobTaskJuKanDian());
                 //闪电盒子
                 mTasks.add(new RobTaskShanDianHeZi());
                 //趣看天下
                 mTasks.add(new RobTaskQuKanTianXia());
                 //中青看点
                 mTasks.add(new RobTaskZhongQingKanDian());
-                //刷宝
-                mTasks.add(new RobTaskShuaBao());
                 //趣头条
                 mTasks.add(new RobTaskQuTouTiao());
-                //聚看点
-                mTasks.add(new RobTaskJuKanDian());
-                //头条精选
-                mTasks.add(new RobTaskTouTiaoJingXuan());
+                //刷宝
+                mTasks.add(new RobTaskShuaBao());
+
+
 
                 int i = 0;
 
@@ -102,8 +107,7 @@ public class mCommonTask {
                         mTasks.get(i).StartTask();
                     }
 
-                    //清楚手机内存
-                    mCacheTask.ClearPhoneROMTask();
+
 
                     if(!ThreadTaskOpenStatus){ break; }
                     i++;

@@ -124,6 +124,8 @@ public class mCommonFunctionTask {
             mGestureUtil.clickByText("确定");
         }
 
+        mGestureUtil.clickByResourceId("android:id/aerr_close");
+        mGestureUtil.clickByText("关闭应用");
     }
 
 

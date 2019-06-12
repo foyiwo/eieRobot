@@ -25,6 +25,20 @@ public abstract class BaseRobotTask {
     boolean TodayIncomeIsFinsh = false;   //今日的收益是否已完成。
     private String PackageName = null; //APP包名
 
+
+    //头条精选
+    boolean YueDuWenZhangIsFinish   = false;
+    boolean WenZhangTouPiaoIsFinish = false;
+    boolean ShiPingTouPiaoIsFinish  = false;
+
+    //热词搜索
+    boolean isHotWordFinish = false;
+
+    //搜狐资讯
+    Boolean ArticleIsFinish = false;
+    Boolean VideoIsFinish = false;
+
+
     public boolean StartTask(){
         //APP允许开始的标志，true可继续执行，false即表示准备结束
         mCommonTask.setAppTaskOpen();
@@ -36,10 +50,12 @@ public abstract class BaseRobotTask {
     }
 
     boolean CloseTask(){
+        mCloseSystem();
         //设置APP的运行状态为停止
         mCommonTask.setAppTaskClose();
         mToast.success("【"+this.AppName+"】已停止");
         mFunction.click_sleep();
+
         return true;
     }
 
@@ -73,7 +89,7 @@ public abstract class BaseRobotTask {
             while (count > 0) {
                 //清理可能出现的各种弹框
                 runnable.run();//this.CloseDialog();
-
+                mCloseSystem();
                 //再次获取底部导航栏
                 NodeInfo1 = AccessibilityHelper.findNodeInfosByText(Nav1);
                 NodeInfo2 = AccessibilityHelper.findNodeInfosByText(Nav2);
@@ -130,7 +146,7 @@ public abstract class BaseRobotTask {
             while (count > 0) {
                 //清理可能出现的各种弹框
                 runnable.run();//this.CloseDialog();
-
+                mCloseSystem();
                 //再次获取底部导航栏
                 NodeInfo1 = AccessibilityHelper.findNodeInfosById(Nav1);
                 NodeInfo2 = AccessibilityHelper.findNodeInfosById(Nav2);
@@ -169,6 +185,14 @@ public abstract class BaseRobotTask {
     //将今天的最大收益设置为未达到
     public void setTodayIncomeIsNoFinsh(){
         this.TodayIncomeIsFinsh = false;
+        this.IsSign = false;
+        this.YueDuWenZhangIsFinish = false;
+        this.WenZhangTouPiaoIsFinish = false;
+        this.ShiPingTouPiaoIsFinish  = false;
+        this.isHotWordFinish = false;
+        this.ArticleIsFinish = false;
+        this.VideoIsFinish = false;
+
     }
 
     public void mCloseSystem(){

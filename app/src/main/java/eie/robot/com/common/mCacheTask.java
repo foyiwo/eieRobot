@@ -76,9 +76,12 @@ public class mCacheTask {
                 return;
             }
             mFunction.sleep(mConfig.clickSleepTime);
+            AccessibilityHelper.performHome();
+
             String UniqueSerialNumber = RxDeviceTool.getUniqueSerialNumber().toLowerCase();
             int index = -1;
             index = UniqueSerialNumber.toLowerCase().indexOf("xiaomi");
+
             //小米手机版清理数据
             if(index > -1){
                 ClearXiaoMiPhoneROM();
@@ -89,7 +92,7 @@ public class mCacheTask {
             }
             index = UniqueSerialNumber.toLowerCase().indexOf("huawei");
             if(index > -1){
-                ClearLenovoPhoneROM();
+                ClearHuaWeiPhoneROM();
             }
         }catch (Exception ex){
             RxToast.success("清理内存报错:"+ex.getMessage());
@@ -105,6 +108,11 @@ public class mCacheTask {
         if(nodeInfo != null){
             mGestureUtil.click(nodeInfo);
         }
+        mGestureUtil.scroll_down_screen();
+        nodeInfo = AccessibilityHelper.findNodeInfosById("com.android.systemui:id/delete");
+        if(nodeInfo != null){
+            mGestureUtil.click(nodeInfo);
+        }
 
     }
     //清除联想手机的内存
@@ -115,12 +123,23 @@ public class mCacheTask {
         if(nodeInfo != null){
             mGestureUtil.click(nodeInfo);
         }
+
+        mGestureUtil.scroll_down_screen();
+        nodeInfo = AccessibilityHelper.findNodeInfosById("com.android.systemui:id/notification_cleanup");
+        if(nodeInfo != null){
+            mGestureUtil.click(nodeInfo);
+        }
     }
     //清除华为手机的内存
     private static void ClearHuaWeiPhoneROM(){
         AccessibilityHelper.performRecents();
         mFunction.click_sleep();
         AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById("com.android.systemui:id/clear_all_recents_image_button");
+        if(nodeInfo != null){
+            mGestureUtil.click(nodeInfo);
+        }
+        mGestureUtil.scroll_down_screen();
+        nodeInfo = AccessibilityHelper.findNodeInfosById("com.android.systemui:id/delete");
         if(nodeInfo != null){
             mGestureUtil.click(nodeInfo);
         }

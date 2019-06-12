@@ -16,23 +16,17 @@ import eie.robot.com.common.mToast;
 
 public class RobTaskWeiLiKanKan extends BaseRobotTask {
 
-    private boolean isHotWordFinish = false;
     private List<String> HotWords = new ArrayList<>();
 
-    /**
-     * 构造函数
-     */
+    //构造函数
     public RobTaskWeiLiKanKan() {
         super();
         this.AppName = "微鲤看看";
-        this.TodayMaxIncome = 16000;
+        this.TodayMaxIncome = 4000;
         this.TodayIncomeIsFinsh = false;
     }
 
-
-    /**
-     * 执行刷单任务（领取时段奖励、定时刷新视频、查看文章）
-     */
+    //执行刷单任务（领取时段奖励、定时刷新视频、查看文章）
     @Override
     public boolean StartTask()  {
         super.StartTask();
@@ -43,9 +37,6 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
                 //每次进行一项任务时，都先恢复到首页
                 //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
                 if(!returnHome()){ continue; }
-
-                //热词搜索
-                HotWordSearchIncome();
 
                 //领取时段奖励
                 performTask_TimeSlotReward();
@@ -313,6 +304,15 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
         mGestureUtil.clickByResourceId("cn.weli.story:id/image_close");
         mGestureUtil.clickByResourceId("cn.weli.story:id/ic_close");
         mGestureUtil.clickByResourceId("cn.weli.story:id/button1");
+
+
+        //点击收红包微鲤福利
+        mGestureUtil.clickByResourceId("cn.weli.story:id/iv_take");
+
+        //点击收到微鲤看看福利之后的【知道了】
+        mGestureUtil.clickByResourceId("cn.weli.story:id/tv_ok");
+        mGestureUtil.clickByText("知道了");
+
         //清理系统级的弹框
         super.mCloseSystem();
 

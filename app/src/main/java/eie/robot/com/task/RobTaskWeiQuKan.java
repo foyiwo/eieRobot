@@ -14,8 +14,6 @@ import eie.robot.com.common.mToast;
 
 public class RobTaskWeiQuKan extends BaseRobotTask {
 
-    private int SizeOffset = 40;
-    private boolean isHotWordFinish = false;
     private List<String> HotWords = new ArrayList<>();
 
     /**
