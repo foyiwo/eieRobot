@@ -109,7 +109,7 @@ public class mCacheTask {
             mGestureUtil.click(nodeInfo);
         }
         mGestureUtil.scroll_down_screen();
-        nodeInfo = AccessibilityHelper.findNodeInfosById("com.android.systemui:id/delete");
+        nodeInfo = AccessibilityHelper.findNodeInfosById("com.android.systemui:id/dismiss_view");
         if(nodeInfo != null){
             mGestureUtil.click(nodeInfo);
         }

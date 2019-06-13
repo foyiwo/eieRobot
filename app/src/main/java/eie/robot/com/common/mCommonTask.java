@@ -57,19 +57,19 @@ public class mCommonTask {
                 mTaskTimer.AppTaskOpenScreenTimer();
                 //在夜间重置
                 mTaskTimer.ResetingAppFinishStatus();
-                //清楚手机内存
-                mCacheTask.ClearPhoneROMTask();
+
 
                 //组装任务列表，通过策略
                 mTasks = new ArrayList<>();
 
 
+                //头条精选
+                mTasks.add(new RobTaskTouTiaoJingXuan());//已重构
                 //搜狐资讯
                 mTasks.add(new RobTaskSouHuZiXun());     //已重构
                 //微鲤看看
                 mTasks.add(new RobTaskWeiLiKanKan());    //已重构
-                //头条精选
-                mTasks.add(new RobTaskTouTiaoJingXuan());//已重构
+
                 //优看点
                 mTasks.add(new RobTaskYouKanDian());     //已重构
                 //微趣看
@@ -107,9 +107,11 @@ public class mCommonTask {
                         mTasks.get(i).StartTask();
                     }
 
-
-
                     if(!ThreadTaskOpenStatus){ break; }
+
+                    //清楚手机内存
+                    mCacheTask.ClearPhoneROMTask();
+
                     i++;
                 }
                 //AccessibilityHelper.performHome();

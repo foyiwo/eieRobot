@@ -41,10 +41,14 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
                     continue;
                 }
 
+                //领取红票分红
+                getShareIncome();
+
                 //判断收益是否封顶
                 if(JudgeGoldIncomeIsMax()){
                     break;
                 }
+
 
                 //看视频
                 performTask_WatchVideo();
@@ -85,6 +89,10 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
         }
 
         mGestureUtil.clickTab(4,2);
+
+        if(!returnHome()){
+            return false;
+        }
 
         //判断是否属于视频列表页
         AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById("com.deshang.ttjx:id/recycler_view");
@@ -161,6 +169,10 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
 
         //点击第一个功能列表
         mGestureUtil.clickTab(4,1);
+
+        if(!returnHome()){
+            return false;
+        }
 
         mGestureUtil.scroll_up();
         //随机获取在本首页的滑动的次数
@@ -244,6 +256,10 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
 
         mGestureUtil.clickTab(4,3);
 
+        if(!returnHome()){
+            return false;
+        }
+
         mToast.success("收取血汗钱");
 
         if(!mCommonFunctionTask.judgeNodeIsHavingByText("红钻余额")){
@@ -270,6 +286,9 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
         //点击【赚钱】列表
         mGestureUtil.clickTab(4,3);
 
+        if(!returnHome()){
+            return false;
+        }
         AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosById("com.deshang.ttjx:id/hp_num");
         if(node != null){
             if(Integer.valueOf(node.getContentDescription().toString()) < 1){
@@ -277,8 +296,8 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
                 return false;
             }
         }
-
         mGestureUtil.clickByResourceId("com.deshang.ttjx:id/receive_bonus");
+        mGestureUtil.clickByResourceId("com.deshang.ttjx:id/receive");
 
         return false;
     }
@@ -310,6 +329,9 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
         //点击【赚钱】列表
         mGestureUtil.clickTab(4,3);
 
+        if(!returnHome()){
+            return false;
+        }
         if(!mCommonFunctionTask.judgeNodeIsHavingByText("红钻余额")){
             return false;
         }
@@ -429,6 +451,7 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
     //关闭APP弹出的所有可能弹框
     private void CloseDialog(){
         mGestureUtil.clickByResourceId("com.deshang.ttjx:id/close");
+        mGestureUtil.clickByResourceId("com.deshang.ttjx:id/i_know");
         AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosByText("放弃提现");
         if(node != null){
             mGestureUtil.click(node);
