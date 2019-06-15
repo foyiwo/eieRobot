@@ -248,7 +248,7 @@ public class RobTaskWeiQuKan extends BaseRobotTask {
             return false;
         }
         //点击【我的】列表
-        mGestureUtil.click(mGlobal.mScreenWidth-SizeOffset,mGlobal.mScreenHeight-SizeOffset);
+        mGestureUtil.clickTab(4,4);
 
         //再次恢复到首页
         if(!returnHome()){

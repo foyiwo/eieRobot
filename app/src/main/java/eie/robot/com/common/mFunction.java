@@ -236,6 +236,7 @@ public class mFunction {
             //打开后，尝试多次获取
             int count = mConfig.loopCount*2;
             while (count > 0) {
+                mCommonFunctionTask.CloseSystemBulletBox();
                 rootWindow = AccessibilityHelper.getRootInActiveWindow();
                 if(rootWindow == null){
                     mFunction.click_sleep();
@@ -356,7 +357,7 @@ public class mFunction {
         return ((int) Math.random()/2+1)*10;
     }
     public static int getRandom_4_8(){
-        return (int) (Math.random()+1)*4;
+        return (int) ((Math.random()+1)*4);
     }
     public static int getRandom_3_6(){
        int count = (int) ((Math.random()+1)*3);
@@ -387,7 +388,7 @@ public class mFunction {
         return count;
     }
     public static int getRandom_1_3(){
-        return (int)( Math.random()*2)+1;
+        return (int) ( Math.random()*2)+1;
     }
 
     public static boolean openAccessibilityService(){

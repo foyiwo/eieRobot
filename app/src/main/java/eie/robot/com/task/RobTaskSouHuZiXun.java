@@ -44,6 +44,9 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
                     continue;
                 }
 
+                //判断收益是否封顶（每次重启的时候查一次）
+                this.TaskCounter = this.TaskCounterDefaultValue;
+
                 //签到
                 SignIn();
 
@@ -64,9 +67,7 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
     //-----------------------------------------------------------
 
     //执行刷单任务（看视频）
-    private int JudgeGoldIncomeIsMaxCounter = 0;
-    private int NewsCount = 0;
-    //看视频总任务
+    //看新闻总任务
     @Override
     Boolean performTask_LookNews(){
         int RefreshCount =   mFunction.getRandom_4_8();
@@ -85,7 +86,7 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
         return false;
     }
 
-    //看视频子任务一
+    //看新闻子任务一
     private boolean performTask_LookNews_1(){
         if(!returnHome()){
             return false;
@@ -94,8 +95,7 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
         mGestureUtil.clickTab(4,1);
 
         //随机获取在本首页的滑动的次数
-        this.NewsCount =   mFunction.getRandom_4_8();
-        this.JudgeGoldIncomeIsMaxCounter = NewsCount;
+        int NewsCount =   mFunction.getRandom_4_8();
         while (NewsCount > 0){
             if(mCommonTask.isCloseAppTask() || this.ArticleIsFinish){ break; }
 
@@ -115,73 +115,67 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
         return true;
     }
 
-    //看视频子任务二
+    //看新闻子任务二
     private boolean performTask_LookNews_2() {
-        AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosByClassName("android.support.v7.widget.RecyclerView");
-        if(node == null || node.getChildCount() < 1){
-            return false;
-        }
-        AccessibilityNodeInfo ArticleNode = null;
-        for (int i = node.getChildCount()-1;i >= 0; i-- ){
-            AccessibilityNodeInfo childNode = node.getChild(i);
-            if(childNode == null) continue;
-            AccessibilityNodeInfo AirtNode = AccessibilityHelper.findChildNodeInfosByText(childNode,"广告");
-            if(AirtNode == null){
-                ArticleNode = childNode;
-                break;
+        try{
+            List<AccessibilityNodeInfo> node = AccessibilityHelper.findNodeInfosByIds("com.sohu.infonews:id/pic_container");
+            if(node == null || node.size() < 1){
+                return false;
             }
-        }
-        if(ArticleNode == null){
-            return false;
-        }
-        //点击新闻进行阅读。
-        boolean clickResult = mGestureUtil.click(ArticleNode);
 
-        //判断是否达到今日收益最大值
-        if(this.JudgeGoldIncomeIsMaxCounter == this.NewsCount){
-            if(JudgeGoldIncomeIsMax()){
-                return true;
-            }
-        }
-        //开始阅读新闻
-        if (clickResult) {
+            int LoopCounter = node.size()-1;
+            while (LoopCounter >= 0){
+                Boolean result = mGestureUtil.performClick(node.get(LoopCounter));
 
-            mFunction.click_sleep();
-            //滑动次数(随机10到20)
-            int SwiperCount = mFunction.getRandom_6_12();
-
-            mToast.info("新闻任务:滑动"+SwiperCount+"次");
-
-            //开始滑动文章
-            while (SwiperCount > 0) {
-                if(mCommonTask.isCloseAppTask() || this.ArticleIsFinish){ break; }
-
-                //判断是否处于文章页，如果不是则退出
-                AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosByText("写优质评论，获狐币大礼");
-                if(XinWenNode == null){
-                    AccessibilityHelper.performBack();
+                //开始阅读新闻
+                if (result) {
                     mFunction.click_sleep();
-                    XinWenNode = AccessibilityHelper.findNodeInfosByText("写优质评论，获狐币大礼");
-                    if(XinWenNode == null){
-                        mGestureUtil.click(SizeOffset,mDeviceUtil.getStatusBarHeight()+SizeOffset);
-                        break;
+
+                    //判断收益
+                    if(JudgeGoldIncomeIsMax()){
+                        return true;
+                    }
+
+                    //滑动次数(随机10到20)
+                    int SwiperCount = mFunction.getRandom_6_12();
+
+                    mToast.info("新闻任务:滑动"+SwiperCount+"次");
+
+                    //开始滑动文章
+                    while (SwiperCount > 0) {
+                        if(mCommonTask.isCloseAppTask() || this.ArticleIsFinish){ break; }
+
+                        //判断是否处于文章页，如果不是则退出
+                        AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosByText("写优质评论，获狐币大礼");
+                        if(XinWenNode == null){
+                            AccessibilityHelper.performBack();
+                            mFunction.click_sleep();
+                            XinWenNode = AccessibilityHelper.findNodeInfosByText("写优质评论，获狐币大礼");
+                            if(XinWenNode == null){
+                                mGestureUtil.click(SizeOffset,mDeviceUtil.getStatusBarHeight()+SizeOffset);
+                                break;
+                            }
+                        }
+                        if(!mCommonFunctionTask.judgeNodeIsHavingByResId("com.sohu.infonews:id/counting_img")){
+                            break;
+                        }
+
+                        //向上滑动
+                        mGestureUtil.scroll_up();
+                        //设置收益的最新时间
+                        mIncomeTask.setLastIncomeTime();
+
+                        //停止进行阅读
+                        int sleepTime = mFunction.getRandom_4_8();
+                        mFunction.sleep(sleepTime * 1000);
+                        SwiperCount--;
+
                     }
                 }
-                if(!mCommonFunctionTask.judgeNodeIsHavingByResId("com.sohu.infonews:id/counting_img")){
-                    break;
-                }
-
-                //向上滑动
-                mGestureUtil.scroll_up();
-                //设置收益的最新时间
-                mIncomeTask.setLastIncomeTime();
-
-                //停止进行阅读
-                int sleepTime = mFunction.getRandom_4_8();
-                mFunction.sleep(sleepTime * 1000);
-                SwiperCount--;
-
+                LoopCounter--;
             }
+        }catch (Exception ignored){
+
         }
         return true;
     }
@@ -207,10 +201,9 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
         if(!returnHome()){
             return false;
         }
-        mGestureUtil.clickTab((mGlobal.mScreenWidth/4)*2-SizeOffset,mGlobal.mScreenHeight-SizeOffset);
+        mGestureUtil.clickTab(4,2);
         //点击第二个功能列表
-        this.NewsCount =   mFunction.getRandom_1_3()+3;
-        this.JudgeGoldIncomeIsMaxCounter = NewsCount;
+        int NewsCount =   mFunction.getRandom_1_3()+3;
         mToast.success("视频任务");
         while (NewsCount > 0){
             if(mCommonTask.isCloseAppTask() || this.VideoIsFinish){ break;}
@@ -243,10 +236,8 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
             mFunction.click_sleep();
 
             //判断是否达到今日收益最大值
-            if(JudgeGoldIncomeIsMaxCounter == NewsCount){
-                if(JudgeGoldIncomeIsMax()){
-                    return true;
-                }
+            if(JudgeGoldIncomeIsMax()){
+                return true;
             }
 
             //滑动次数(随机10到20)
@@ -311,6 +302,9 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
 
     //执行签到任务
     private Boolean SignIn(){
+        if(this.IsSign){
+            return true;
+        }
         if(!returnHome()){
             return false;
         }
@@ -334,6 +328,7 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
         if(SignNode != null){
             if(SignNode.getText().toString().equals("已签到")){
                 mToast.success("今天已签到");
+                this.IsSign = true;
                 return false;
             }
             mGestureUtil.click(SignNode);
@@ -379,47 +374,64 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
 
     //判断今日的收益是否已经达到最大值
     private Boolean JudgeGoldIncomeIsMax(){
-        AccessibilityNodeInfo counterNode = AccessibilityHelper.findNodeInfosById("com.sohu.infonews:id/counting_img");
-        if(counterNode != null){
-            mGestureUtil.click(counterNode);
-            counterNode = AccessibilityHelper.findNodeInfosByText("今日阅读任务");
-            if(counterNode != null){
-                counterNode = AccessibilityHelper.findNodeInfosByText("立即领取");
-                if(counterNode != null){
-                    mToast.success_sleep("今天收益已封顶");
-                    this.TodayIncomeIsFinsh = true;
-                    mGestureUtil.click(counterNode);
+        this.TaskCounter ++;
+        if(TaskCounter < this.TaskCounterDefaultValue){
+            return false;
+        }
+        if(! mGestureUtil.clickByResourceId("com.sohu.infonews:id/counting_img")){
+            return false;
+        }
+        mFunction.click_sleep();
+        if(! mCommonFunctionTask.judgeNodeIsHavingByText("今日阅读任务")){
+            return false;
+        }
+
+
+        //判断文章数量
+        float ArticleIncomeCounter = 0;
+        AccessibilityNodeInfo readCountArticle = AccessibilityHelper.findNodeInfosById("com.sohu.infonews:id/read_count_article");
+        if(readCountArticle != null){
+            String ArticleText = readCountArticle.getText().toString().replace("阅读文章","").trim();
+            String[] ArticleArray = ArticleText.split("/");
+            if(ArticleArray.length > 1){
+                if(Float.valueOf(ArticleArray[0]) >= Integer.valueOf(ArticleArray[1])){
+                    this.ArticleIsFinish = true;
                 }
-                counterNode = AccessibilityHelper.findNodeInfosByText("继续阅读");
-                if(counterNode != null){
-                    AccessibilityNodeInfo readCountArticle = AccessibilityHelper.findNodeInfosById("com.sohu.infonews:id/read_count_article");
-                    if(readCountArticle != null){
-                        String ArticleText = readCountArticle.getText().toString().replace("阅读文章","").trim();
-                        String[] ArticleArray = ArticleText.split("/");
-                        if(ArticleArray.length > 1){
-                            if(Integer.valueOf(ArticleArray[0]) >= Integer.valueOf(ArticleArray[1])){
-                                this.ArticleIsFinish = true;
-                            }
-                        }
-                    }
-                    AccessibilityNodeInfo readCountVideo = AccessibilityHelper.findNodeInfosById("com.sohu.infonews:id/read_count_video");
-                    if(readCountVideo != null){
-                        String ArticleText = readCountVideo.getText().toString().replace("观看视频","").trim();
-                        String[] ArticleArray = ArticleText.split("/");
-                        if(ArticleArray.length > 1){
-                            if(Integer.valueOf(ArticleArray[0]) >= Integer.valueOf(ArticleArray[1])){
-                                this.VideoIsFinish = true;
-                            }
-                        }
-                    }
-                }
-                if(ArticleIsFinish && VideoIsFinish){
-                    mToast.success_sleep("今天收益已封顶");
-                    this.TodayIncomeIsFinsh = true;
-                }
+                ArticleIncomeCounter = Float.valueOf(ArticleArray[0]);
             }
         }
-        return this.TodayIncomeIsFinsh;
+
+        float VideoIncomeCounter = 0;
+        //判断视频数量
+        AccessibilityNodeInfo readCountVideo = AccessibilityHelper.findNodeInfosById("com.sohu.infonews:id/read_count_video");
+        if(readCountVideo != null){
+            String ArticleText = readCountVideo.getText().toString().replace("观看视频","").trim();
+            String[] ArticleArray = ArticleText.split("/");
+            if(ArticleArray.length > 1){
+                if(Float.valueOf(ArticleArray[0]) >= Integer.valueOf(ArticleArray[1])){
+                    this.VideoIsFinish = true;
+                }
+                VideoIncomeCounter = Float.valueOf(ArticleArray[0]);
+            }
+        }
+
+        mGestureUtil.clickByText("立即领取");
+
+        if(this.ArticleIsFinish && this.VideoIsFinish){
+            this.TodayIncomeIsFinsh = true;
+            mToast.success("今日收益已封顶");
+            mFunction.sleep(mConfig.clickSleepTime);
+            this.TaskCounter = 0;
+            AccessibilityHelper.performBack();
+            return true;
+        }else {
+            mToast.success("今日收益未封顶(文章:"+ArticleIncomeCounter+"，视频:"+VideoIncomeCounter+"),继续工作");
+            mFunction.click_sleep();
+            AccessibilityHelper.performBack();
+            this.TaskCounter = 0;
+            return false;
+        }
+
     }
 
     //回归到首页，如果APP未打开，则会自行打开

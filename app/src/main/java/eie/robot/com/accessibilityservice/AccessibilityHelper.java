@@ -499,6 +499,12 @@ public final class AccessibilityHelper {
         if(nodeInfo.getText() == null) return "";
         return nodeInfo.getText().toString().trim();
     }
+    public static String getWebNodeInfosTextByText(String text){
+        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findWebViewNodeInfosByText(text);
+        if(nodeInfo == null) return "";
+        if(nodeInfo.getText() == null) return "";
+        return nodeInfo.getText().toString().trim();
+    }
     public static String getNodeInfosTextByResourceId(String ResourceId){
         AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById(ResourceId);
         if(nodeInfo == null) return "";

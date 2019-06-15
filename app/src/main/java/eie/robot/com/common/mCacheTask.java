@@ -53,9 +53,9 @@ public class mCacheTask {
             if ( nodeInfo != null ) {
                 break;
             }
-            nodeInfo = AccessibilityHelper.findNodeInfosByText("垃圾清理");
+            nodeInfo = AccessibilityHelper.findNodeInfosById("com.miui.securitycenter:id/iv_icon1");
             if ( nodeInfo != null ) {
-                mGestureUtil.click(nodeInfo);
+                mGestureUtil.performClick(nodeInfo);
                 mFunction.sleep(2*mConfig.clickSleepTime);
                 continue;
             }

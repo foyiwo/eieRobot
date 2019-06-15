@@ -124,6 +124,10 @@ public class mCommonFunctionTask {
             mGestureUtil.clickByText("确定");
         }
 
+        if(mCommonFunctionTask.judgeNodeIsHavingByText("通知消息")){
+            mGestureUtil.clickByText("拒绝");
+        }
+
         mGestureUtil.clickByResourceId("android:id/aerr_close");
         mGestureUtil.clickByText("关闭应用");
         mGestureUtil.clickByText("跳过");

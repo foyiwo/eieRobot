@@ -29,7 +29,7 @@ public class RobTaskYouKanDian extends BaseRobotTask {
     public RobTaskYouKanDian() {
         super();
         this.AppName = "优看点";
-        this.TodayMaxIncome = 915000;
+        this.TodayMaxIncome = 8888;
         this.TodayIncomeIsFinsh = false;
     }
 
@@ -46,7 +46,8 @@ public class RobTaskYouKanDian extends BaseRobotTask {
                     continue;
                 }
 
-                //判断收益是否封顶
+                //判断收益是否封顶（每次重启的时候查一次）
+                this.TaskCounter = this.TaskCounterDefaultValue;
                 if(JudgeGoldIncomeIsMax()){
                     break;
                 }
@@ -75,7 +76,7 @@ public class RobTaskYouKanDian extends BaseRobotTask {
     //看视频总任务
     @Override
     Boolean performTask_WatchVideo(){
-        int LoopCount =  mFunction.getRandom_1_3();
+        int LoopCount =  mFunction.getRandom_2_4();
         while (LoopCount > 0){
             if(mCommonTask.isCloseAppTask()){ break;}
 
@@ -93,7 +94,7 @@ public class RobTaskYouKanDian extends BaseRobotTask {
             return false;
         }
 
-        if(mCommonTask.isCloseAppTask()){ return false; }
+        if(mCommonTask.isCloseAppTask() || this.TodayIncomeIsFinsh){ return false; }
 
         mToast.success("开启视频任务");
 
@@ -140,7 +141,7 @@ public class RobTaskYouKanDian extends BaseRobotTask {
 
             mGestureUtil.click(VideoNode.getParent());
 
-            mFunction.click_sleep();
+
             mGestureUtil.click(mGlobal.mScreenWidth/2,SizeOffset*6);
 
             //滑动次数(随机10到20)
@@ -153,11 +154,14 @@ public class RobTaskYouKanDian extends BaseRobotTask {
                 if(mFunction.judgeAppIsHomeById(HomeNavTitle1,HomeNavTitle1)){
                     break;
                 }
-
+                AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findWebViewNodeInfosByText("观看奖励");
+                if(nodeInfo == null){
+                    break;
+                }
                 if(IncomeSure()){ break; }
-
-                mFunction.sleep(mConfig.WaitLauncherlTime);
                 mGestureUtil.click(mGlobal.mScreenWidth/2,SizeOffset*6);
+                mFunction.sleep(mConfig.WaitLauncherlTime);
+
                 SwiperCount--;
             }
 
@@ -177,7 +181,7 @@ public class RobTaskYouKanDian extends BaseRobotTask {
         super.performTask_LookNews();
         int RefreshCount =   mFunction.getRandom_4_8();
         while (RefreshCount > 0){
-            if(mCommonTask.isCloseAppTask()){ break;}
+            if(mCommonTask.isCloseAppTask() || this.TodayIncomeIsFinsh){ break;}
             performTask_LookNews_1();
             mToast.success("倒数第"+RefreshCount+"轮新闻任务");
             mFunction.click_sleep();
@@ -193,12 +197,19 @@ public class RobTaskYouKanDian extends BaseRobotTask {
         }
         //点击第一个功能列表
         mGestureUtil.clickTab(4,1);
+
         mGestureUtil.scroll_up();
+        //判断收益是否封顶
+        if(JudgeGoldIncomeIsMax()){
+            return false;
+        }
 
         //随机获取在本首页的滑动的次数
         int NewsCount =   mFunction.getRandom_4_8();
         while (NewsCount > 0){
             if(mCommonTask.isCloseAppTask()){ return false; }
+            //点击第一个功能列表
+            mGestureUtil.clickTab(4,1);
             //进入文章页看新闻
             performTask_LookNews_2();
             if(!returnHome()){
@@ -255,7 +266,10 @@ public class RobTaskYouKanDian extends BaseRobotTask {
                 if(mFunction.judgeAppIsHomeById(HomeNavTitle1,HomeNavTitle1)){
                     break;
                 }
-
+                AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findWebViewNodeInfosByText("阅读奖励");
+                if(nodeInfo == null){
+                    break;
+                }
                 if(IncomeSure()){ break; }
 
                 //向上滑动
@@ -278,9 +292,10 @@ public class RobTaskYouKanDian extends BaseRobotTask {
             mToast.success("双倍奖励阅读");
             mFunction.sleep(2 * mConfig.clickSleepTime);
             mGestureUtil.clickInScreenCenter();
-            int LoopCounter = 15;
+            int LoopCounter = 20;
             while (LoopCounter > 0){
                 super.mCloseSystem();
+                this.CloseDialog();
                 if(mCommonFunctionTask.judgeNodeIsHavingByText("朕知道了")){
                     mGestureUtil.clickByText("朕知道了");
                     AccessibilityHelper.performBack();
@@ -306,13 +321,17 @@ public class RobTaskYouKanDian extends BaseRobotTask {
         if(mCommonFunctionTask.judgeNodeIsHavingByText("获得系统奖励红包")){
             mToast.success("获得系统奖励红包");
             mFunction.click_sleep();
-            mGestureUtil.clickByResourceId("com.memory.online:id/x_recycler_view");
+            if(!mGestureUtil.clickByResourceId("com.memory.online:id/x_recycler_view")){
+                return false;
+            }
             int SlideCount = 10;
             while (SlideCount > 0){
                 mGestureUtil.scroll_up();
-                mFunction.sleep(3000);
+                mFunction.click_sleep();
                 SlideCount--;
             }
+            AccessibilityHelper.performBack();
+            this.CloseDialog();
             return true;
         }
         return false;
@@ -323,15 +342,20 @@ public class RobTaskYouKanDian extends BaseRobotTask {
 
     //关闭APP弹出的所有可能弹框
     private void CloseDialog(){
+        mGestureUtil.clickByResourceId("com.memory.online:id/tv_confim");
         mGestureUtil.clickByText("我知道了");
         mGestureUtil.clickByText("继续赚钱");
+        mGestureUtil.clickByText("朕知道了");
         mGestureUtil.clickByResourceId("com.memory.online:id/iv_close");
         super.mCloseSystem();
     }
 
     //判断今日的收益是否已经达到最大值
     private Boolean JudgeGoldIncomeIsMax(){
-
+        this.TaskCounter ++;
+        if(TaskCounter < this.TaskCounterDefaultValue){
+            return false;
+        }
         if(!returnHome()){
             return false;
         }
@@ -388,10 +412,12 @@ public class RobTaskYouKanDian extends BaseRobotTask {
                 this.TodayIncomeIsFinsh = true;
                 mToast.success("今日收益("+incomeText+")已封顶("+this.TodayMaxIncome+")");
                 mFunction.sleep(mConfig.clickSleepTime);
+                this.TaskCounter = 0;
                 return true;
             }else {
                 mToast.success("今日收益("+incomeText+")未封顶("+this.TodayMaxIncome+")，继续工作");
                 mFunction.sleep(mConfig.clickSleepTime);
+                this.TaskCounter = 0;
                 return false;
             }
         }

@@ -45,6 +45,12 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                 //领取时段奖励
                 performTask_TimeSlotReward();
 
+                //判断收益是否封顶（每次重启的时候查一次）
+                this.TaskCounter = this.TaskCounterDefaultValue;
+                if(JudgeGoldIncomeIsMax()){
+                    break;
+                }
+
                 //阅读文章
                 performTask_LookNews();
 
@@ -258,9 +264,8 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                     }
 
                     //点开【查看全文，奖励更多】按钮，阅读全文
-                    AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosByText("查看全文，奖励更多");
-                    if(node != null){
-                        AccessibilityHelper.performClick(node);
+                    if(mGestureUtil.clickByText("查看全文，奖励更多") || mGestureUtil.clickWebNodeByText("查看全文，奖励更多")){
+                        mToast.success("查看全文，奖励更多");
                     }
 
                     //向上滑动
@@ -309,9 +314,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
         AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosByText("分享立赚");
         if(node != null){
             mGestureUtil.click(node);
-            mFunction.sleep(mConfig.clickSleepTime);
             AccessibilityHelper.performBack();
-            mFunction.sleep(mConfig.clickSleepTime);
         }
         mGestureUtil.clickByText("忽略");
 
@@ -341,7 +344,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                 return false;
             }
             mGestureUtil.clickByResourceId("com.xiangzi.jukandian:id/pager_jinbi_num");
-
+            mFunction.click_sleep();
             if(!mCommonFunctionTask.judgeNodeIsHavingByText("阅读收益")){
                 return false;
             }

@@ -62,33 +62,36 @@ public class mCommonTask {
                 //组装任务列表，通过策略
                 mTasks = new ArrayList<>();
 
-                //聚看点
-                mTasks.add(new RobTaskJuKanDian());      //已重构，检查收益准确型
-                //搜狐资讯
-                mTasks.add(new RobTaskSouHuZiXun());     //已重构，检查收益准确型
-                //头条精选
-                mTasks.add(new RobTaskTouTiaoJingXuan());//已重构，检查收益准确型
 
-
+                //刷宝
+                mTasks.add(new RobTaskShuaBao());
+                //趣头条
+                mTasks.add(new RobTaskQuTouTiao());
 
                 //微鲤看看
-                mTasks.add(new RobTaskWeiLiKanKan());    //已重构
+                mTasks.add(new RobTaskWeiLiKanKan());    //已重构，检查收益准确型（文章和视频都是60分钟）
+                //搜狐资讯
+                mTasks.add(new RobTaskSouHuZiXun());     //已重构，检查收益准确型（固定的金币）
+                //聚看点
+                mTasks.add(new RobTaskJuKanDian());      //已重构，检查收益准确型（文章/视频：150/50次数）
                 //优看点
                 mTasks.add(new RobTaskYouKanDian());     //已重构
+                //头条精选
+                mTasks.add(new RobTaskTouTiaoJingXuan());//已重构，检查收益准确型
+                //刷宝
+                mTasks.add(new RobTaskShuaBao());
+
                 //微趣看
                 mTasks.add(new RobTaskWeiQuKan());       //已重构
-
-
                 //闪电盒子
                 mTasks.add(new RobTaskShanDianHeZi());
+
+
                 //趣看天下
                 mTasks.add(new RobTaskQuKanTianXia());
                 //中青看点
                 mTasks.add(new RobTaskZhongQingKanDian());
-                //趣头条
-                mTasks.add(new RobTaskQuTouTiao());
-                //刷宝
-                mTasks.add(new RobTaskShuaBao());
+
 
 
 

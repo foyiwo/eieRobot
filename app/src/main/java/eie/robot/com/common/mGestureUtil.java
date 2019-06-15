@@ -139,10 +139,14 @@ public class mGestureUtil {
     //点击某个点手势
     public static Boolean clickByText(String text){
         AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText(text);
+        if(AccessibilityHelper.performClick(nodeInfo)){
+            mFunction.click_sleep();
+            return true;
+        }
         if(nodeInfo != null){
             Rect rect = new Rect();
             nodeInfo.getBoundsInScreen(rect);
-            if(rect.top < mGlobal.mScreenHeight-10 && rect.top > 10){
+            if(rect.top < mGlobal.mScreenHeight-88 && rect.top > 88){
                 return mGestureUtil.click(nodeInfo);
             }
         }
@@ -152,6 +156,10 @@ public class mGestureUtil {
     //点击某个元素的上面一点
     public static Boolean clickNodeOffsizeTopById(String resid){
         AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById(resid);
+        if(AccessibilityHelper.performClick(nodeInfo)){
+            mFunction.click_sleep();
+            return true;
+        }
         if(nodeInfo != null){
             Rect rect = new Rect();
             nodeInfo.getBoundsInScreen(rect);
@@ -164,10 +172,26 @@ public class mGestureUtil {
     //点击某个点手势
     public static Boolean clickByResourceId(String id){
         AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById(id);
+        if(AccessibilityHelper.performClick(nodeInfo)){
+            mFunction.click_sleep();
+            return true;
+        }
         if(nodeInfo != null){
             Rect rect = new Rect();
             nodeInfo.getBoundsInScreen(rect);
             if(rect.top < mGlobal.mScreenHeight-10 && rect.top > 10){
+                return mGestureUtil.click(nodeInfo);
+            }
+        }
+        return false;
+    }
+    //点击Web里的某个Node
+    public static Boolean clickWebNodeByText(String Text){
+        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findWebViewNodeInfosByText(Text);
+        if(nodeInfo != null){
+            Rect rect = new Rect();
+            nodeInfo.getBoundsInScreen(rect);
+            if(rect.top < mGlobal.mScreenHeight-88 && rect.top > 88){
                 return mGestureUtil.click(nodeInfo);
             }
         }
@@ -301,6 +325,22 @@ public class mGestureUtil {
             mGestureUtil.scroll_up_quick();
             i++;
         }
+    }
+
+    public static Boolean performClick(AccessibilityNodeInfo nodeInfo){
+        if(nodeInfo == null) return false;
+        if(AccessibilityHelper.performClick(nodeInfo)){
+            mFunction.click_sleep();
+            return true;
+        }
+        if(nodeInfo != null){
+            Rect rect = new Rect();
+            nodeInfo.getBoundsInScreen(rect);
+            if(rect.top < mGlobal.mScreenHeight-88 && rect.top > 88){
+                return mGestureUtil.click(nodeInfo);
+            }
+        }
+        return false;
     }
 
 
