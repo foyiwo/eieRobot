@@ -76,7 +76,22 @@ public class mGestureUtil {
 
         return click(x,y);
     }
+    public static Boolean clickTop(AccessibilityNodeInfo nodeInfo){
+        if(nodeInfo == null){
+            return false;
+        }
 
+        float x = 0;
+        float y = 0;
+
+        Rect rect = new Rect();
+        nodeInfo.getBoundsInScreen(rect);
+
+        x = rect.left+rect.width()/2;
+        y = rect.top+10;
+
+        return click(x,y);
+    }
 
     public static boolean doubleClickInScreenCenter(){
         float x = mGlobal.mScreenWidth/2;

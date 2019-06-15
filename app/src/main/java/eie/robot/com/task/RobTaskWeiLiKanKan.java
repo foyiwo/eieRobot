@@ -22,7 +22,7 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
     public RobTaskWeiLiKanKan() {
         super();
         this.AppName = "微鲤看看";
-        this.TodayMaxIncome = 4000;
+        this.TodayMaxIncome = 41000;
         this.TodayIncomeIsFinsh = false;
     }
 

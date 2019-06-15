@@ -8,6 +8,7 @@ import com.vondear.rxtool.view.RxToast;
 import java.util.List;
 
 import eie.robot.com.accessibilityservice.AccessibilityHelper;
+import eie.robot.com.common.mCommonFunctionTask;
 import eie.robot.com.common.mCommonTask;
 import eie.robot.com.common.mConfig;
 import eie.robot.com.common.mDeviceUtil;
@@ -166,6 +167,9 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
                         break;
                     }
                 }
+                if(!mCommonFunctionTask.judgeNodeIsHavingByResId("com.sohu.infonews:id/counting_img")){
+                    break;
+                }
 
                 //向上滑动
                 mGestureUtil.scroll_up();
@@ -203,7 +207,7 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
         if(!returnHome()){
             return false;
         }
-        mGestureUtil.click((mGlobal.mScreenWidth/4)*2-SizeOffset,mGlobal.mScreenHeight-SizeOffset);
+        mGestureUtil.clickTab((mGlobal.mScreenWidth/4)*2-SizeOffset,mGlobal.mScreenHeight-SizeOffset);
         //点击第二个功能列表
         this.NewsCount =   mFunction.getRandom_1_3()+3;
         this.JudgeGoldIncomeIsMaxCounter = NewsCount;
@@ -311,7 +315,7 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
             return false;
         }
         //点击【我的】列表
-        mGestureUtil.click(mGlobal.mScreenWidth-SizeOffset,mGlobal.mScreenHeight-SizeOffset);
+        mGestureUtil.clickTab(4,4);
 
         //再次恢复到首页
         if(!returnHome()){
@@ -342,6 +346,9 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
 
     //关闭APP弹出的所有可能弹框
     private void CloseDialog(){
+
+        mGestureUtil.clickByResourceId("com.sohu.infonews:id/act_close_image");
+
 
         AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosByText("放弃提现");
         if(node != null){

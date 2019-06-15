@@ -49,9 +49,9 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
                     break;
                 }
 
-
                 //看视频
                 performTask_WatchVideo();
+
 
                 //阅读文章
                 performTask_LookNews();
@@ -149,7 +149,7 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
     //看新闻总任务
     @Override
     Boolean performTask_LookNews(){
-        int RefreshCount =  mFunction.getRandom_4_8();
+        int RefreshCount =  mFunction.getRandom_1_3();
         while (RefreshCount > 0){
             if(mCommonTask.isCloseAppTask() || (this.YueDuWenZhangIsFinish && this.WenZhangTouPiaoIsFinish)){ break;}
             this.CollectIncome();

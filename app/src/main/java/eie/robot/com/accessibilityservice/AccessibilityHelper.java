@@ -480,4 +480,29 @@ public final class AccessibilityHelper {
         }
         return mGlobal.mAccessibilityService.getRootInActiveWindow();
     }
+
+    /**
+     * 通过文本查找
+     */
+    public static AccessibilityNodeInfo findWebViewNodeInfosByText(String text) {
+
+        AccessibilityNodeInfo webView = AccessibilityHelper.findNodeInfosByClassName("android.webkit.WebView");
+        if(webView == null){
+            return null;
+        }
+        return findChildNodeInfosByText(webView,text);
+    }
+
+    public static String getNodeInfosTextByText(String text){
+        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText(text);
+        if(nodeInfo == null) return "";
+        if(nodeInfo.getText() == null) return "";
+        return nodeInfo.getText().toString().trim();
+    }
+    public static String getNodeInfosTextByResourceId(String ResourceId){
+        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById(ResourceId);
+        if(nodeInfo == null) return "";
+        if(nodeInfo.getText() == null) return "";
+        return nodeInfo.getText().toString().trim();
+    }
 }

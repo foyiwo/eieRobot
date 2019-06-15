@@ -34,10 +34,17 @@ public abstract class BaseRobotTask {
     //热词搜索
     boolean isHotWordFinish = false;
 
-    //搜狐资讯
+    //搜狐资讯,聚看点
     Boolean ArticleIsFinish = false;
     Boolean VideoIsFinish = false;
 
+    int ArticleCounter = 0;
+    int VideoCounter = 0;
+
+    //阅读计数器，用于决定阅读多少次后，前往检查收益
+    int TaskCounter = 0;
+    //阅读计数器的默认值，当达到该值时，前往检查收益
+    int TaskCounterDefaultValue = 1;
 
     public boolean StartTask(){
         //APP允许开始的标志，true可继续执行，false即表示准备结束

@@ -75,9 +75,8 @@ public class mCacheTask {
             if(!mCommonTask.ThreadTaskOpenStatus){
                 return;
             }
-            mFunction.sleep(mConfig.clickSleepTime);
             AccessibilityHelper.performHome();
-
+            mFunction.sleep(mConfig.clickSleepTime);
             String UniqueSerialNumber = RxDeviceTool.getUniqueSerialNumber().toLowerCase();
             int index = -1;
             index = UniqueSerialNumber.toLowerCase().indexOf("xiaomi");
