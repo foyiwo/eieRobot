@@ -266,8 +266,8 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
         }
         AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosById("com.deshang.ttjx:id/container");
         if(node != null){
-            if(node.getChildCount() > 0){
-                mGestureUtil.click(node.getChild(0));
+            if(node.getChildCount() > 1){
+                mGestureUtil.click(node.getChild(1));
                 return true;
             }
         }
@@ -356,8 +356,9 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
                     //清除可能的弹框
                     this.CloseDialog();
                     //判断阅读文章是否已经完成
-                    node = AccessibilityHelper.findNodeInfosByText("阅读文章");
+                    node = AccessibilityHelper.findNodeInfosByText("阅读20篇文章");
                     if(node != null){
+                        node = node.getParent().getChild(0);
                         Rect rect = new Rect();
                         node.getParent().getBoundsInScreen(rect);
                         if(rect.top > mGlobal.mScreenHeight){
@@ -380,8 +381,9 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
                         }
                     }
                     //判断阅读文章是否已经完成
-                    node = AccessibilityHelper.findNodeInfosByText("文章投票");
+                    node = AccessibilityHelper.findNodeInfosByText("给10篇文章点赞投票");
                     if(node != null){
+                        node = node.getParent().getChild(0);
                         Rect rect = new Rect();
                         node.getParent().getBoundsInScreen(rect);
                         if(rect.top > mGlobal.mScreenHeight){
@@ -403,8 +405,9 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
                         }
                     }
                     //判断阅读文章是否已经完成
-                    node = AccessibilityHelper.findNodeInfosByText("视频投票");
+                    node = AccessibilityHelper.findNodeInfosByText("给10个视频投票");
                     if(node != null){
+                        node = node.getParent().getChild(0);
                         Rect rect = new Rect();
                         node.getParent().getBoundsInScreen(rect);
                         if(rect.top > mGlobal.mScreenHeight){

@@ -141,7 +141,7 @@ public class mTaskTimer {
             if(judgeTimeIsInNight()){
                 while (true){
                     if(judgeTimeIsInNight()){
-                        AccessibilityHelper.performBack();
+                        AccessibilityHelper.performHome();
                         mToast.success("深夜休息中.....");
                         int StopTime = 1;
                         mFunction.sleep(StopTime*60*1000);

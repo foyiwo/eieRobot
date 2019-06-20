@@ -56,7 +56,7 @@ public class mCommonTask {
                 //定时器，不断点亮屏幕
                 mTaskTimer.AppTaskOpenScreenTimer();
                 //在夜间重置
-                mTaskTimer.ResetingAppFinishStatus();
+                //mTaskTimer.ResetingAppFinishStatus();
 
                 //组装任务列表，通过策略
                 mTasks = new ArrayList<>();
