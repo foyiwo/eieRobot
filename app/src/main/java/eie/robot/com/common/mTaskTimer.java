@@ -2,6 +2,7 @@ package eie.robot.com.common;
 
 import java.util.Date;
 
+import eie.robot.com.accessibilityservice.AccessibilityHelper;
 import eie.robot.com.task.BaseRobotTask;
 
 public class mTaskTimer {
@@ -67,12 +68,12 @@ public class mTaskTimer {
                             }
                             if(mCommonTask.isCloseThreadTask()){
                                 mFloatWindow.EditRobTaskTimerMinText("-1m");
-                                mFunction.sleep(5*1000);
+                                mFunction.sleep(30*1000);
                                 continue;
                             }
                             if(mCommonTask.isCloseAppTask()){
-                                mToast.error("APP任务处于关闭状态，定时器未启动");
-                                mFunction.sleep(5*1000);
+                                //mToast.error("APP任务处于关闭状态，定时器未启动");
+                                mFunction.sleep(10*1000);
                                 continue;
                             }
                             mTaskTimer.TaskMin =  mFunction.getRandom_10_20()+15;
@@ -133,6 +134,55 @@ public class mTaskTimer {
             }
         });
     }
+
+    //凌晨停止刷钱
+    public static void StopAppInNight(){
+        try {
+            if(judgeTimeIsInNight()){
+                while (true){
+                    if(judgeTimeIsInNight()){
+                        AccessibilityHelper.performBack();
+                        mToast.success("深夜休息中.....");
+                        int StopTime = 1;
+                        mFunction.sleep(StopTime*60*1000);
+                        mFunction.openScreen();
+                    }else {
+                        for (BaseRobotTask task : mCommonTask.mTasks){
+                            task.setTodayIncomeIsNoFinsh();
+                        }
+                        mToast.success("天亮了，开始搬砖....");
+                        break;
+                    }
+                }
+            }
+        }catch (Exception ignored){
+            mToast.error_sleep(ignored.getMessage());
+        }
+
+    }
+
+    public static Boolean judgeTimeIsInNight(){
+        //获取当前时间
+        String currentTime = mDateUtil.formatDate(new Date(),"datetime");
+
+        String currentDate = mDateUtil.formatDate(new Date(),"date");
+
+        int StartRamdomNumber = mFunction.getRandom_4_8();
+        int EndRamdomNumber = mFunction.getRandom_4_8();
+        String startTime = currentDate+" 00:00:00";
+        String endTime = currentDate+" 07:3"+EndRamdomNumber+":00";
+
+        //比较时间
+        int start   = mDateUtil.compareDate(currentTime,startTime);
+        int end     = mDateUtil.compareDate(endTime,currentTime);
+
+        //属于休眠时间
+        if(start > 0 && end > 0){
+            return true;
+        }
+        return false;
+    }
+
     public static void ResetingAppFinishStatus(){
         //定时任务
         mFunction.runInChildThread(new Runnable() {
@@ -170,6 +220,7 @@ public class mTaskTimer {
             }
         });
     }
+
     //判断定时器是否在正常运行
     private static Boolean isNormalForAppTimer(){
         try {

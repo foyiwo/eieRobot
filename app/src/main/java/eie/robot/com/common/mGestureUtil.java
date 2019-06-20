@@ -4,7 +4,11 @@ import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.GestureDescription;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.view.accessibility.AccessibilityNodeInfo;
+
+import com.vondear.rxtool.RxDeviceTool;
 
 import eie.robot.com.accessibilityservice.AccessibilityHelper;
 
@@ -16,7 +20,21 @@ public class mGestureUtil {
      * @param dx 终点 x 轴
      * @param dy 终点 x 轴
      */
-    private static Boolean dispatchGesture(float sx,float sy,float dx,float dy,long duration){
+
+    private static Boolean dispatchGesture(float sx, float sy, float dx, float dy, long duration){
+
+        //如果Android SDK低于24，也就是Android7.0,则
+        if(!mFunction.judgeAndroidVersionIsGreater7()){
+            mAdbShell.dispatchGesture(sx,sy,dx,dy,duration);
+            return true;
+        }else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return dispatchGesture_N(sx, sy, dx, dy, duration);
+        }
+        return false;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private static Boolean dispatchGesture_N(float sx, float sy, float dx, float dy, long duration){
         GestureDescription.Builder builder = new GestureDescription.Builder();
         Path path = new Path();
         path.moveTo(sx,sy);
@@ -41,26 +59,39 @@ public class mGestureUtil {
     /**
      * 触发一个触摸手势
      */
-    public static Boolean dispatchGesture(Path path,long duration){
-        GestureDescription.Builder builder = new GestureDescription.Builder();
-        GestureDescription.StrokeDescription Gesture = new GestureDescription.StrokeDescription(path, 100, duration);
-        GestureDescription gestureDescription = builder.addStroke(Gesture).build();
+    public static Boolean dispatchGesture(Path path, long duration){
 
-        AccessibilityService.GestureResultCallback callback = new AccessibilityService.GestureResultCallback() {
-            @Override
-            public void onCompleted(GestureDescription gestureDescription) {
-                super.onCompleted(gestureDescription);
-            }
+        GestureDescription.Builder builder = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            builder = new GestureDescription.Builder();
+            GestureDescription.StrokeDescription Gesture = new GestureDescription.StrokeDescription(path, 100, duration);
+            GestureDescription gestureDescription = builder.addStroke(Gesture).build();
 
-            @Override
-            public void onCancelled(GestureDescription gestureDescription) {
-                super.onCancelled(gestureDescription);
-            }
-        };
-        return mGlobal.mAccessibilityService.dispatchGesture(gestureDescription,callback,null);
+            AccessibilityService.GestureResultCallback callback = new AccessibilityService.GestureResultCallback() {
+                @Override
+                public void onCompleted(GestureDescription gestureDescription) {
+                    super.onCompleted(gestureDescription);
+                }
+
+                @Override
+                public void onCancelled(GestureDescription gestureDescription) {
+                    super.onCancelled(gestureDescription);
+                }
+            };
+            return mGlobal.mAccessibilityService.dispatchGesture(gestureDescription,callback,null);
+        }
+        return false;
+
     }
 
     public static Boolean click(AccessibilityNodeInfo nodeInfo){
+        if(nodeInfo == null){
+            return false;
+        }
+        if(AccessibilityHelper.performClick(nodeInfo)){
+            mFunction.click_sleep();
+            return true;
+        }
         if(nodeInfo == null){
             return false;
         }
@@ -114,31 +145,48 @@ public class mGestureUtil {
     }
     //点击某个点手势
     public static Boolean click(float x,float y,long clicktime){
-        GestureDescription.Builder builder = new GestureDescription.Builder();
-        Path path = new Path();
-        path.moveTo(x,y);
-        GestureDescription.StrokeDescription Gesture = new GestureDescription.StrokeDescription(path, 0, 10);
-        GestureDescription gestureDescription = builder.addStroke(Gesture).build();
 
-        AccessibilityService.GestureResultCallback callback = new AccessibilityService.GestureResultCallback() {
-            @Override
-            public void onCompleted(GestureDescription gestureDescription) {
-                super.onCompleted(gestureDescription);
-            }
+        if(!mFunction.judgeAndroidVersionIsGreater7()){
+            mAdbShell.click(x,y);
+            return true;
+        }
 
-            @Override
-            public void onCancelled(GestureDescription gestureDescription) {
-                super.onCancelled(gestureDescription);
-            }
-        };
-        boolean res = mGlobal.mAccessibilityService.dispatchGesture(gestureDescription,callback,null);
-        mFunction.sleep(clicktime);
-        return res;
+        GestureDescription.Builder builder = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            builder = new GestureDescription.Builder();
+            Path path = new Path();
+            path.moveTo(x,y);
+            GestureDescription.StrokeDescription Gesture = new GestureDescription.StrokeDescription(path, 0, 10);
+            GestureDescription gestureDescription = builder.addStroke(Gesture).build();
+
+            AccessibilityService.GestureResultCallback callback = new AccessibilityService.GestureResultCallback() {
+                @Override
+                public void onCompleted(GestureDescription gestureDescription) {
+                    super.onCompleted(gestureDescription);
+                }
+
+                @Override
+                public void onCancelled(GestureDescription gestureDescription) {
+                    super.onCancelled(gestureDescription);
+                }
+            };
+
+            boolean res = mGlobal.mAccessibilityService.dispatchGesture(gestureDescription,callback,null);
+            mFunction.sleep(clicktime);
+            return res;
+        }
+        return false;
     }
 
     //点击某个点手势
     public static Boolean clickByText(String text){
+        if(text == null || text.isEmpty()){
+            return false;
+        }
         AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText(text);
+        if(nodeInfo == null || !nodeInfo.getText().toString().equals(text)){
+            return false;
+        }
         if(AccessibilityHelper.performClick(nodeInfo)){
             mFunction.click_sleep();
             return true;
@@ -186,8 +234,28 @@ public class mGestureUtil {
         return false;
     }
     //点击Web里的某个Node
-    public static Boolean clickWebNodeByText(String Text){
-        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findWebViewNodeInfosByText(Text);
+    public static Boolean clickWebNodeByText(String text){
+        if(text == null || text.isEmpty()){
+            return false;
+        }
+        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findWebViewNodeInfosByText(text);
+
+        if(nodeInfo == null){
+            return false;
+        }
+        try{
+            String NodeText = nodeInfo.getText() == null ? nodeInfo.getContentDescription().toString() : nodeInfo.getText().toString();
+            if(!NodeText.equals(text)){
+                return false;
+            }
+        }catch (Exception ex){
+            return false;
+        }
+
+        if(mGestureUtil.performClick(nodeInfo)){
+            mFunction.click_sleep();
+            return true;
+        }
         if(nodeInfo != null){
             Rect rect = new Rect();
             nodeInfo.getBoundsInScreen(rect);
@@ -228,6 +296,12 @@ public class mGestureUtil {
             float dy = (float) (mGlobal.mScreenHeight/1.35) - mFunction.getRandom_0_50();
             path.moveTo(dx,dy);
 
+            float sxss = dx;
+            float syss = dy;
+            float dxss = 0;
+            float dyss= 0;
+
+
             int count = mFunction.getRandom_6_12();
             int Factor = 1;
             for (int i=0; i < count; i++){
@@ -240,30 +314,29 @@ public class mGestureUtil {
                     dy = 50;
                 }
                 path.lineTo(dxx,dy);
-
                 Factor = Factor * -1;
+
+                dxss = dxx;
+                dyss = dy;
             }
-            dispatchGesture(path,duration);
+
+            if(mFunction.judgeAndroidVersionIsGreater7()){
+                dispatchGesture(path,duration);
+            }else {
+                mAdbShell.dispatchGesture(sxss,syss,dxss,dyss,duration);
+            }
             mFunction.sleep(mConfig.clickSleepTime);
         }catch (Exception ex){
 
         }
     }
     public static void scroll_up(long distance ,long duration){
-
-        Path path = new Path();
-        path.moveTo(mGlobal.mScreenWidth/2,(float) (mGlobal.mScreenHeight/2));
-        path.lineTo(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/2-distance);
-        mGestureUtil.dispatchGesture(path,duration);
+        mGestureUtil.dispatchGesture(mGlobal.mScreenWidth/2,(float) (mGlobal.mScreenHeight/2),mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/2-distance,duration);
         mFunction.sleep(mConfig.clickSleepTime/2);
 
     }
     public static void scroll_down(long distance ,long duration){
-
-        Path path = new Path();
-        path.moveTo(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/3);
-        path.lineTo(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/3+distance);
-        mGestureUtil.dispatchGesture(path,duration);
+        mGestureUtil.dispatchGesture(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/3,mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/3+distance,duration);
         mFunction.sleep(mConfig.clickSleepTime/2);
 
     }

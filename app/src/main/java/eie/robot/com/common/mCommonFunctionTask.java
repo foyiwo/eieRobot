@@ -44,7 +44,6 @@ public class mCommonFunctionTask {
     }
 
     public static boolean judgeNodeIsHavingByResId(String ResId){
-
         //判断是否处于文章页，如果不是则退出
         AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosById(ResId);
         return XinWenNode != null;

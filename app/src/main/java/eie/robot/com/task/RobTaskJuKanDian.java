@@ -51,6 +51,8 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                     break;
                 }
 
+                //看视频
+                performTask_WatchVideo();
                 //阅读文章
                 performTask_LookNews();
 
@@ -251,6 +253,8 @@ public class RobTaskJuKanDian extends BaseRobotTask {
 
                     this.CloseDialog();
 
+
+
                     //判断是否处于文章页，如果不是则退出
                     AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosByText("评论得金币");
                     if(XinWenNode == null){
@@ -262,14 +266,15 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                             break;
                         }
                     }
+                    //向上滑动
+                    mGestureUtil.scroll_up();
 
                     //点开【查看全文，奖励更多】按钮，阅读全文
                     if(mGestureUtil.clickByText("查看全文，奖励更多") || mGestureUtil.clickWebNodeByText("查看全文，奖励更多")){
                         mToast.success("查看全文，奖励更多");
                     }
 
-                    //向上滑动
-                    mGestureUtil.scroll_up();
+
 
                     //设置收益的最新时间
                     mIncomeTask.setLastIncomeTime();
@@ -349,9 +354,9 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                 return false;
             }
             //文章【阅读收益】的次数，最大150
-            AccessibilityNodeInfo node = AccessibilityHelper.findWebViewNodeInfosByText("今日奖励次数(");
+            AccessibilityNodeInfo node = AccessibilityHelper.findWebViewNodeInfosByText("今日奖励次数");
             if(node == null ) return false;
-            String ArticleIncomeCounter = node.getText().toString();
+            String ArticleIncomeCounter = node.getText() == null ? node.getContentDescription().toString() : node.getText().toString();
             ArticleIncomeCounter = ArticleIncomeCounter.replace("今日奖励次数(","");
             ArticleIncomeCounter = ArticleIncomeCounter.replace("次)","");
             if(Integer.valueOf(ArticleIncomeCounter) >= 150){
@@ -363,7 +368,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
             if(node == null) return false;
             node = node.getParent();
             if(node == null || node.getChildCount() < 3) return false;
-            String VideoIncomeCounter = node.getChild(1).getText().toString();
+            String VideoIncomeCounter =  node.getChild(1).getText() == null ? node.getChild(1).getContentDescription().toString() :  node.getChild(1).getText().toString();
             VideoIncomeCounter = VideoIncomeCounter.replace("今日奖励次数(","");
             VideoIncomeCounter = VideoIncomeCounter.replace("次)","");
             if(Integer.valueOf(VideoIncomeCounter) >= 50){
@@ -388,6 +393,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
             }
 
         }catch (Exception ignored){
+            this.TaskCounter = 0;
             return false;
         }
     }

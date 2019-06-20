@@ -15,6 +15,7 @@ import com.yhao.floatwindow.Screen;
 
 import eie.robot.com.R;
 import eie.robot.com.accessibilityservice.mAccessibilityService;
+import eie.robot.com.common.mAdbShell;
 import eie.robot.com.common.mCommonTask;
 import eie.robot.com.common.mDeviceUtil;
 import eie.robot.com.common.mFloatWindow;
@@ -30,6 +31,7 @@ public class NavigationBarActivity extends QMUIFragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
 
         if (savedInstanceState == null) {
             BaseFragment fragment = new HomeFragment();

@@ -69,9 +69,12 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
     Boolean performTask_WatchVideo() {
         super.performTask_WatchVideo();
 
-        int LoopCount =   mFunction.getRandom_2_4();
+        int LoopCount =   mFunction.getRandom_1_3();
         while (LoopCount > 0){
             if(mCommonTask.isCloseAppTask() || this.VideoIsFinish){ break;}
+
+            //点击第三个功能列表
+            mGestureUtil.clickTab(5,3);
 
             //执行看视频
             performTask_WatchVideo_1();
@@ -88,12 +91,10 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
         }
         mToast.success("开启视频任务");
 
-        //点击第三个功能列表
-        mGestureUtil.clickTab(5,3);
-
         int NewsCount =   mFunction.getRandom_4_8();
         while (NewsCount > 0){
             if(mCommonTask.isCloseAppTask() || this.VideoIsFinish){ break;}
+
 
             //看视频
             performTask_WatchVideo_2();
@@ -110,11 +111,11 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
     //看视频子任务二
     private void performTask_WatchVideo_2(){
         try{
-            List<AccessibilityNodeInfo> nodes= AccessibilityHelper.findNodeInfosByIds("cn.weli.story:id/video_desc");
+            List<AccessibilityNodeInfo> nodes= AccessibilityHelper.findNodeInfosByIds("cn.weli.story:id/tv_play_count");
             if(nodes == null || nodes.size() < 1){
                 return;
             }
-            int loopCounter = nodes.size()-1;
+            int loopCounter = nodes.size();
             while (loopCounter > 0){
                 loopCounter --;
                 if(mCommonTask.isCloseAppTask() || this.VideoIsFinish){ break; }
@@ -134,10 +135,13 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
 
                     this.mCloseSystem();
 
-                    if(!mCommonFunctionTask.judgeNodeIsHavingByText("写评论...")){
-                        break;
+                    if(!mCommonFunctionTask.judgeNodeIsHavingByText("说说你的想法")){
+                        AccessibilityHelper.performBack();
+                        if(!mCommonFunctionTask.judgeNodeIsHavingByText("说说你的想法")){
+                            break;
+                        }
                     }
-                    if(mCommonFunctionTask.judgeNodeIsHavingByText("重播视频")){
+                    if(mCommonFunctionTask.judgeNodeIsHavingByText("重播")){
                         break;
                     }
                     mIncomeTask.setLastIncomeTime();
@@ -232,7 +236,7 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
                 if(JudgeGoldIncomeIsMax()){ return; }
 
                 //滑动次数(随机10到20)
-                int SwiperCount = mFunction.getRandom_8_14();
+                int SwiperCount = mFunction.getRandom_6_12();
                 //开始滑动文章
                 while (SwiperCount > 0) {
                     if(mCommonTask.isCloseAppTask() || this.ArticleIsFinish){ break; }
@@ -240,8 +244,11 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
                     this.mCloseSystem();
 
                     //判断是否处于页，如果不是则退出
-                    if(mCommonFunctionTask.judgeIsNoWenZhangPageByText("语音说说你的想法")){
-                        break;
+                    if(!mCommonFunctionTask.judgeNodeIsHavingByText("语音说说你的想法")){
+                        AccessibilityHelper.performBack();
+                        if(!mCommonFunctionTask.judgeNodeIsHavingByText("语音说说你的想法")){
+                            break;
+                        }
                     }
                     //判断计时器是否存在
                     if(!mCommonFunctionTask.judgeNodeIsHavingByResId("cn.weli.story:id/rl_read_coin")){
@@ -351,6 +358,28 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
 
             mFunction.click_sleep();
 
+            AccessibilityNodeInfo ArticleIncomeNode = AccessibilityHelper.findWebViewNodeInfosByText("今日已阅读");
+            if(ArticleIncomeNode != null && ArticleIncomeNode.getParent() != null && ArticleIncomeNode.getParent().getClassName().equals("android.webkit.WebView")){
+                AccessibilityNodeInfo nodeInfos = ArticleIncomeNode.getParent();
+                if(nodeInfos.getChildCount() > 1 && nodeInfos.getChild(1).getChildCount()>1){
+                    nodeInfos = nodeInfos.getChild(1);
+                    String  ArticleIncome = AccessibilityHelper.getNodeInfosTextByNode(nodeInfos.getChild(0));
+                    if(Float.valueOf(ArticleIncome) >= 50){
+                        this.TodayIncomeIsFinsh = true;
+                        mToast.success("今日收益已封顶");
+                        mFunction.sleep(mConfig.clickSleepTime);
+                        this.TaskCounter = 0;
+                        return true;
+                    }else {
+                        mToast.success("今日收益未封顶(文章:"+ArticleIncome+"分钟),继续工作");
+                        mFunction.click_sleep();
+                        this.TaskCounter = 0;
+                        return false;
+                    }
+                }
+            }
+
+
             //判断是否已经属于受益页
             AccessibilityNodeInfo node = AccessibilityHelper.findWebViewNodeInfosByText("阅读60分钟");
             AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText("查看金币明细");
@@ -371,12 +400,12 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
                 ArticleIncome = AccessibilityHelper.getNodeInfosTextByText("阅读文章");
                 ArticleIncomeCopy = ArticleIncome;
             }
-            if(ArticleIncome.isEmpty()) return false;
+            if(ArticleIncome==null) return false;
 
             String[] articleIncomeArrays = ArticleIncome.split("分钟");
             if(articleIncomeArrays.length < 2) return false;
             ArticleIncome = articleIncomeArrays[0].replace("阅读文章","");
-            if(Float.valueOf(ArticleIncome) >= 60){
+            if(Float.valueOf(ArticleIncome) >= 45){
                 this.ArticleIsFinish = true;
             }
 
@@ -389,13 +418,13 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
                 if(VideoIncomeA.length < 2) return false;
                 VideoIncome = VideoIncomeA[1];
             }
-            if(VideoIncome.isEmpty()) return false;
+            if(VideoIncome == null) return false;
 
             String[] VideoIncomeArrays = VideoIncome.split("分钟");
             if(VideoIncomeArrays.length < 2) return false;
             VideoIncome = VideoIncomeArrays[0].replace("观看视频","");
             VideoIncome = VideoIncome.replace("\n","");
-            if(Float.valueOf(VideoIncome) >= 60){
+            if(Float.valueOf(VideoIncome) >= 40){
                 this.VideoIsFinish = true;
             }
 
@@ -404,12 +433,12 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
                 mToast.success("今日收益已封顶");
                 mFunction.sleep(mConfig.clickSleepTime);
                 this.TaskCounter = 0;
-                AccessibilityHelper.performBack();
+
                 return true;
             }else {
                 mToast.success("今日收益未封顶(文章:"+ArticleIncome+"分钟，视频:"+VideoIncome+"分钟),继续工作");
                 mFunction.click_sleep();
-                AccessibilityHelper.performBack();
+
                 this.TaskCounter = 0;
                 return false;
             }
@@ -443,6 +472,7 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
                         if(IngoreString.contains(Word)){
                             continue;
                         }
+                        if(HotWords.size() > 30) break;
                         HotWords.add(HotWords.size(),String.valueOf(text));
                     }
                 }
@@ -450,6 +480,36 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
             if(!mGestureUtil.clickByResourceId("cn.weli.story:id/et_search")){
                 return;
             }
+
+            AccessibilityNodeInfo nodes = AccessibilityHelper.findNodeInfosById("cn.weli.story:id/tabFlowLayout");
+            if(nodes != null && nodes.getChildCount() > 0){
+                for( int i=0; i < nodes.getChildCount();i++ ){
+                    if(nodes.getChild(i) == null || nodes.getChild(i).getText().toString().isEmpty()){ continue; }
+                    if(!HotWords.contains(nodes.getChild(i).getText().toString())){
+                        String NodeText = nodes.getChild(i).getText().toString();
+                        if(NodeText.isEmpty()){
+                            continue;
+                        }
+                        if(NodeText.equals("领今日福利")){
+                            continue;
+                        }
+                        if(NodeText.equals("抽现金红包")){
+                            continue;
+                        }
+                        boolean isAdd = true;
+                        for (String hotWords : HotWords){
+                            if(hotWords.startsWith(NodeText.substring(0,1))){
+                                isAdd = false;
+                                break;
+                            }
+                        }
+                        if(isAdd){
+                            HotWords.add(nodes.getChild(i).getText().toString());
+                        }
+                    }
+                }
+            }
+
 
             int LoopCount = 12;
             while (LoopCount > 0){
@@ -471,47 +531,25 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
                     }
 
                     AccessibilityNodeInfo clickNode = null;
-                    AccessibilityNodeInfo nodes = AccessibilityHelper.findNodeInfosById("cn.weli.story:id/tabFlowLayout");
-                    if(nodes != null && nodes.getChildCount() > 0){
-                        for( int i=0; i < nodes.getChildCount();i++ ){
-                            if(nodes.getChild(i) == null || nodes.getChild(i).getText().toString().isEmpty()){ continue; }
-                            if(!HotWords.contains(nodes.getChild(i).getText().toString())){
-                                String NodeText = nodes.getChild(i).getText().toString();
-                                if(NodeText.isEmpty()){
-                                    continue;
-                                }
-                                if(NodeText.equals("领今日福利")){
-                                    continue;
-                                }
-                                if(NodeText.equals("抽现金红包")){
-                                    continue;
-                                }
-                                boolean isAdd = true;
-                                for (String hotWords : HotWords){
-                                    if(hotWords.startsWith(NodeText.substring(0,1))){
-                                        isAdd = false;
-                                        break;
-                                    }
-                                }
-                                if(isAdd){
-                                    HotWords.add(nodes.getChild(i).getText().toString());
-                                    if(nodes.getChildCount() >= 3 ){
-                                        clickNode = nodes.getChild(2);
-                                    }
-                                }
-                            }
-                        }
-                    }
+
                     if(HotWords.size() < 1){
                         return;
                     }
                     String word = HotWords.get(0);
+                    for (String hotWords : HotWords){
+                        char[] st = hotWords.toCharArray();
+                        if(st.length>1){
+                            word = hotWords;
+                        }
+                    }
+
                     if(word.isEmpty()){
                         HotWords.remove(word);
                         continue;
                     }
 
                     if(clickNode == null){
+                        HotWords.remove(word);
                         AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById("cn.weli.story:id/edt_tool_search");
                         if(nodeInfo == null){
                             return;
@@ -526,9 +564,6 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
                         if(!mCommonFunctionTask.pasteTextToNode(nodeInfo,subWord)){
                             return;
                         }
-
-                        HotWords.remove(word);
-
                         if(!mGestureUtil.clickByResourceId("cn.weli.story:id/view_search")){
                             continue;
                         }

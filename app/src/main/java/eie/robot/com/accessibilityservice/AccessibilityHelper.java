@@ -122,7 +122,18 @@ public final class AccessibilityHelper {
         int childCount = nodeInfo.getChildCount();
         for (int i = 0; i < childCount; i++) {
             AccessibilityNodeInfo node = nodeInfo.getChild(i);
+            String NodeStrigs = null;
+            if (node.getText() != null ) {
+                NodeStrigs = node.getText().toString();
+            }
             if (node.getText() != null && node.getText().toString().contains(text)) {
+                return node;
+            }
+            String NodeStrig = null;
+            if (node.getContentDescription() != null ) {
+                NodeStrig  = node.getContentDescription().toString();
+            }
+            if (node.getContentDescription() != null && node.getContentDescription().toString().contains(text)) {
                 return node;
             }
             else if(node.getChildCount() > 0) {
@@ -130,6 +141,9 @@ public final class AccessibilityHelper {
                 Info = findChildNodeInfosByText(node,text);
             }
             if(Info != null && Info.getText() != null && Info.getText().toString().contains(text)){
+                break;
+            }
+            if(Info != null && Info.getContentDescription() != null && Info.getContentDescription().toString().contains(text)){
                 break;
             }
         }
@@ -501,9 +515,16 @@ public final class AccessibilityHelper {
     }
     public static String getWebNodeInfosTextByText(String text){
         AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findWebViewNodeInfosByText(text);
-        if(nodeInfo == null) return "";
-        if(nodeInfo.getText() == null) return "";
-        return nodeInfo.getText().toString().trim();
+        if(nodeInfo == null) return null;
+        CharSequence NodeText = nodeInfo.getText() == null ? nodeInfo.getContentDescription() : nodeInfo.getText();
+        if(NodeText == null) return null;
+        return NodeText.toString();
+    }
+    public static String getNodeInfosTextByNode(AccessibilityNodeInfo nodeInfo){
+        if(nodeInfo == null) return null;
+        CharSequence NodeText = nodeInfo.getText() == null ? nodeInfo.getContentDescription() : nodeInfo.getText();
+        if(NodeText == null) return null;
+        return NodeText.toString();
     }
     public static String getNodeInfosTextByResourceId(String ResourceId){
         AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById(ResourceId);

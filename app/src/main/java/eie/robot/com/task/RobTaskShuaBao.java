@@ -18,9 +18,7 @@ public class RobTaskShuaBao extends BaseRobotTask {
 
     public int SizeOffset = 40;
 
-    /**
-     * 构造函数
-     */
+    //构造函数
     public RobTaskShuaBao() {
         super();
         this.AppName = "刷宝短视频";
@@ -29,7 +27,7 @@ public class RobTaskShuaBao extends BaseRobotTask {
             this.AppName = "刷宝";
         }
 
-        this.TodayMaxIncome = 13888;
+        this.TodayMaxIncome = 11111;
         this.TodayIncomeIsFinsh = false;
     }
 

@@ -6,6 +6,7 @@ import com.vondear.rxtool.RxDeviceTool;
 import com.vondear.rxtool.view.RxToast;
 
 import eie.robot.com.accessibilityservice.AccessibilityHelper;
+import eie.robot.com.common.mAdbShell;
 import eie.robot.com.common.mCommonFunctionTask;
 import eie.robot.com.common.mCommonTask;
 import eie.robot.com.common.mConfig;
@@ -13,6 +14,7 @@ import eie.robot.com.common.mFunction;
 import eie.robot.com.common.mGestureUtil;
 import eie.robot.com.common.mGlobal;
 import eie.robot.com.common.mIncomeTask;
+import eie.robot.com.common.mTaskTimer;
 import eie.robot.com.common.mToast;
 
 public abstract class BaseRobotTask {
@@ -51,8 +53,15 @@ public abstract class BaseRobotTask {
         mCommonTask.setAppTaskOpen();
         //设置APP的收益最新时间
         mIncomeTask.setLastIncomeTime();
-
         mToast.success("准备运行【"+AppName+"】");
+
+        String PackageName = mFunction.GetAppPackageName(AppName);
+        if(PackageName == null || PackageName.isEmpty() || PackageName.equals("")){
+            mToast.error_sleep(AppName+"：未安装，下一个");
+            mCommonTask.setAppTaskClose();
+            return false;
+        }
+
         return true;
     }
 
@@ -61,8 +70,10 @@ public abstract class BaseRobotTask {
         //设置APP的运行状态为停止
         mCommonTask.setAppTaskClose();
         mToast.success("【"+this.AppName+"】已停止");
+//        AccessibilityHelper.performHome();
+//        mAdbShell.clearApp(this.AppName);
+//        mAdbShell.stopApp(this.AppName);
         mFunction.click_sleep();
-
         return true;
     }
 
@@ -71,6 +82,10 @@ public abstract class BaseRobotTask {
     }
 
     boolean returnHome(String Nav1, String Nav2, Runnable runnable){
+
+        if(mTaskTimer.judgeTimeIsInNight()){
+            mCommonTask.setAppTaskClose();
+        }
 
         if(mCommonTask.isCloseAppTask()){
             return false;
@@ -128,6 +143,10 @@ public abstract class BaseRobotTask {
     }
 
     boolean returnHomeById(String Nav1, String Nav2, Runnable runnable){
+
+        if(mTaskTimer.judgeTimeIsInNight()){
+            mCommonTask.setAppTaskClose();
+        }
 
         if(mCommonTask.isCloseAppTask()){
             return false;

@@ -58,40 +58,35 @@ public class mCommonTask {
                 //在夜间重置
                 mTaskTimer.ResetingAppFinishStatus();
 
-
                 //组装任务列表，通过策略
                 mTasks = new ArrayList<>();
 
-
-                //刷宝
-                mTasks.add(new RobTaskShuaBao());
-                //趣头条
-                mTasks.add(new RobTaskQuTouTiao());
-
-                //微鲤看看
-                mTasks.add(new RobTaskWeiLiKanKan());    //已重构，检查收益准确型（文章和视频都是60分钟）
-                //搜狐资讯
-                mTasks.add(new RobTaskSouHuZiXun());     //已重构，检查收益准确型（固定的金币）
-                //聚看点
-                mTasks.add(new RobTaskJuKanDian());      //已重构，检查收益准确型（文章/视频：150/50次数）
-                //优看点
-                mTasks.add(new RobTaskYouKanDian());     //已重构
                 //头条精选
-                mTasks.add(new RobTaskTouTiaoJingXuan());//已重构，检查收益准确型
-                //刷宝
-                mTasks.add(new RobTaskShuaBao());
+                mTasks.add(new RobTaskTouTiaoJingXuan());   //已重构，检查收益准确型
+                //搜狐资讯
+                mTasks.add(new RobTaskSouHuZiXun());        //已重构，检查收益准确型（固定的金币），5.1适配
+                //微鲤看看
+                mTasks.add(new RobTaskWeiLiKanKan());       //已重构，检查收益准确型（文章和视频都是60分钟),5.1适配
+                //趣头条
+                mTasks.add(new RobTaskQuTouTiao());         //已重构，5.1适配
 
-                //微趣看
-                mTasks.add(new RobTaskWeiQuKan());       //已重构
-                //闪电盒子
-                mTasks.add(new RobTaskShanDianHeZi());
 
-
-                //趣看天下
-                mTasks.add(new RobTaskQuKanTianXia());
                 //中青看点
                 mTasks.add(new RobTaskZhongQingKanDian());
 
+                //趣看天下
+                mTasks.add(new RobTaskQuKanTianXia());
+                //闪电盒子
+                mTasks.add(new RobTaskShanDianHeZi());
+                //刷宝
+                mTasks.add(new RobTaskShuaBao());
+
+
+
+                //聚看点
+                mTasks.add(new RobTaskJuKanDian());      //已重构，检查收益准确型（文章/视频：150/50次数）
+                //优看点
+                //mTasks.add(new RobTaskYouKanDian());     //已重构
 
 
 
@@ -113,6 +108,9 @@ public class mCommonTask {
                     }
 
                     if(!ThreadTaskOpenStatus){ break; }
+
+                    //凌晨时间段，停止刷钱
+                    mTaskTimer.StopAppInNight();
 
                     //清楚手机内存
                     mCacheTask.ClearPhoneROMTask();

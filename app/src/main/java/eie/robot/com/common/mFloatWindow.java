@@ -116,10 +116,15 @@ public class mFloatWindow {
     }
 
     public static void showFloatWindow(){
+
+
+
         //开启任务
         View.OnClickListener StartRobTask = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String ss = mAdbShell.GetPackagesList();
+
                 String taskRes = mCommonTask.StartTask();
                 if(taskRes.equals("true")){
                     mGlobal.viewFloatButton.findViewById(R.id.btnStartTaskAndCloseFloat).setVisibility(View.GONE);

@@ -93,6 +93,10 @@ public class mCacheTask {
             if(index > -1){
                 ClearHuaWeiPhoneROM();
             }
+            index = UniqueSerialNumber.toLowerCase().indexOf("4g-4g");
+            if(index > -1){
+                Clear4G4GPhoneROM();
+            }
         }catch (Exception ex){
             RxToast.success("清理内存报错:"+ex.getMessage());
         }
@@ -108,10 +112,9 @@ public class mCacheTask {
             mGestureUtil.click(nodeInfo);
         }
         mGestureUtil.scroll_down_screen();
-        nodeInfo = AccessibilityHelper.findNodeInfosById("com.android.systemui:id/dismiss_view");
-        if(nodeInfo != null){
-            mGestureUtil.click(nodeInfo);
-        }
+        mGestureUtil.clickByResourceId("com.android.systemui:id/dismiss_view");
+        mGestureUtil.clickByResourceId("com.android.systemui:id/clear_all_button");
+
 
     }
     //清除联想手机的内存
@@ -139,6 +142,14 @@ public class mCacheTask {
         }
         mGestureUtil.scroll_down_screen();
         nodeInfo = AccessibilityHelper.findNodeInfosById("com.android.systemui:id/delete");
+        if(nodeInfo != null){
+            mGestureUtil.click(nodeInfo);
+        }
+    }
+    //清除公司购买的400元手机
+    private static void Clear4G4GPhoneROM(){
+        mGestureUtil.scroll_down_screen();
+        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById("com.android.systemui:id/dismiss_text");
         if(nodeInfo != null){
             mGestureUtil.click(nodeInfo);
         }

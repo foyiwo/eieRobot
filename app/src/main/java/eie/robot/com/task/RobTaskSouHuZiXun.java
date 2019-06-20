@@ -104,6 +104,9 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
 
             //进入文章页看新闻
             performTask_LookNews_2();
+
+            if(mCommonTask.isCloseAppTask() || this.ArticleIsFinish){ break; }
+
             if(!returnHome()){
                 continue;
             }
@@ -137,7 +140,7 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
                     }
 
                     //滑动次数(随机10到20)
-                    int SwiperCount = mFunction.getRandom_6_12();
+                    int SwiperCount = mFunction.getRandom_4_8();
 
                     mToast.info("新闻任务:滑动"+SwiperCount+"次");
 
@@ -172,6 +175,7 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
 
                     }
                 }
+                returnHome();
                 LoopCounter--;
             }
         }catch (Exception ignored){
@@ -209,9 +213,13 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
             if(mCommonTask.isCloseAppTask() || this.VideoIsFinish){ break;}
             //看视频
             performTask_WatchVideo_2();
+
             if(!returnHome()){
                 continue;
             }
+
+            if(mCommonTask.isCloseAppTask() || this.VideoIsFinish){ break;}
+
             mToast.success("阅读完毕，首页滑动");
             NewsCount -- ;
             if(NewsCount > 0){

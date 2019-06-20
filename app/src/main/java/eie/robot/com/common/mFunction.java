@@ -11,7 +11,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Path;
+import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Build;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
@@ -416,5 +418,31 @@ public class mFunction {
         AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosById(nav1);
         AccessibilityNodeInfo VideoNode = AccessibilityHelper.findNodeInfosById(nav2);
         return XinWenNode != null && VideoNode != null;
+    }
+
+
+    public static boolean judgeAndroidVersionIsGreater7(){
+        Boolean result = Build.VERSION.SDK_INT >= 24;
+        return result;
+
+    }
+
+    public static int getNodeHeight(AccessibilityNodeInfo node){
+        if(node == null ){
+            return 0;
+        }
+        Rect rect = new Rect();
+        node.getBoundsInScreen(rect);
+        int height = rect.height();
+                return height;
+    }
+    public static int getNodeWidth(AccessibilityNodeInfo node){
+        if(node == null ){
+            return 0;
+        }
+        Rect rect = new Rect();
+        node.getBoundsInScreen(rect);
+
+        return rect.width();
     }
 }

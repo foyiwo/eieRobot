@@ -52,7 +52,6 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
                 //看视频
                 performTask_WatchVideo();
 
-
                 //阅读文章
                 performTask_LookNews();
 
