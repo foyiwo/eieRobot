@@ -7,6 +7,7 @@ import eie.robot.com.accessibilityservice.AccessibilityHelper;
 import eie.robot.com.common.mCommonFunctionTask;
 import eie.robot.com.common.mCommonTask;
 import eie.robot.com.common.mConfig;
+import eie.robot.com.common.mData;
 import eie.robot.com.common.mDeviceUtil;
 import eie.robot.com.common.mFunction;
 import eie.robot.com.common.mGestureUtil;
@@ -48,11 +49,13 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
                 //签到
                 SignIn();
 
-                //阅读文章
-                performTask_LookNews();
-
-                //看视频
-                performTask_WatchVideo();
+                if(mFunction.getRandomBooleanOffsetTrue()){
+                    //阅读文章
+                    performTask_LookNews();
+                }else {
+                    //阅读视频
+                    performTask_WatchVideo();
+                }
             }
             catch (Exception ex){
                 mToast.error(ex.getMessage());
@@ -68,6 +71,7 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
     @Override
     Boolean performTask_WatchVideo() {
         super.performTask_WatchVideo();
+        if(!returnHome()){ return false; }
 
         int LoopCount =   mFunction.getRandom_1_3();
         while (LoopCount > 0){
@@ -91,9 +95,10 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
         }
         mToast.success("开启视频任务");
 
-        int NewsCount =   mFunction.getRandom_4_8();
+        int NewsCount =   mFunction.getRandom_2_4();
         while (NewsCount > 0){
             if(mCommonTask.isCloseAppTask() || this.VideoIsFinish){ break;}
+
 
 
             //看视频
@@ -102,8 +107,10 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
             if(!returnHome()){
                 continue;
             }
-            mToast.info("阅读完毕，首页滑动");
-            mGestureUtil.scroll_up();
+            mToast.info("阅读完毕，视频首页刷新");
+            //点击第三个功能列表
+            mGestureUtil.clickTab(5,3);
+            mGestureUtil.clickTab(5,3);
             NewsCount -- ;
         }
     }
@@ -123,8 +130,6 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
                 //点击视频Node
                 mGestureUtil.performClick(nodes.get(loopCounter));
 
-                //判断金币收益
-                if(JudgeGoldIncomeIsMax()){ return; }
 
                 //滑动次数(随机)
                 int SlideCounter = mFunction.getRandom_4_8();
@@ -168,9 +173,11 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
         while (RefreshCount > 0){
             if(mCommonTask.isCloseAppTask() || this.ArticleIsFinish ){ break; }
 
-
             //热词搜索
             HotWordSearchIncome();
+
+            //时段奖励
+            performTask_TimeSlotReward();
 
             //子任务
             performTask_LookNews_1();
@@ -267,6 +274,11 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
                     int sleepTime = mFunction.getRandom_2_4();
                     mFunction.sleep(sleepTime * 1000);
                     SwiperCount--;
+
+                }
+
+                if(mFunction.getRandomBoolean()){
+                    SendingComment();
                 }
                 AccessibilityHelper.performBack();
             }
@@ -294,6 +306,43 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
     //-----------------------------------------------------------
 
 
+    //输入评论
+    private boolean SendingComment(){
+
+        if(this.PingLunIsFinish){
+            return true;
+        }
+
+        mGestureUtil.scroll_left();
+
+
+        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByEqualText("说说你的想法");
+        if(nodeInfo != null){
+            mGestureUtil.clickByCoordinate(nodeInfo);
+        }else {
+            nodeInfo = AccessibilityHelper.findNodeInfosByEqualText("请输入...");
+            if(nodeInfo != null){
+                mGestureUtil.clickByCoordinate(nodeInfo);
+            }
+        }
+
+        nodeInfo = AccessibilityHelper.findNodeInfosByClassName("android.widget.EditText");
+        if(nodeInfo == null) return false;
+
+        mCommonFunctionTask.pasteTextToNode(nodeInfo, mData.getRandomSChatSpeaking());
+
+        mFunction.click_sleep();
+
+        mGestureUtil.clickByText("发送");
+
+        nodeInfo = AccessibilityHelper.findNodeInfosById("cn.weli.story:id/iv_button");
+        if(nodeInfo != null){
+            //连击
+            mGestureUtil.continuedClick(nodeInfo,mFunction.getRandom_50_100()-20);
+        }
+
+        return false;
+    }
 
 
     //领取时段奖励
@@ -322,6 +371,7 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
         //关闭按钮
         mGestureUtil.clickByResourceId("cn.weli.story:id/image_close");
         mGestureUtil.clickByResourceId("cn.weli.story:id/ic_close");
+        mGestureUtil.clickByResourceId("cn.weli.story:id/iv_close");
         mGestureUtil.clickByResourceId("cn.weli.story:id/button1");
 
 
@@ -460,15 +510,18 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
             //点击第二个功能列表
             mGestureUtil.clickTab(5,2);
 
+            mGestureUtil.scroll_up();
+
             List<AccessibilityNodeInfo> nodesList = AccessibilityHelper.findNodeInfosByIds("cn.weli.story:id/tv_title");
-            if(nodesList != null) {
+            if(nodesList != null && nodesList.size() > 1) {
+                nodesList.remove(0);
                 for (AccessibilityNodeInfo node : nodesList){
                     String Text = node.getText().toString();
                     char[] array = Text.toCharArray();
                     for (char text : array){
                         String Word = String.valueOf(text);
                         if(Word.isEmpty()){ continue; }
-                        String IngoreString = ",，!！。.?？:：\"”“";
+                        String IngoreString = "1234567890【】,，!！。.?？:：\"”“";
                         if(IngoreString.contains(Word)){
                             continue;
                         }
@@ -511,7 +564,7 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
             }
 
 
-            int LoopCount = 12;
+            int LoopCount = mFunction.getRandom_6_12();
             while (LoopCount > 0){
                 try{
                     if(mCommonTask.isCloseAppTask()){ break; }
@@ -576,7 +629,9 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
                         continue;
                     }
 
-                    mGestureUtil.scroll_up();
+                    mFunction.sleep(mConfig.WaitLauncherlTime);
+
+                    mGestureUtil.scroll_up_screen();
 
                     mGestureUtil.clickInScreenCenter();
 
@@ -637,6 +692,7 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
             return;
         }
 
+        mFunction.click_sleep();
         this.CloseDialog();
 
         if(!mCommonFunctionTask.loopJudgeNodeIsHavingByResId("cn.weli.story:id/webView1")){

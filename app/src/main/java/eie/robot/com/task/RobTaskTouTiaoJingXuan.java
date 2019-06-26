@@ -32,35 +32,38 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
     //总任务
     @Override
     public boolean StartTask()  {
-        super.StartTask();
-        while (mCommonTask.isOpenAppTask()){
-            try {
+        try {
+            super.StartTask();
+            while (mCommonTask.isOpenAppTask()){
                 //每次进行一项任务时，都先恢复到首页
                 //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
                 if(!returnHome()){
                     continue;
                 }
 
-                //领取红票分红
+                //领取分红
                 getShareIncome();
 
-                //判断收益是否封顶
+                //判断收益是否封顶,领取红票分红
                 if(JudgeGoldIncomeIsMax()){
                     break;
                 }
 
-                //看视频
-                performTask_WatchVideo();
-
-                //阅读文章
-                performTask_LookNews();
-
+                if(mFunction.getRandomBoolean()){
+                    //看视频
+                    performTask_WatchVideo();
+                }else {
+                    //阅读文章
+                    performTask_LookNews();
+                }
             }
-            catch (Exception ex){
-                mToast.error(ex.getMessage());
-            }
+
+            JudgeGoldIncomeIsMax();
+            super.CloseTask();
         }
-        super.CloseTask();
+        catch (Exception ex){
+            mToast.error(ex.getMessage());
+        }
         return false;
     }
 
@@ -69,7 +72,7 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
     //看视频总任务
     @Override
     Boolean performTask_WatchVideo(){
-        int RefreshCount =  3;
+        int RefreshCount =  mFunction.getRandom_2_4();
         while (RefreshCount > 0){
             if(mCommonTask.isCloseAppTask() || this.ShiPingTouPiaoIsFinish){ break;}
 
@@ -114,7 +117,7 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
         }
         mToast.success("视频任务");
 
-        int NewsCount =   3;
+        int NewsCount =   mFunction.getRandom_2_5();
         while (NewsCount > 0){
 
             if(mCommonTask.isCloseAppTask()){ break;}
@@ -150,7 +153,7 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
     Boolean performTask_LookNews(){
         int RefreshCount =  mFunction.getRandom_1_3();
         while (RefreshCount > 0){
-            if(mCommonTask.isCloseAppTask() || (this.YueDuWenZhangIsFinish && this.WenZhangTouPiaoIsFinish)){ break;}
+            if(mCommonTask.isCloseAppTask() || (this.YueDuWenZhangIsFinish && this.WenZhangTouPiaoIsFinish && this.PingLunIsFinish)){ break; }
             this.CollectIncome();
             performTask_LookNews_1();
             mToast.success("倒数第"+RefreshCount+"轮新闻任务");
@@ -198,8 +201,8 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
             return false;
         }
 
-        int nodeCounter = nodes.size()-1;
-        while (nodeCounter >= 0){
+        int nodeCounter = nodes.size();
+        while (nodeCounter > 0){
             try{
                 nodeCounter --;
                 if(mCommonTask.isCloseAppTask()){ break; }
@@ -210,7 +213,7 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
                 mGestureUtil.click(XinWenNode.getParent());
 
                 //滑动次数(随机10到20)
-                int SwiperCount = mFunction.getRandom_6_12()+10;
+                int SwiperCount = mFunction.getRandom_6_12()+20;
                 mToast.info("新闻任务:滑动"+SwiperCount+"次");
                 //开始滑动文章
                 while (SwiperCount > 0) {
@@ -218,6 +221,12 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
 
                     //判断是否处于文章页，如果不是则退出
                     if(mCommonFunctionTask.judgeIsNoWenZhangPageByText("写评论得红钻")){
+                        break;
+                    }
+
+                    if(mCommonFunctionTask.judgeNodeIsHavingByText("全部评论")){
+                        //发表评论
+                        SendingComment();
                         break;
                     }
 
@@ -231,7 +240,7 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
                     mIncomeTask.setLastIncomeTime();
                     //停止进行阅读
                     int sleepTime = 2;
-                    mFunction.sleep(sleepTime * 1000);
+                    mFunction.sleep(  sleepTime*1000);
                     SwiperCount--;
                 }
                 AccessibilityHelper.performBack();
@@ -275,6 +284,39 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
     }
 
     //-----------------------------------------------------------
+
+    //输入评论
+    private boolean SendingComment(){
+        if(this.PingLunIsFinish){
+            return true;
+        }
+        if(PingLunCounter > 5){
+            return true;
+        }
+        mGestureUtil.scroll_up();
+        if(mCommonFunctionTask.judgeNodeIsHavingByText("全部评论")){
+            List<AccessibilityNodeInfo>  nodes = AccessibilityHelper.findNodeInfosByIds("com.deshang.ttjx:id/content");
+            if(nodes != null && nodes.size() > 0){
+                String content = AccessibilityHelper.getNodeInfosTextByNode(nodes.get(nodes.size()-1));
+                if(content == null || content.isEmpty()) return false;
+
+                Boolean clickResult = mGestureUtil.clickByText("写评论得红钻");
+                if(clickResult){
+                    AccessibilityNodeInfo commentNode = AccessibilityHelper.findNodeInfosById("com.deshang.ttjx:id/edit");
+                    if(commentNode == null) return false;
+                    mCommonFunctionTask.pasteTextToNode(commentNode,content);
+                    mFunction.click_sleep();
+                    mGestureUtil.clickByText("发布");
+                    PingLunCounter++;
+                }
+            }
+
+        }
+
+
+
+        return false;
+    }
 
     //领取红票分红
     private boolean getShareIncome(){
@@ -335,6 +377,7 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
             return false;
         }
 
+
         int TestCounter = 10;
         while (TestCounter > 0){
 
@@ -351,6 +394,8 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
             this.CloseDialog();
 
             if(mCommonFunctionTask.judgeNodeIsHavingByText("任务列表")){
+                mGestureUtil.scroll_up_screen();
+
                 int SlideCount = 10;
                 while (SlideCount > 0){
                     //清除可能的弹框
@@ -360,22 +405,23 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
                     if(node != null){
                         node = node.getParent().getChild(0);
                         Rect rect = new Rect();
-                        node.getParent().getBoundsInScreen(rect);
+                        node.getBoundsInScreen(rect);
                         if(rect.top > mGlobal.mScreenHeight){
                             mGestureUtil.scroll_up_screen();
-                            continue;
+                            //continue;
                         }
                         String[] XinWenCount = node.getText().toString().replace("阅读文章","").split("/");
                         if( XinWenCount.length ==2){
                             if(Integer.valueOf(XinWenCount[0]) >= Integer.valueOf(XinWenCount[1])){
-                                mToast.success("阅读文章已完成");
+                                mToast.success("阅读文章已完成("+XinWenCount[0]+")");
                                 rect = new Rect();
                                 node.getParent().getBoundsInScreen(rect);
                                 mGestureUtil.click(mGlobal.mScreenWidth-SizeOffset*2,rect.top+rect.height()/2);
+                                this.CloseDialog();
                                 YueDuWenZhangIsFinish = true;
 
                             }else {
-                                mToast.error("阅读文章未完成");
+                                mToast.error("阅读文章未完成("+XinWenCount[0]+")");
                                 mFunction.click_sleep();
                             }
                         }
@@ -385,26 +431,52 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
                     if(node != null){
                         node = node.getParent().getChild(0);
                         Rect rect = new Rect();
-                        node.getParent().getBoundsInScreen(rect);
+                        node.getBoundsInScreen(rect);
                         if(rect.top > mGlobal.mScreenHeight){
                             mGestureUtil.scroll_up_screen();
-                            continue;
+                            //continue;
                         }
                         String[] XinWenCount = node.getText().toString().replace("文章投票","").split("/");
                         if( XinWenCount.length ==2){
                             if(Integer.valueOf(XinWenCount[0]) >= Integer.valueOf(XinWenCount[1])){
-                                mToast.success("文章投票已完成");
+                                mToast.success("文章投票已完成("+XinWenCount[0]+")");
                                 rect = new Rect();
                                 node.getParent().getBoundsInScreen(rect);
                                 mGestureUtil.click(mGlobal.mScreenWidth-SizeOffset*2,rect.top+rect.height()/2);
+                                this.CloseDialog();
                                 WenZhangTouPiaoIsFinish = true;
                             }else {
-                                mToast.error("文章投票未完成");
+                                mToast.error("文章投票未完成("+XinWenCount[0]+")");
                                 mFunction.click_sleep();
                             }
                         }
                     }
-                    //判断阅读文章是否已经完成
+                    //判断文章评论是否已经完成
+                    node = AccessibilityHelper.findNodeInfosByText("评论5篇文章");
+                    if(node != null){
+                        node = node.getParent().getChild(0);
+                        Rect rect = new Rect();
+                        node.getBoundsInScreen(rect);
+                        if(rect.top > mGlobal.mScreenHeight){
+                            mGestureUtil.scroll_up_screen();
+                            //continue;
+                        }
+                        String[] XinWenCount = node.getText().toString().replace("文章评论","").split("/");
+                        if( XinWenCount.length ==2){
+                            if(Integer.valueOf(XinWenCount[0]) >= Integer.valueOf(XinWenCount[1])){
+                                mToast.success("文章评论已完成("+XinWenCount[0]+")");
+                                rect = new Rect();
+                                node.getParent().getBoundsInScreen(rect);
+                                mGestureUtil.click(mGlobal.mScreenWidth-SizeOffset*2,rect.top+rect.height()/2);
+                                this.CloseDialog();
+                                this.PingLunIsFinish = true;
+                            }else {
+                                mToast.error("文章评论未完成("+XinWenCount[0]+")");
+                                mFunction.click_sleep();
+                            }
+                        }
+                    }
+                    //判断视频投票是否已经完成
                     node = AccessibilityHelper.findNodeInfosByText("给10个视频投票");
                     if(node != null){
                         node = node.getParent().getChild(0);
@@ -412,18 +484,19 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
                         node.getParent().getBoundsInScreen(rect);
                         if(rect.top > mGlobal.mScreenHeight){
                             mGestureUtil.scroll_up_screen();
-                            continue;
+                            //continue;
                         }
                         String[] XinWenCount = node.getText().toString().replace("视频投票","").split("/");
                         if( XinWenCount.length == 2){
                             if(Integer.valueOf(XinWenCount[0]) >= Integer.valueOf(XinWenCount[1])){
-                                mToast.success("视频投票已完成");
+                                mToast.success("视频投票已完成("+XinWenCount[0]+")");
                                 rect = new Rect();
                                 node.getParent().getBoundsInScreen(rect);
                                 mGestureUtil.click(mGlobal.mScreenWidth-SizeOffset*2,rect.top+rect.height()/2);
+                                this.CloseDialog();
                                 ShiPingTouPiaoIsFinish = true;
                             }else {
-                                mToast.error("视频投票未完成");
+                                mToast.error("视频投票未完成("+XinWenCount[0]+")");
                                 mFunction.click_sleep();
                             }
                         }
@@ -433,13 +506,14 @@ public class RobTaskTouTiaoJingXuan extends BaseRobotTask {
                     mGestureUtil.scroll_up_screen();
                     SlideCount--;
                 }
-                if(YueDuWenZhangIsFinish && ShiPingTouPiaoIsFinish && WenZhangTouPiaoIsFinish){
+                if(YueDuWenZhangIsFinish && ShiPingTouPiaoIsFinish && WenZhangTouPiaoIsFinish && this.PingLunIsFinish){
                     mToast.success("今日收益已封顶");
                     this.TodayIncomeIsFinsh = true;
                     mFunction.click_sleep();
                     return true;
                 }else {
                     mToast.success("今日收益未封顶，继续工作");
+                   this.PingLunCounter = 0;
                     mFunction.click_sleep();
                 }
 

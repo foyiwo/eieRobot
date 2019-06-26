@@ -98,7 +98,7 @@ public final class AccessibilityHelper {
 
 
     /**
-     * 通过文本查找
+     * 通过包含文本查找
      */
     public static AccessibilityNodeInfo findChildNodeInfosByText(String text) {
         if(AccessibilityHelper.getRootInActiveWindow() == null){
@@ -111,6 +111,7 @@ public final class AccessibilityHelper {
         return findChildNodeInfosByText(AccessibilityHelper.getRootInActiveWindow(),text);
 
     }
+
     /**
      * 通过文本查找
      */
@@ -149,6 +150,61 @@ public final class AccessibilityHelper {
         }
         return Info;
     }
+
+    /**
+     * 通过相等文本相同查找
+     */
+    public static AccessibilityNodeInfo findNodeInfosByEqualText(String text) {
+        if(AccessibilityHelper.getRootInActiveWindow() == null){
+            mFunction.recoverRootWindow();
+            return null;
+        }
+        if(AccessibilityHelper.getRootInActiveWindow() == null){
+            return null;
+        }
+        return findNodeInfosByEqualText(AccessibilityHelper.getRootInActiveWindow(),text);
+
+    }
+    /**
+     * 通过文本查找
+     */
+    public static AccessibilityNodeInfo findNodeInfosByEqualText( AccessibilityNodeInfo nodeInfo, String text) {
+        if (TextUtils.isEmpty(text) || nodeInfo == null) {
+            return null;
+        }
+        AccessibilityNodeInfo Info = null;
+        int childCount = nodeInfo.getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            AccessibilityNodeInfo node = nodeInfo.getChild(i);
+            String NodeStrigs = null;
+            if (node.getText() != null ) {
+                NodeStrigs = node.getText().toString();
+            }
+            if (node.getText() != null && node.getText().toString().equals(text)) {
+                return node;
+            }
+            String NodeStrig = null;
+            if (node.getContentDescription() != null ) {
+                NodeStrig  = node.getContentDescription().toString();
+            }
+            if (node.getContentDescription() != null && node.getContentDescription().toString().equals(text)) {
+                return node;
+            }
+            else if(node.getChildCount() > 0) {
+                int count = node.getChildCount();
+                Info = findNodeInfosByEqualText(node,text);
+            }
+            if(Info != null && Info.getText() != null && Info.getText().toString().equals(text)){
+                break;
+            }
+            if(Info != null && Info.getContentDescription() != null && Info.getContentDescription().toString().equals(text)){
+                break;
+            }
+        }
+        return Info;
+    }
+
+
     /**
      * 通过文本查找
      */

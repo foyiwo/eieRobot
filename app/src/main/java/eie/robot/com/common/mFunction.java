@@ -335,8 +335,27 @@ public class mFunction {
     }
 
 
-
-
+    public static Boolean getRandomBooleanOffsetFalse(){
+        double res = Math.random()*20;
+        if(res > 15){
+            return true;
+        }
+        return false;
+    }
+    public static Boolean getRandomBooleanOffsetTrue(){
+        double res = Math.random()*20;
+        if(res > 9){
+            return true;
+        }
+        return false;
+    }
+    public static Boolean getRandomBoolean(){
+        double res = Math.random()*20;
+        if(res > 10){
+            return true;
+        }
+        return false;
+    }
     public static float getRandom_0_20(){
         return (float) (Math.random()*20);
     }
@@ -369,6 +388,16 @@ public class mFunction {
         int count = (int) ((Math.random()*2)+2);
         if(count > 4){
             count = 4;
+        }
+        return count;
+    }
+    public static double getRandom_06_08(){
+        double count = Math.random();
+        if(count > 0.8){
+            count = 0.8;
+        }
+        if(count < 0.6){
+            count = 0.6;
         }
         return count;
     }

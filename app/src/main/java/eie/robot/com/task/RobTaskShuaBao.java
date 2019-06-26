@@ -1,11 +1,15 @@
 package eie.robot.com.task;
 
 import android.graphics.Rect;
+import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.vondear.rxtool.view.RxToast;
 
+import java.util.List;
+
 import eie.robot.com.accessibilityservice.AccessibilityHelper;
+import eie.robot.com.common.mCommonFunctionTask;
 import eie.robot.com.common.mCommonTask;
 import eie.robot.com.common.mConfig;
 import eie.robot.com.common.mFunction;
@@ -27,7 +31,7 @@ public class RobTaskShuaBao extends BaseRobotTask {
             this.AppName = "刷宝";
         }
 
-        this.TodayMaxIncome = 11111;
+        this.TodayMaxIncome = 9999;
         this.TodayIncomeIsFinsh = false;
     }
 
@@ -36,8 +40,8 @@ public class RobTaskShuaBao extends BaseRobotTask {
     @Override
     public boolean StartTask()  {
         super.StartTask();
-        while (mCommonTask.isOpenAppTask()){
-            try {
+        try {
+            while (mCommonTask.isOpenAppTask()){
 
                 if(!returnHome()){
                     continue;
@@ -55,11 +59,15 @@ public class RobTaskShuaBao extends BaseRobotTask {
                 this.performTask_WatchVideo();
 
                 if(mCommonTask.isCloseAppTask()){ break; }
-            }catch (Exception ex){
-                RxToast.error(ex.getMessage());
+
             }
+
+            JudgeGoldIncomeIsMax();
+            super.CloseTask();
+        }catch (Exception ex){
+            RxToast.error(ex.getMessage());
         }
-        super.CloseTask();
+
         return false;
     }
 
@@ -71,6 +79,14 @@ public class RobTaskShuaBao extends BaseRobotTask {
         int RefreshCount =   mFunction.getRandom_10_20()+20;
         while (RefreshCount > 0){
             if(mCommonTask.isCloseAppTask()){ break; }
+
+            //在主界面的情况下，点击底部导航【小视频】按钮，刷新小视频
+            mGestureUtil.clickTab(5,1);
+
+            if(!returnHome()){
+                return false;
+            }
+
             performTask_WatchVideo_1();
             RefreshCount -- ;
         }
@@ -79,18 +95,14 @@ public class RobTaskShuaBao extends BaseRobotTask {
 
     //执行刷单任务（定时刷小视频）
     private boolean performTask_WatchVideo_1(){
-        if(!returnHome()){
-            return false;
-        }
 
-        //在主界面的情况下，点击底部导航【小视频】按钮，刷新小视频
-        mGestureUtil.clickTab(5,1);
-        int VideoCount = mFunction.getRandom_10_20();
+        int VideoCount = mFunction.getRandom_6_12();
 
         while (VideoCount > 0){
 
             //点击视频的间隔
-            int VideoInterval = 6+ mFunction.getRandom_6_12();//3;
+            int VideoInterval = 6+ mFunction.getRandom_6_12();
+
             if(mCommonTask.isCloseAppTask()){ break; }
 
             mGestureUtil.scroll_up_30();
@@ -100,26 +112,204 @@ public class RobTaskShuaBao extends BaseRobotTask {
             //设置收益的最新时间
             mIncomeTask.setLastIncomeTime();
 
-            if(VideoInterval == 18){
+            if(VideoInterval >= 17){
                 AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText("关注");
                 if(nodeInfo != null){
                     mGestureUtil.click(nodeInfo);
                 }else {
-                    mGestureUtil.doubleClickInScreenCenter();
+                    mGestureUtil.clickByResourceId("com.jm.video:id/praise");
                 }
+                mGestureUtil.clickByResourceId("com.jm.video:id/praise");
+
+                LookOverVideoAuthorHome();
+            }
+            if(mCommonFunctionTask.judgeNodeIsHavingByText("衣服")){
+                mGestureUtil.clickByText("关注");
                 mGestureUtil.doubleClickInScreenCenter();
             }
+
+            if(mFunction.getRandomBooleanOffsetFalse()){
+                VideoSendingComment();
+            }
+
+            if(mFunction.getRandomBooleanOffsetFalse()){
+                WeChatShare();
+            }
+
+            LookOverIncome();
+
             mFunction.sleep( VideoInterval * 1000);
             VideoCount--;
         }
+        LookOverIncome();
+        returnHome();
         return true;
+    }
+
+    //小视频输入评论
+    private boolean VideoSendingComment(){
+        try{
+
+            mGestureUtil.clickByResourceId("com.jm.video:id/comment");
+
+            if(!mCommonFunctionTask.judgeNodeIsHavingByText("条评论")) return false;
+
+            mGestureUtil.scroll_up();
+
+            mGestureUtil.scroll_up();
+
+            mGestureUtil.clickByResourceId("com.jm.video:id/iv_prise_btn");
+
+            AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByClassName("android.support.v7.widget.RecyclerView");
+            if(nodeInfo == null) return false;
+
+            String CommentText = nodeInfo.getChild(1).getChild(0).getChild(2).getText().toString();
+            if(CommentText.isEmpty()) return false;
+
+            mGestureUtil.clickByText("我也说几句");
+
+            nodeInfo = AccessibilityHelper.findNodeInfosByClassName("android.widget.EditText");
+            if(nodeInfo == null) return false;
+
+            mCommonFunctionTask.pasteTextToNode(nodeInfo,CommentText);
+
+            mGestureUtil.click(mGlobal.mScreenWidth-SizeOffset,mGlobal.mScreenHeight-SizeOffset);
+
+            AccessibilityHelper.performBack();
+
+            returnHome();
+        }catch (Exception ex){
+
+        }
+        return false;
     }
 
     //-----------------------------------------------------------
 
 
+    //微信分享
+    private boolean WeChatShare(){
+        try{
+            if(!returnHome()){
+                return false;
+            }
+            mGestureUtil.clickByResourceId("com.jm.video:id/share");
+
+            if(!mCommonFunctionTask.judgeNodeIsHavingByText("分享到")) return false;
+
+            mGestureUtil.clickByText("微信好友");
+
+            mFunction.click_sleep();
+
+            AccessibilityHelper.performBack();
+
+            returnHome();
+        }catch (Exception ex){
+
+        }
+        return true;
+    }
+
+    //看作者的主页
+    private boolean LookOverVideoAuthorHome(){
+
+        try{
+            if(!returnHome()){
+                return false;
+            }
+
+            mGestureUtil.clickByResourceId("com.jm.video:id/name");
+
+            String nodeInfoText = AccessibilityHelper.getNodeInfosTextByText("作品");
+
+            nodeInfoText = nodeInfoText.replace("作品","").trim();
+
+            if(Integer.valueOf(nodeInfoText) > 0){
+                mGestureUtil.clickByResourceId("com.jm.video:id/iv_cover");
+
+                int VideoCount = mFunction.getRandom_6_12();
+                if(VideoCount >= Integer.valueOf(nodeInfoText)){
+                    VideoCount = Integer.valueOf(nodeInfoText);
+                }
+
+                while (VideoCount > 0){
+
+                    //点击视频的间隔
+                    int VideoInterval = 6+ mFunction.getRandom_6_12();
+
+                    if(mCommonTask.isCloseAppTask()){ break; }
+
+                    mGestureUtil.scroll_up_30();
+
+                    mToast.success("视频任务:浏览"+VideoInterval+"秒");
+
+                    //设置收益的最新时间
+                    mIncomeTask.setLastIncomeTime();
+
+                    if(VideoInterval >= 17){
+                        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText("关注");
+                        if(nodeInfo != null){
+                            mGestureUtil.click(nodeInfo);
+                        }else {
+                            mGestureUtil.clickByResourceId("com.jm.video:id/praise");
+                        }
+                        mGestureUtil.clickByResourceId("com.jm.video:id/praise");
+                    }
+
+                    LookOverIncome();
+
+                    mFunction.sleep( VideoInterval * 1000);
+                    VideoCount--;
+                }
+
+                returnHome();
+            }
+        }catch (Exception ex){
+
+        }
+        return true;
+    }
+
+    private void LookOverIncome(){
+        try{
+            if(!returnHome()){
+                return;
+            }
+
+            if(mCommonFunctionTask.judgeNodeIsHavingByResId("com.jm.video:id/frame_box_open_new")){
+                mGestureUtil.clickByResourceId("com.jm.video:id/frame_box_open_new");
+                mFunction.click_sleep();
+                mGestureUtil.clickByResourceId("com.jm.video:id/view_gold");
+
+                int LoopCounter = 15;
+                while (LoopCounter > 0){
+                    if(mCommonFunctionTask.judgeNodeIsHavingByResId("com.jm.video:id/tt_video_ad_close")){
+                        mGestureUtil.clickByResourceId("com.jm.video:id/tt_video_ad_close");
+                        returnHome();
+                    }
+                    LoopCounter--;
+                    mFunction.click_sleep();
+                }
+            }
+        }catch (Exception ex){
+
+        }
+    }
+
+
+
     //关闭APP弹出的所有可能弹框
     private void CloseDialog(){
+        AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosByText("首页");
+        if(node != null){
+            Rect rect = new Rect();
+            node.getBoundsInScreen(rect);
+            if(rect.right < 0 || rect.right > mGlobal.mScreenWidth){
+                AccessibilityHelper.performBack();
+            }
+        }
+
+
         mGestureUtil.clickByResourceId("com.jm.video:id/imgClose");
         mGestureUtil.clickByText("邀请好友最高可得");
     }

@@ -9,10 +9,12 @@ import com.vondear.rxtool.view.RxToast;
 
 import java.util.List;
 
+import eie.robot.com.R;
 import eie.robot.com.accessibilityservice.AccessibilityHelper;
 import eie.robot.com.common.mCommonFunctionTask;
 import eie.robot.com.common.mCommonTask;
 import eie.robot.com.common.mConfig;
+import eie.robot.com.common.mData;
 import eie.robot.com.common.mDeviceUtil;
 import eie.robot.com.common.mFunction;
 import eie.robot.com.common.mGestureUtil;
@@ -42,6 +44,9 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                     continue;
                 }
 
+                //领取圣诞树奖励
+                performTask_TimeSlotReward_Tree();
+
                 //领取时段奖励
                 performTask_TimeSlotReward();
 
@@ -51,13 +56,14 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                     break;
                 }
 
-                //看视频
-                performTask_WatchVideo();
-                //阅读文章
-                performTask_LookNews();
+                if(mFunction.getRandomBooleanOffsetTrue() || this.VideoIsFinish){
+                    //阅读文章
+                    performTask_LookNews();
+                }else {
+                    //看视频
+                    performTask_WatchVideo();
+                }
 
-                //看视频
-                performTask_WatchVideo();
             }
             catch (Exception ex){
                 mToast.error(ex.getMessage());
@@ -72,7 +78,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
     //看视频总任务
     @Override
     Boolean performTask_WatchVideo(){
-        int RefreshCount =   mFunction.getRandom_4_8();
+        int RefreshCount =   mFunction.getRandom_1_3();
         while (RefreshCount > 0){
             //判断收益
             if(JudgeGoldIncomeIsMax()){
@@ -180,7 +186,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
     //看新闻总任务
     @Override
     Boolean performTask_LookNews(){
-        int RefreshCount =   mFunction.getRandom_4_8();
+        int RefreshCount =   mFunction.getRandom_2_4();
         while (RefreshCount > 0){
             //判断收益
             if(mCommonTask.isCloseAppTask() || this.ArticleIsFinish){ break;}
@@ -204,6 +210,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
         int NewsCount = mFunction.getRandom_4_8();
 
         while (NewsCount > 0){
+
             if(mCommonTask.isCloseAppTask()){ break; }
 
             //判断收益
@@ -249,45 +256,80 @@ public class RobTaskJuKanDian extends BaseRobotTask {
 
                 //开始滑动文章
                 while (SwiperCount > 0) {
-                    if(mCommonTask.isCloseAppTask() || this.ArticleIsFinish){ break; }
 
-                    this.CloseDialog();
+                    try{
+                        if(mCommonTask.isCloseAppTask() || this.ArticleIsFinish){ break; }
 
+                        this.CloseDialog();
 
-
-                    //判断是否处于文章页，如果不是则退出
-                    AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosByText("评论得金币");
-                    if(XinWenNode == null){
-                        AccessibilityHelper.performBack();
-                        mFunction.click_sleep();
-                        XinWenNode = AccessibilityHelper.findNodeInfosByText("评论得金币");
+                        //判断是否处于文章页，如果不是则退出
+                        AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosByText("评论得金币");
                         if(XinWenNode == null){
-                            mGestureUtil.click(SizeOffset,mDeviceUtil.getStatusBarHeight()+SizeOffset);
-                            break;
+                            AccessibilityHelper.performBack();
+                            mFunction.click_sleep();
+                            XinWenNode = AccessibilityHelper.findNodeInfosByText("评论得金币");
+                            if(XinWenNode == null){
+                                mGestureUtil.click(SizeOffset,mDeviceUtil.getStatusBarHeight()+SizeOffset);
+                                break;
+                            }
                         }
+                        //向上滑动
+                        mGestureUtil.scroll_up();
+
+                        //点开【查看全文，奖励更多】按钮，阅读全文
+                        if(mGestureUtil.clickByText("查看全文，奖励更多") || mGestureUtil.clickWebNodeByText("查看全文，奖励更多")){
+                            mToast.success("查看全文，奖励更多");
+                        }
+
+
+
+                        //设置收益的最新时间
+                        mIncomeTask.setLastIncomeTime();
+
+                        //停止进行阅读
+                        int sleepTime = mFunction.getRandom_2_5();
+                        mFunction.sleep(sleepTime * 1000);
+                        SwiperCount--;
+                    }catch (Exception ex){
+                        mToast.error_sleep(ex.getMessage());
                     }
-                    //向上滑动
-                    mGestureUtil.scroll_up();
-
-                    //点开【查看全文，奖励更多】按钮，阅读全文
-                    if(mGestureUtil.clickByText("查看全文，奖励更多") || mGestureUtil.clickWebNodeByText("查看全文，奖励更多")){
-                        mToast.success("查看全文，奖励更多");
-                    }
-
-
-
-                    //设置收益的最新时间
-                    mIncomeTask.setLastIncomeTime();
-
-                    //停止进行阅读
-                    int sleepTime = mFunction.getRandom_2_5();
-                    mFunction.sleep(sleepTime * 1000);
-                    SwiperCount--;
                 }
+
+                LookNewsSendingComment();
             }
             NodeCounter--;
         }
         return true;
+    }
+
+    //看新闻输入评论
+    private boolean LookNewsSendingComment(){
+        try{
+            if(!mCommonFunctionTask.judgeNodeIsHavingByText("评论得金币")) return false;
+
+            if(!mGestureUtil.clickByResourceId("com.xiangzi.jukandian:id/fl_comment_layout")) return false;
+
+            if(!mCommonFunctionTask.judgeNodeIsHavingByText("点赞是一种态度")) return false;
+
+            List<AccessibilityNodeInfo> nodes = AccessibilityHelper.findNodeInfosByIds("com.xiangzi.jukandian:id/comment_content");
+            if(nodes == null || nodes.size() <= 0) return false;
+
+            String CommentText = nodes.get(nodes.size()-1).getText().toString();
+
+            mGestureUtil.clickByText("评论得金币");
+
+            AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByClassName("android.widget.EditText");
+            if(nodeInfo == null) return false;
+            mCommonFunctionTask.pasteTextToNode(nodeInfo, CommentText);
+
+            mFunction.click_sleep();
+
+            mGestureUtil.clickByText("发送");
+
+        }catch (Exception ex){
+
+        }
+        return false;
     }
 
     //-----------------------------------------------------------
@@ -303,13 +345,32 @@ public class RobTaskJuKanDian extends BaseRobotTask {
         }
         mGestureUtil.clickByResourceId("com.xiangzi.jukandian:id/icon_home_left_timer_lq");
         this.CloseDialog();
+
         return true;
     }
+
+    //领取圣诞树奖励
+    private boolean performTask_TimeSlotReward_Tree(){
+        mGestureUtil.clickTab(5,4);
+        mGestureUtil.click(mGlobal.mScreenWidth-SizeOffset,(float) (mGlobal.mScreenHeight*0.79));
+        return true;
+    }
+
 
     //关闭APP弹出的所有可能弹框
     private void CloseDialog(){
         //签到
         SignIn();
+
+        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findWebViewNodeInfosByText("阅读福袋");
+        if(nodeInfo != null){
+            Rect rect = new Rect();
+            nodeInfo.getBoundsInScreen(rect);
+            if(rect.top < mGlobal.mScreenHeight-100 && rect.top > 100){
+                mGestureUtil.click((float) (mGlobal.mScreenWidth*0.67),rect.top+rect.height()-50);
+            }
+
+        }
 
         mGestureUtil.clickByText("不再提醒");
         mGestureUtil.clickByText("确认关闭");
@@ -326,6 +387,8 @@ public class RobTaskJuKanDian extends BaseRobotTask {
         mGestureUtil.clickByText("继续赚钱");
 
         mGestureUtil.clickByResourceId("com.xiangzi.jukandian:id/close_img_layout");
+
+
     }
 
     //判断今日的收益是否已经达到最大值
@@ -359,7 +422,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
             String ArticleIncomeCounter = node.getText() == null ? node.getContentDescription().toString() : node.getText().toString();
             ArticleIncomeCounter = ArticleIncomeCounter.replace("今日奖励次数(","");
             ArticleIncomeCounter = ArticleIncomeCounter.replace("次)","");
-            if(Integer.valueOf(ArticleIncomeCounter) >= 150){
+            if(Integer.valueOf(ArticleIncomeCounter) >= 150*mFunction.getRandom_06_08()){
                 this.ArticleIsFinish = true;
             }
 
@@ -371,7 +434,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
             String VideoIncomeCounter =  node.getChild(1).getText() == null ? node.getChild(1).getContentDescription().toString() :  node.getChild(1).getText().toString();
             VideoIncomeCounter = VideoIncomeCounter.replace("今日奖励次数(","");
             VideoIncomeCounter = VideoIncomeCounter.replace("次)","");
-            if(Integer.valueOf(VideoIncomeCounter) >= 50){
+            if(Integer.valueOf(VideoIncomeCounter) >= 50*mFunction.getRandom_06_08()){
                 this.VideoIsFinish = true;
             }
 

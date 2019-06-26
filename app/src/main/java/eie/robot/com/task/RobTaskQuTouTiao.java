@@ -35,7 +35,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
     public RobTaskQuTouTiao() {
         super();
         this.AppName = "趣头条";
-        this.TodayMaxIncome = 4200;
+        this.TodayMaxIncome = 3999;
         this.TodayIncomeIsFinsh = false;
     }
 
@@ -49,6 +49,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
                 if(!returnHome()){
                     continue;
                 }
+
                 //领取时段奖励
                 performTask_TimeSlotReward();
 
@@ -59,11 +60,20 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
 
                 //签到
                 SignIn();
-                //刷视频
-                performTask_WatchVideo();
 
-                //看新闻
-                performTask_LookNews();
+                if(mFunction.getRandomBooleanOffsetTrue()){
+                    //看新闻
+                    performTask_LookNews();
+                }else {
+                    if(mFunction.getRandomBoolean()){
+                        //刷列表视频
+                        performTask_WatchVideo_list();
+                    }else {
+                        //刷小视频
+                        performTask_WatchVideo();
+                    }
+
+                }
 
             }catch (Exception ex){
                 RxToast.error(AppName+"出错:"+ex.getMessage());
@@ -79,7 +89,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
     @Override
     Boolean performTask_LookNews(){
         //阅读文章
-        int RefreshCount =   mFunction.getRandom_10_20();
+        int RefreshCount =   mFunction.getRandom_2_4();
         while (RefreshCount > 0){
             if(mCommonTask.isCloseAppTask()){ break; }
             performTask_LookNews_1();
@@ -166,6 +176,11 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
 
                         SwiperCount--;
                     }
+
+                    if(mFunction.getRandomBoolean()){
+                        LookNewsSendingComment();
+                    }
+
                     //阅读完返回
                     AccessibilityHelper.performBack();
                     mFunction.click_sleep();
@@ -179,12 +194,79 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
         return true;
     }
 
+    //看新闻输入评论
+    private boolean LookNewsSendingComment(){
+        try{
+            AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByClassName("android.support.v7.widget.RecyclerView");
+            if(nodeInfo == null) return false;
+
+            String CommentText = nodeInfo.getChild(1).getChild(0).getChild(1).getChild(0).getText().toString();
+            if(CommentText.isEmpty())return false;
+
+            mGestureUtil.clickByText("1金币");
+
+            mGestureUtil.clickByText("评论得赏金");
+
+            nodeInfo = AccessibilityHelper.findNodeInfosByClassName("android.widget.EditText");
+            if(nodeInfo == null) return false;
+
+            mCommonFunctionTask.pasteTextToNode(nodeInfo,CommentText);
+
+            mGestureUtil.clickByText("立即评论");
+
+        }catch (Exception ex){
+
+        }
+        return false;
+    }
+
+    //-----------------------------------------------------------
+
+    //看列表视频总任务
+    Boolean performTask_WatchVideo_list(){
+
+        mGestureUtil.clickTab(5,2);
+        int RefreshCount =   mFunction.getRandom_4_8();
+        while (RefreshCount > 0){
+            if(mCommonTask.isCloseAppTask()){ break; }
+            mGestureUtil.clickTab(5,2);
+
+            performTask_WatchVideo_list_1();
+
+            mGestureUtil.scroll_up();
+            mGestureUtil.scroll_up();
+            RefreshCount -- ;
+        }
+        return false;
+    }
+
+    //看列表视频子任务一
+    private boolean performTask_WatchVideo_list_1(){
+
+        List<AccessibilityNodeInfo> node = AccessibilityHelper.findNodeInfoByText(":");
+        if(node == null) return false;
+
+        int loopCounter = node.size();
+        while (loopCounter >0 ){
+            loopCounter--;
+            if(filterAdvertisement(node.get(loopCounter))){
+                continue;
+            }
+            if(mGestureUtil.clickByCoordinate(node.get(loopCounter))){
+                //设置收益的最新时间
+                mIncomeTask.setLastIncomeTime();
+                mFunction.sleep(mFunction.getRandom_6_12()*3000);
+            }
+        }
+        return true;
+    }
+
     //-----------------------------------------------------------
 
     //看视频总任务
     @Override
     Boolean performTask_WatchVideo(){
-        int RefreshCount =   mFunction.getRandom_10_20();
+        int RefreshCount =   mFunction.getRandom_4_8();
         while (RefreshCount > 0){
             AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText("赚钱玩");
             if(nodeInfo != null){
@@ -217,8 +299,51 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
             mGestureUtil.doubleClickInScreenCenter();
         }
         mFunction.sleep( VideoInterval * 1000);
+
+        if(mFunction.getRandomBoolean()){
+            VideoSendingComment();
+        }
         return true;
     }
+
+    //小视频输入评论
+    private boolean VideoSendingComment(){
+        try{
+
+            AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByClassName("android.support.v7.widget.RecyclerView");
+            if(nodeInfo == null) return false;
+
+            nodeInfo = nodeInfo.getChild(0).getChild(4).getChild(0).getChild(1);
+            if(nodeInfo == null) return false;
+
+            mGestureUtil.click(nodeInfo);
+
+            if(!mCommonFunctionTask.judgeNodeIsHavingByText("条评论")) return false;
+
+            mGestureUtil.clickByText("1金币");
+
+            nodeInfo = AccessibilityHelper.findNodeInfosByClassName("android.support.v7.widget.RecyclerView");
+            if(nodeInfo == null) return false;
+
+            String CommentText = nodeInfo.getChild(1).getChild(0).getChild(1).getChild(0).getText().toString();
+            if(CommentText.isEmpty())return false;
+
+            mGestureUtil.clickByText("评论得赏金");
+
+            nodeInfo = AccessibilityHelper.findNodeInfosByClassName("android.widget.EditText");
+            if(nodeInfo == null) return false;
+
+            mCommonFunctionTask.pasteTextToNode(nodeInfo,CommentText);
+
+            mGestureUtil.clickByText("立即评论");
+
+            AccessibilityHelper.performBack();
+        }catch (Exception ex){
+
+        }
+        return false;
+    }
+
 
     //-----------------------------------------------------------
 
@@ -306,6 +431,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
 
     //判断今日的收益是否已经达到最大值
     private Boolean JudgeGoldIncomeIsMax(){
+
         if(!returnHome()){
             return false;
         }
@@ -317,10 +443,11 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
             return false;
         }
         try{
-            AccessibilityNodeInfo nodes = AccessibilityHelper.findNodeInfosByText("今日阅读(分钟)");
+
+            AccessibilityNodeInfo nodes = AccessibilityHelper.findNodeInfosByText("今日阅读");
             if(nodes != null && nodes.getParent() != null && nodes.getParent().getChildCount() > 1){
                 String ReadTime = nodes.getParent().getChild(0).getText().toString().trim();
-                if(Float.valueOf(ReadTime) > 120 ){
+                if(Float.valueOf(ReadTime) > 60 ){
                     this.TodayIncomeIsFinsh = true;
                     mToast.success("今日阅读时间过长("+ReadTime+")，结束工作");
                     mFunction.sleep(mConfig.clickSleepTime);
@@ -333,7 +460,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
                 String incomeText = nodeInfo.getText().toString().trim();
                 incomeText = incomeText.replaceAll("今日金币","").trim();
                 if(Integer.valueOf(incomeText) > this.TodayMaxIncome){
-                    AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosByText("今日阅读(分钟)");
+                    AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosByEqualText("今日阅读");
                     if(node != null && node.getParent() != null && node.getParent().getChildCount() > 1){
                         String ReadTime = node.getParent().getChild(0).getText().toString().trim();
                         if(Float.valueOf(ReadTime) < 60 ){
@@ -370,4 +497,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
         });
 
     }
+
+
+
 }

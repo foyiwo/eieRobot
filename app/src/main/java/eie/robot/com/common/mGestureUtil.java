@@ -13,6 +13,28 @@ import com.vondear.rxtool.RxDeviceTool;
 import eie.robot.com.accessibilityservice.AccessibilityHelper;
 
 public class mGestureUtil {
+
+    public static void continuedClick(AccessibilityNodeInfo nodeInfo, int Count){
+
+        if(nodeInfo == null) return;
+        Rect rect = new Rect();
+        nodeInfo.getBoundsInScreen(rect);
+        float x = rect.left+rect.width()/2;
+        float y = rect.top+rect.height()/2;
+
+        mGestureUtil.continuedClick(x,y,Count);
+    }
+    public static void continuedClick(float x,float y, int Count){
+        while (Count > 0){
+            long clicktime = 0;
+            if(mFunction.judgeAndroidVersionIsGreater7()){
+                clicktime = 500;
+            }
+            mGestureUtil.click(x,y,clicktime);
+            Count --;
+        }
+    }
+
     /**
      * 触发一个触摸手势
      * @param sx 起点 x 轴
@@ -84,6 +106,65 @@ public class mGestureUtil {
 
     }
 
+    //通过坐标点击
+    public static Boolean clickByCoordinate(AccessibilityNodeInfo nodeInfo){
+        return clickByCoordinate(nodeInfo,150);
+    }
+
+    //通过坐标点击
+    public static Boolean clickByCoordinate(AccessibilityNodeInfo nodeInfo,Integer offsize){
+        if(nodeInfo == null){
+            return false;
+        }
+        float x = 0;
+        float y = 0;
+
+        Rect rect = new Rect();
+        nodeInfo.getBoundsInScreen(rect);
+
+        x = rect.left+rect.width()/2;
+        y = rect.top+rect.height()/2;
+
+        if(y < mGlobal.mScreenHeight-offsize && y > offsize){
+            return click(x,y);
+        }
+        return false;
+
+    }
+
+    //通过坐标点击
+    public static Boolean clickByCoordinateByText(String Text){
+        if(Text == null || Text.isEmpty()){
+            return false;
+        }
+        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByEqualText(Text);
+        if(nodeInfo == null ){
+            return false;
+        }
+
+        mGestureUtil.clickByCoordinate(nodeInfo);
+
+        return false;
+
+    }
+
+    //通过坐标点击
+    public static Boolean clickByCoordinateByResId(String ResId){
+        if(ResId == null || ResId.isEmpty()){
+            return false;
+        }
+        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById(ResId);
+        if(nodeInfo == null ){
+            return false;
+        }
+
+        mGestureUtil.clickByCoordinate(nodeInfo);
+
+        return false;
+
+    }
+
+
     public static Boolean click(AccessibilityNodeInfo nodeInfo){
         if(nodeInfo == null){
             return false;
@@ -140,6 +221,8 @@ public class mGestureUtil {
     public static boolean click(float x,float y){
         return mGestureUtil.click(x,y,mConfig.clickSleepTime);
     }
+
+
     public static void clickTab(int TabCount,int Number){
         mGestureUtil.click((mGlobal.mScreenWidth/TabCount)*Number-40,mGlobal.mScreenHeight-40);
     }
@@ -147,7 +230,7 @@ public class mGestureUtil {
     public static Boolean click(float x,float y,long clicktime){
 
         if(!mFunction.judgeAndroidVersionIsGreater7()){
-            mAdbShell.click(x,y);
+            mAdbShell.click(x,y,clicktime);
             return true;
         }
 
@@ -183,8 +266,8 @@ public class mGestureUtil {
         if(text == null || text.isEmpty()){
             return false;
         }
-        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText(text);
-        if(nodeInfo == null || !nodeInfo.getText().toString().equals(text)){
+        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByEqualText(text);
+        if(nodeInfo == null ){
             return false;
         }
         if(AccessibilityHelper.performClick(nodeInfo)){
@@ -391,6 +474,7 @@ public class mGestureUtil {
         mFunction.click_sleep();
         return true;
     }
+
     public static void MultipleScrollUp(int count){
         int i=0;
         while (i < count) {

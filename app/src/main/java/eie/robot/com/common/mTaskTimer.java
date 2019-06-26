@@ -162,6 +162,7 @@ public class mTaskTimer {
     }
 
     public static Boolean judgeTimeIsInNight(){
+
         //获取当前时间
         String currentTime = mDateUtil.formatDate(new Date(),"datetime");
 
@@ -169,15 +170,15 @@ public class mTaskTimer {
 
         int StartRamdomNumber = mFunction.getRandom_4_8();
         int EndRamdomNumber = mFunction.getRandom_4_8();
-        String startTime = currentDate+" 00:00:00";
-        String endTime = currentDate+" 07:3"+EndRamdomNumber+":00";
+        String startTime = currentDate+" 23:00:00";
+        String endTime = currentDate+" 09:0"+EndRamdomNumber+":00";
 
         //比较时间
         int start   = mDateUtil.compareDate(currentTime,startTime);
         int end     = mDateUtil.compareDate(endTime,currentTime);
 
         //属于休眠时间
-        if(start > 0 && end > 0){
+        if(start > 0 || end > 0){
             return true;
         }
         return false;

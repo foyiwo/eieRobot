@@ -6,6 +6,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import com.vondear.rxtool.view.RxToast;
 
 import eie.robot.com.accessibilityservice.AccessibilityHelper;
+import eie.robot.com.common.mCacheTask;
 import eie.robot.com.common.mCommonTask;
 import eie.robot.com.common.mConfig;
 import eie.robot.com.common.mDeviceUtil;
@@ -485,7 +486,7 @@ public class RobTaskZhongQingKanDian extends BaseRobotTask {
             mGestureUtil.click(SignNode);
             this.CloseDialog();
             mFunction.click_sleep();
-            mGestureUtil.click(mGlobal.mScreenWidth-2*SizeOffset,(float) (mGlobal.mScreenHeight*0.3));
+            mCacheTask.ClearPhoneROMTask();
             returnHome();
             return true;
         }

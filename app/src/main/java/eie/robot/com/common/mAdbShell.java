@@ -103,10 +103,10 @@ public class mAdbShell {
         return execRootCmd("pm list packages");
     }
 
-    public static boolean click(float x,float y){
+    public static boolean click(float x,float y,long clicktime){
         String shells = "input tap "+x+" "+y;
         Integer result = execRootCmdSilent(shells);
-        mFunction.click_sleep();
+        mFunction.sleep(clicktime);
         return true;
     }
 

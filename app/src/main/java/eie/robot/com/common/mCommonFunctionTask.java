@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.graphics.Rect;
 import android.os.Looper;
 import android.support.v7.widget.WithHint;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -40,7 +41,11 @@ public class mCommonFunctionTask {
 
         //判断是否处于文章页，如果不是则退出
         AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosByText(desc);
-        return XinWenNode != null;
+        if(XinWenNode == null ) return false;
+        Rect rect = new Rect();
+        XinWenNode.getBoundsInScreen(rect);
+        if(rect.top < mGlobal.mScreenHeight && rect.top > 0)  return true;
+        return false;
     }
 
     public static boolean judgeNodeIsHavingByResId(String ResId){

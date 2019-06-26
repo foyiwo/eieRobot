@@ -112,6 +112,7 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
             }
             mToast.info("阅读完毕，首页滑动");
             mGestureUtil.scroll_up();
+            mGestureUtil.scroll_up();
             NewsCount -- ;
         }
         //刷资讯
@@ -289,6 +290,7 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
             mGestureUtil.click(node);
             AccessibilityHelper.performBack();
         }
+        this.CloseDialog();
         return true;
     }
 
@@ -368,12 +370,8 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
             mGestureUtil.click(node);
         }
 
-        //判断是否点多了，触发了【退出APP确认框】
-        AccessibilityNodeInfo NodeInfo3 = AccessibilityHelper.findNodeInfosByText("确认退出聚看点？");
-        AccessibilityNodeInfo NodeInfo4 = AccessibilityHelper.findNodeInfosByText("继续赚钱");
-        if ( NodeInfo3 != null && NodeInfo4 != null ) {
-            mGestureUtil.click(NodeInfo4);
-        }
+        mGestureUtil.clickByText("笑纳了");
+
         node = AccessibilityHelper.findNodeInfosById("com.xiangzi.jukandian:id/close_img_layout");
         if(node != null){
             mGestureUtil.click(node);
@@ -444,7 +442,7 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
 
     //回归到首页，如果APP未打开，则会自行打开
     private boolean returnHome(){
-        return returnHome("首页","任务",new Runnable() {
+        return returnHome("追踪","任务",new Runnable() {
             @Override
             public void run() {
                 CloseDialog();

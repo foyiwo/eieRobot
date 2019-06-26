@@ -1,5 +1,6 @@
 package eie.robot.com.task;
 
+import android.graphics.Rect;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.vondear.rxtool.RxDeviceTool;
@@ -32,7 +33,8 @@ public abstract class BaseRobotTask {
     boolean YueDuWenZhangIsFinish   = false;
     boolean WenZhangTouPiaoIsFinish = false;
     boolean ShiPingTouPiaoIsFinish  = false;
-
+    boolean PingLunIsFinish  = false;
+    int PingLunCounter = 0;
     //热词搜索
     boolean isHotWordFinish = false;
 
@@ -98,10 +100,8 @@ public abstract class BaseRobotTask {
 
         //确定已经打开应用之后，下面确定是否处于首页。
         //获取底部导航栏的图标来判断
-        AccessibilityNodeInfo NodeInfo1 = AccessibilityHelper.findNodeInfosByText(Nav1);
-        AccessibilityNodeInfo NodeInfo2 = AccessibilityHelper.findNodeInfosByText(Nav2);
 
-        if ( (NodeInfo1 != null && NodeInfo1.getText().equals(Nav1)) || (NodeInfo2 != null && NodeInfo2.getText().equals(Nav2) )) {
+        if (isInHomeByText(Nav1,Nav2)) {
            //说明正处于首页
             return true;
         } else {
@@ -112,10 +112,8 @@ public abstract class BaseRobotTask {
                 //清理可能出现的各种弹框
                 runnable.run();//this.CloseDialog();
                 mCloseSystem();
-                //再次获取底部导航栏
-                NodeInfo1 = AccessibilityHelper.findNodeInfosByText(Nav1);
-                NodeInfo2 = AccessibilityHelper.findNodeInfosByText(Nav2);
-                if ( (NodeInfo1 != null && NodeInfo1.getText().equals(Nav1)) || (NodeInfo2 != null && NodeInfo2.getText().equals(Nav2) )) {
+
+                if (isInHomeByText(Nav1,Nav2)) {
                     break;
                 }
                 //尝试点击一次返回键
@@ -131,7 +129,7 @@ public abstract class BaseRobotTask {
                 }
                 count--;
             }
-            if ( (NodeInfo1 != null && NodeInfo1.getText().equals(Nav1)) || (NodeInfo2 != null && NodeInfo2.getText().equals(Nav2) )) {
+            if (isInHomeByText(Nav1,Nav2)) {
                 return true;
             } else {
                 //如果一直没反应，尝试着点击一下屏幕中心。
@@ -140,6 +138,27 @@ public abstract class BaseRobotTask {
                 return false;
             }
         }
+    }
+
+    private boolean isInHomeByText(String Nav1, String Nav2){
+        AccessibilityNodeInfo NodeInfo1 = AccessibilityHelper.findNodeInfosByEqualText(Nav1);
+        AccessibilityNodeInfo NodeInfo2 = AccessibilityHelper.findNodeInfosByEqualText(Nav2);
+
+        if ( NodeInfo1 != null || NodeInfo2 != null ) {
+            Rect rect = new Rect();
+            if(NodeInfo1 != null){
+                NodeInfo1.getBoundsInScreen(rect);
+                if(rect.right > 0){
+                    //说明正处于首页
+                    return true;
+                }else {
+                    return false;
+                }
+            }
+            return true;
+
+        }
+        return false;
     }
 
     boolean returnHomeById(String Nav1, String Nav2, Runnable runnable){

@@ -49,7 +49,7 @@ public class mCacheTask {
         AccessibilityNodeInfo nodeInfo = null;
         int count = 3 * mConfig.loopCount;
         while (count > 0) {
-            nodeInfo = AccessibilityHelper.findNodeInfosByText("清理选中垃圾");
+            nodeInfo = AccessibilityHelper.findNodeInfosByText("选中垃圾");
             if ( nodeInfo != null ) {
                 break;
             }
