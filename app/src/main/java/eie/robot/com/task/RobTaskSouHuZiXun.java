@@ -17,6 +17,7 @@ import eie.robot.com.common.mGestureUtil;
 import eie.robot.com.common.mGlobal;
 import eie.robot.com.common.mIncomeTask;
 import eie.robot.com.common.mToast;
+import eie.robot.com.common.mUploadDataUtil;
 
 public class RobTaskSouHuZiXun extends BaseRobotTask {
 
@@ -26,41 +27,50 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
         this.AppName = "搜狐资讯";
         this.TodayMaxIncome = 3500;
         this.TodayIncomeIsFinsh = false;
+        this.TaskCounterDefaultValue = 3;
     }
 
     //执行刷单任务（领取时段奖励、定时刷新视频、查看文章）
     @Override
     public boolean StartTask()  {
-        super.StartTask();
-        while (mCommonTask.isOpenAppTask()){
-            try {
-                if(this.TodayIncomeIsFinsh){
-                    break;
+        try{
+            super.StartTask();
+            while (mCommonTask.isOpenAppTask()){
+                try {
+                    if(this.TodayIncomeIsFinsh){
+                        break;
+                    }
+
+                    //每次进行一项任务时，都先恢复到首页
+                    //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
+                    if(!returnHome()){
+                        continue;
+                    }
+
+                    UploadIncome();
+
+                    //判断收益是否封顶（每次重启的时候查一次）
+                    this.TaskCounter = this.TaskCounterDefaultValue;
+
+                    //签到
+                    SignIn();
+
+                    //阅读文章
+                    performTask_LookNews();
+
+                    //看视频
+                    performTask_WatchVideo();
                 }
-
-                //每次进行一项任务时，都先恢复到首页
-                //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
-                if(!returnHome()){
-                    continue;
+                catch (Exception ex){
+                    mToast.error(ex.getMessage());
                 }
-
-                //判断收益是否封顶（每次重启的时候查一次）
-                this.TaskCounter = this.TaskCounterDefaultValue;
-
-                //签到
-                SignIn();
-
-                //阅读文章
-                performTask_LookNews();
-
-                //看视频
-                performTask_WatchVideo();
             }
-            catch (Exception ex){
-                mToast.error(ex.getMessage());
-            }
+            UploadIncome();
+            super.CloseTask();
+        }catch (Exception ex){
+
         }
-        super.CloseTask();
+
         return false;
     }
 
@@ -439,6 +449,61 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
         }
 
     }
+
+    //上传APP的最新收益情况
+    private Boolean UploadIncome(){
+
+        try{
+
+            if(!mCommonFunctionTask.judgeNodeIsHavingByText("任务中心")){
+                if(!returnHome()){
+                    return false;
+                }
+
+                mGestureUtil.clickTab(4,4);
+
+                if(!returnHome()){
+                    return false;
+                }
+
+                mGestureUtil.scroll_down_half_screen();
+
+                if(!returnHome()){
+                    return false;
+                }
+            }
+
+            float cash = 0;
+            AccessibilityNodeInfo cash_item = AccessibilityHelper.findNodeInfosById("com.sohu.infonews:id/cash_item");
+            if(cash_item != null){
+                cash_item = cash_item.getChild(0).getChild(1);
+                if(cash_item != null){
+                    cash = Float.valueOf(cash_item.getText().toString());
+                }
+            }
+
+            float coin = 0;
+            AccessibilityNodeInfo money_item = AccessibilityHelper.findNodeInfosById("com.sohu.infonews:id/money_item");
+            if(money_item != null){
+                money_item = money_item.getChild(0).getChild(1);
+                if(money_item != null){
+                    String coinString = money_item.getText().toString().replace(",","");
+                    coin = Float.valueOf(coinString)/10000;
+                }
+            }
+
+            float rmd = cash + coin ;
+            mUploadDataUtil.postIncomeRecord(this.AppName,rmd);
+
+
+        }catch (Exception ex){
+
+        }
+
+
+        return true;
+    }
+
 
     //回归到首页，如果APP未打开，则会自行打开
     private boolean returnHome(){

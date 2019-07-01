@@ -344,7 +344,7 @@ public class mFunction {
     }
     public static Boolean getRandomBooleanOffsetTrue(){
         double res = Math.random()*20;
-        if(res > 9){
+        if(res > 8){
             return true;
         }
         return false;

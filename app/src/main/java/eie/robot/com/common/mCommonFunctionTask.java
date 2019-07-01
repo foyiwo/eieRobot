@@ -10,6 +10,7 @@ import android.support.v7.widget.WithHint;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import eie.robot.com.accessibilityservice.AccessibilityHelper;
+import retrofit2.http.PUT;
 
 public class mCommonFunctionTask {
 
@@ -92,6 +93,7 @@ public class mCommonFunctionTask {
         }
         return false;
     }
+
     public static boolean loopJudgeNodeIsHavingByText(int TestCount,String Text){
         while (TestCount > 0){
             AccessibilityNodeInfo XinWenNode = AccessibilityHelper.findNodeInfosByText(Text);
@@ -103,6 +105,7 @@ public class mCommonFunctionTask {
         }
         return false;
     }
+
     public static boolean loopJudgeNodeIsHavingByText(String Text){
         int TestCount = 10;
         return loopJudgeNodeIsHavingByText(TestCount,Text);
@@ -126,6 +129,7 @@ public class mCommonFunctionTask {
 
         if(mCommonFunctionTask.judgeNodeIsHavingByText("没有响应")){
             mGestureUtil.clickByText("确定");
+            mGestureUtil.clickByText("关闭应用");
         }
 
         if(mCommonFunctionTask.judgeNodeIsHavingByText("通知消息")){
@@ -135,6 +139,25 @@ public class mCommonFunctionTask {
         mGestureUtil.clickByResourceId("android:id/aerr_close");
         mGestureUtil.clickByText("关闭应用");
         mGestureUtil.clickByText("跳过");
+    }
+
+    public static void ControlWifi(){
+        if(mFunction.getRandomBooleanOffsetFalse()){
+            CloseWIFI();
+        }else {
+            OpenWIFI();
+        }
+    }
+
+    public static void CloseWIFI(){
+        if(!mFunction.judgeAndroidVersionIsGreater7()){
+            mAdbShell.CloseWIFI();
+        }
+    }
+    public static void OpenWIFI(){
+        if(!mFunction.judgeAndroidVersionIsGreater7()){
+            mAdbShell.OpenWIFI();
+        }
     }
 
 

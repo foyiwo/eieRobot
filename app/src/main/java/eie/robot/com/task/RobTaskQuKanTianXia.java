@@ -17,6 +17,7 @@ import eie.robot.com.common.mGestureUtil;
 import eie.robot.com.common.mGlobal;
 import eie.robot.com.common.mIncomeTask;
 import eie.robot.com.common.mToast;
+import eie.robot.com.common.mUploadDataUtil;
 
 public class RobTaskQuKanTianXia extends BaseRobotTask {
 
@@ -135,6 +136,7 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
         if(node == null) return false;
 
         int loopCounter = node.size();
+
         while (loopCounter > 0){
             try{
                 loopCounter--;
@@ -149,19 +151,29 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
 
                     mToast.info("新闻任务:滑动"+SwiperCount+"次");
 
+
+                    int loopXinWenCounter = 3;
                     //开始滑动文章
                     while (SwiperCount > 0) {
 
                         if(mCommonTask.isCloseAppTask()){ break; }
+
 
                         //判断是否处于文章页或者视频页，如果不是则退出
                         if(!mCommonFunctionTask.judgeNodeIsHavingByText("评论得金币")){
                             break;
                         }
 
-                        if(mCommonFunctionTask.judgeNodeIsHavingByText("查看更多评论")){
-                            break;
+                        while (loopXinWenCounter > 0){
+                            mGestureUtil.scroll_up(100,1000);
+                            mGestureUtil.click(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight-150);
+                            if(mCommonFunctionTask.judgeNodeIsHavingByText("保存")){
+                                AccessibilityHelper.performBack();
+                                mFunction.click_sleep();
+                            }
+                            loopXinWenCounter--;
                         }
+
 
                         //设置收益的最新时间
                         mIncomeTask.setLastIncomeTime();
@@ -177,7 +189,7 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
                         }
 
                         //停止进行阅读
-                        int sleepTime = mFunction.getRandom_4_8();
+                        int sleepTime = mFunction.getRandom_2_4();
                         mFunction.sleep(sleepTime * 1000);
                         SwiperCount--;
 
@@ -411,8 +423,14 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
         if(!returnHome()){
             return false;
         }
+
         //点击第一个功能列表
-        mGestureUtil.click(SizeOffset,mGlobal.mScreenHeight-SizeOffset);
+        mGestureUtil.clickTab(5,1);
+
+        if(mCommonFunctionTask.judgeNodeIsHavingByResId("com.yanhui.qktx:id/tv_time")){
+            mToast.success("时段奖励已领取");
+            return true;
+        }
 
         AccessibilityNodeInfo ScrollViewNodeInfo = AccessibilityHelper.findNodeInfosByClassName(
                 mGlobal.mAccessibilityService.getRootInActiveWindow()
@@ -420,13 +438,14 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
         if(ScrollViewNodeInfo == null){
             return false;
         }
-        mToast.success("时段奖励任务");
+
         Rect rect = new Rect();
         ScrollViewNodeInfo.getBoundsInScreen(rect);
         if(rect.width() < 1 || rect.top < 1){
             return false;
         }
 
+        mToast.success("领取时段奖励");
         //点击时段按钮
         mGestureUtil.click(rect.width() - SizeOffset,rect.top - SizeOffset);
 
@@ -434,7 +453,6 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
 
         return true;
     }
-
 
     //关闭APP弹出的所有可能弹框
     private void CloseDialog(){
@@ -478,7 +496,6 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
 
     }
 
-
     //判断今日的收益是否已经达到最大值
     private Boolean JudgeGoldIncomeIsMax(){
 
@@ -495,52 +512,56 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
         }
         mGestureUtil.scroll_down_100();
 
+        UploadIncome();
+
         AccessibilityNodeInfo IncomeNode = null;
 
         try{
-            AccessibilityNodeInfo nodes = AccessibilityHelper.findNodeInfosByText("今日阅读");
-            if(nodes != null && nodes.getParent() != null && nodes.getParent().getChildCount() > 1){
-                String ReadTime = nodes.getParent().getChild(0).getText().toString().trim();
-                if(Float.valueOf(ReadTime) > 60 ){
-                    this.TodayIncomeIsFinsh = true;
-                    mToast.success("今日阅读时间过长("+ReadTime+")，结束工作");
-                    mFunction.sleep(mConfig.clickSleepTime);
-                    return true;
-                }
-            }
 
             //利用ID的方式
             AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById("com.yanhui.qktx:id/tv_money_count");
             if(nodeInfo != null && nodeInfo.getClassName().equals("android.widget.TextView")){
                 IncomeNode = nodeInfo;
             }
+
+            if(IncomeNode != null){
+                String incomeText = IncomeNode.getText().toString().trim();
+                if(Integer.valueOf(incomeText) > this.TodayMaxIncome){
+                    AccessibilityNodeInfo nodes = AccessibilityHelper.findNodeInfosById("com.yanhui.qktx:id/tv_income_count");
+                    if(nodes != null && nodes.getParent() != null && nodes.getParent().getChildCount() > 1){
+                        String ReadTime = nodes.getText().toString().trim();
+                        if(Float.valueOf(ReadTime) < 60 ){
+                            this.TodayIncomeIsFinsh = false;
+                            mToast.success("今日收益("+incomeText+")已封顶("+this.TodayMaxIncome+"),但阅读时间未封顶("+ReadTime+")，继续工作");
+                            mFunction.sleep(mConfig.clickSleepTime);
+                            return false;
+                        }
+                    }
+
+                    this.TodayIncomeIsFinsh = true;
+                    mToast.success("今日收益("+incomeText+")已封顶("+this.TodayMaxIncome+")");
+                    mFunction.sleep(mConfig.clickSleepTime);
+                    return true;
+                }else {
+                    AccessibilityNodeInfo nodes = AccessibilityHelper.findNodeInfosById("com.yanhui.qktx:id/tv_income_count");
+                    if(nodes != null && nodes.getParent() != null && nodes.getParent().getChildCount() > 1){
+                        String ReadTime = nodes.getText().toString().trim();
+                        if(Float.valueOf(ReadTime) > 60 ){
+                            this.TodayIncomeIsFinsh = true;
+                            mToast.success("今日阅读时间过长("+ReadTime+")，结束工作");
+                            mFunction.sleep(mConfig.clickSleepTime);
+                            return true;
+                        }
+                    }
+                    mToast.success("今日收益("+incomeText+")未封顶("+this.TodayMaxIncome+")，继续工作");
+                    mFunction.sleep(mConfig.clickSleepTime);
+                    return false;
+                }
+            }
         }catch (Exception ex){
             mToast.error(this.AppName+"收益检测错误:"+ex.getMessage());
         }
-        if(IncomeNode != null){
-            String incomeText = IncomeNode.getText().toString().trim();
-            if(Integer.valueOf(incomeText) > this.TodayMaxIncome){
-                AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosByEqualText("今日阅读");
-                if(node != null && node.getParent() != null && node.getParent().getChildCount() > 1){
-                    String ReadTime = node.getParent().getChild(0).getText().toString().trim();
-                    if(Float.valueOf(ReadTime) < 60 ){
-                        this.TodayIncomeIsFinsh = false;
-                        mToast.success("今日收益("+incomeText+")已封顶("+this.TodayMaxIncome+"),但阅读时间未封顶("+ReadTime+")，继续工作");
-                        mFunction.sleep(mConfig.clickSleepTime);
-                        return false;
-                    }
-                }
 
-                this.TodayIncomeIsFinsh = true;
-                mToast.success("今日收益("+incomeText+")已封顶("+this.TodayMaxIncome+")");
-                mFunction.sleep(mConfig.clickSleepTime);
-                return true;
-            }else {
-                mToast.success("今日收益("+incomeText+")未封顶("+this.TodayMaxIncome+")，继续工作");
-                mFunction.sleep(mConfig.clickSleepTime);
-                return false;
-            }
-        }
 
         return false;
     }
@@ -563,8 +584,48 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
 
     //执行签到任务
     private void SignIn(){
+        if(this.IsSign ){
+            return;
+        }
         mToast.success("签到");
         mGestureUtil.clickTab(5,4);
+        this.IsSign = true;
+    }
+
+    //上传APP的最新收益情况
+    private Boolean UploadIncome(){
+
+        if(mCommonFunctionTask.judgeNodeIsHavingByResId("com.yanhui.qktx:id/tv_coin_count")){
+            String curValue = AccessibilityHelper.getNodeInfosTextByResourceId("com.yanhui.qktx:id/tv_coin_count");
+            if(!curValue.isEmpty()){
+                float rmd = Float.valueOf(curValue)/10000;
+                mUploadDataUtil.postIncomeRecord(this.AppName,rmd);
+            }
+            return true;
+        }
+
+        if(!returnHome()){
+            return false;
+        }
+
+        mGestureUtil.clickTab(5,5);
+
+        if(!returnHome()){
+            return false;
+        }
+
+        mGestureUtil.scroll_down_half_screen();
+
+        if(!returnHome()){
+            return false;
+        }
+
+        String curValue = AccessibilityHelper.getNodeInfosTextByResourceId("com.yanhui.qktx:id/tv_coin_count");
+        if(!curValue.isEmpty()){
+            float rmd = Float.valueOf(curValue)/10000;
+            mUploadDataUtil.postIncomeRecord(this.AppName,rmd);
+        }
+        return true;
     }
 
     //回归到首页，如果APP未打开，则会自行打开
@@ -576,4 +637,5 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
             }
         });
     }
+
 }

@@ -1,20 +1,15 @@
 package eie.robot.com.task;
 
 import android.graphics.Rect;
-import android.icu.lang.UCharacter;
 import android.view.accessibility.AccessibilityNodeInfo;
-
-import com.vondear.rxtool.RxBarTool;
-import com.vondear.rxtool.view.RxToast;
 
 import java.util.List;
 
-import eie.robot.com.R;
 import eie.robot.com.accessibilityservice.AccessibilityHelper;
 import eie.robot.com.common.mCommonFunctionTask;
 import eie.robot.com.common.mCommonTask;
 import eie.robot.com.common.mConfig;
-import eie.robot.com.common.mData;
+import eie.robot.com.common.mUploadDataUtil;
 import eie.robot.com.common.mDeviceUtil;
 import eie.robot.com.common.mFunction;
 import eie.robot.com.common.mGestureUtil;
@@ -35,41 +30,51 @@ public class RobTaskJuKanDian extends BaseRobotTask {
     //执行刷单任务（领取时段奖励、定时刷新视频、查看文章）
     @Override
     public boolean StartTask()  {
-        super.StartTask();
-        while (mCommonTask.isOpenAppTask()){
-            try {
-                //每次进行一项任务时，都先恢复到首页
-                //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
-                if(!returnHome()){
-                    continue;
+        try{
+            super.StartTask();
+
+            while (mCommonTask.isOpenAppTask()){
+                try {
+                    //每次进行一项任务时，都先恢复到首页
+                    //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
+                    if(!returnHome()){
+                        continue;
+                    }
+
+                    //上传数据
+                    UploadIncome();
+
+                    //领取圣诞树奖励
+                    performTask_TimeSlotReward_Tree();
+
+                    //领取时段奖励
+                    performTask_TimeSlotReward();
+
+                    //判断收益是否封顶（每次重启的时候查一次）
+                    this.TaskCounter = this.TaskCounterDefaultValue;
+
+                    if(mFunction.getRandomBooleanOffsetTrue() || this.VideoIsFinish){
+                        //阅读文章
+                        performTask_LookNews();
+                    }else {
+                        //看视频
+                        performTask_WatchVideo();
+                    }
+
+
+
                 }
-
-                //领取圣诞树奖励
-                performTask_TimeSlotReward_Tree();
-
-                //领取时段奖励
-                performTask_TimeSlotReward();
-
-                //判断收益是否封顶（每次重启的时候查一次）
-                this.TaskCounter = this.TaskCounterDefaultValue;
-                if(JudgeGoldIncomeIsMax()){
-                    break;
+                catch (Exception ex){
+                    mToast.error(ex.getMessage());
                 }
-
-                if(mFunction.getRandomBooleanOffsetTrue() || this.VideoIsFinish){
-                    //阅读文章
-                    performTask_LookNews();
-                }else {
-                    //看视频
-                    performTask_WatchVideo();
-                }
-
             }
-            catch (Exception ex){
-                mToast.error(ex.getMessage());
-            }
+            //上传数据
+            UploadIncome();
+            super.CloseTask();
+
+        }catch (Exception ex){
+
         }
-        super.CloseTask();
         return false;
     }
 
@@ -93,6 +98,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
 
     //看视频子任务一
     private boolean performTask_WatchVideo_1(){
+        UploadIncome();
 
         if(!returnHome()){
             return false;
@@ -125,6 +131,8 @@ public class RobTaskJuKanDian extends BaseRobotTask {
 
     //看视频子任务二
     private boolean performTask_WatchVideo_2() {
+
+
 
         List<AccessibilityNodeInfo> nodes = AccessibilityHelper.findNodeInfosByIds("com.xiangzi.jukandian:id/item_video_parent");
 
@@ -200,6 +208,8 @@ public class RobTaskJuKanDian extends BaseRobotTask {
 
     //看新闻子任务一
     private boolean performTask_LookNews_1(){
+        UploadIncome();
+
         if(!returnHome()){
             return false;
         }
@@ -237,6 +247,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
     //看新闻子任务二
     private boolean performTask_LookNews_2() {
 
+
         List<AccessibilityNodeInfo> nodes = AccessibilityHelper.findNodeInfosByIds("com.xiangzi.jukandian:id/item_artical_three_read_num");
 
         if(nodes == null || nodes.size() < 1){
@@ -251,9 +262,9 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                 //滑动次数(随机10到20)
                 int SwiperCount = mFunction.getRandom_6_12();
 
-
                 mToast.info("新闻任务:滑动"+SwiperCount+"次");
 
+                int loopXinWenCounter = 3;
                 //开始滑动文章
                 while (SwiperCount > 0) {
 
@@ -273,6 +284,14 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                                 break;
                             }
                         }
+
+                        while (loopXinWenCounter > 0){
+                            mGestureUtil.scroll_up(150,1000);
+                            mGestureUtil.click(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight - 150);
+                            loopXinWenCounter--;
+                        }
+
+
                         //向上滑动
                         mGestureUtil.scroll_up();
 
@@ -438,8 +457,6 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                 this.VideoIsFinish = true;
             }
 
-
-
             if(this.ArticleIsFinish && this.VideoIsFinish){
                 this.TodayIncomeIsFinsh = true;
                 mToast.success("今日收益已封顶");
@@ -470,6 +487,32 @@ public class RobTaskJuKanDian extends BaseRobotTask {
     //执行签到任务
     private void SignIn(){
         mGestureUtil.clickByText("一键签到");
+    }
+
+    //上传APP的最新收益情况
+    private Boolean UploadIncome(){
+        if(!returnHome()){
+            return false;
+        }
+
+        mGestureUtil.clickTab(5,5);
+
+        if(!returnHome()){
+            return false;
+        }
+
+        mGestureUtil.scroll_down_half_screen();
+
+        if(!returnHome()){
+            return false;
+        }
+        String curValue = AccessibilityHelper.getNodeInfosTextByResourceId("com.xiangzi.jukandian:id/curValue");
+        String goldValue = AccessibilityHelper.getNodeInfosTextByResourceId("com.xiangzi.jukandian:id/goldValue");
+        if(!curValue.isEmpty() && !goldValue.isEmpty()){
+            float rmd = Float.valueOf(curValue) + Float.valueOf(goldValue)/10000;
+            mUploadDataUtil.postIncomeRecord(this.AppName,rmd);
+        }
+        return true;
     }
 
     //回归到首页，如果APP未打开，则会自行打开

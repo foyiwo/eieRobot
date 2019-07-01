@@ -585,7 +585,9 @@ public final class AccessibilityHelper {
     public static String getNodeInfosTextByResourceId(String ResourceId){
         AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById(ResourceId);
         if(nodeInfo == null) return "";
-        if(nodeInfo.getText() == null) return "";
-        return nodeInfo.getText().toString().trim();
+
+        CharSequence charSequence = nodeInfo.getText() == null ? nodeInfo.getContentDescription() : nodeInfo.getText();
+        if(charSequence == null) return "";
+        return charSequence.toString().trim();
     }
 }

@@ -78,7 +78,7 @@ public class mAdbShell {
             Process p = Runtime.getRuntime().exec("su");
             dos = new DataOutputStream(p.getOutputStream());
 
-            Log.i(TAG, cmd);
+
             dos.writeBytes(cmd + "\n");
             dos.flush();
             dos.writeBytes("exit\n");
@@ -111,9 +111,21 @@ public class mAdbShell {
     }
 
     public static boolean dispatchGesture(float sx,float sy,float dx,float dy,long duration){
-        @SuppressLint("DefaultLocale")
+
         String cmd = String.format("input swipe %f %f %f %f ",sx,sy,dx,dy);
         Integer result = execRootCmdSilent(cmd);
+        mFunction.sleep(1000);
+        return true;
+    }
+
+    public static boolean CloseWIFI(){
+        execRootCmdSilent(" svc wifi disable ");
+        mFunction.sleep(1000);
+        return true;
+    }
+
+    public static boolean OpenWIFI(){
+        execRootCmdSilent(" svc wifi enable ");
         mFunction.sleep(1000);
         return true;
     }

@@ -24,6 +24,7 @@ import eie.robot.com.common.mGestureUtil;
 import eie.robot.com.common.mGlobal;
 import eie.robot.com.common.mIncomeTask;
 import eie.robot.com.common.mToast;
+import eie.robot.com.common.mUploadDataUtil;
 
 import static eie.robot.com.common.mFunction.getRandom_1_20;
 
@@ -42,44 +43,50 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
     //执行刷单任务（领取时段奖励、定时刷新视频、查看文章）
     @Override
     public boolean StartTask()  {
-        super.StartTask();
-        while (mCommonTask.isOpenAppTask()){
-            try {
+        try{
+            super.StartTask();
+            while (mCommonTask.isOpenAppTask()){
+                try {
 
-                if(!returnHome()){
-                    continue;
-                }
-
-                //领取时段奖励
-                performTask_TimeSlotReward();
-
-                //判断今日金币是否已经到达
-                if(JudgeGoldIncomeIsMax()){
-                    break;
-                }
-
-                //签到
-                SignIn();
-
-                if(mFunction.getRandomBooleanOffsetTrue()){
-                    //看新闻
-                    performTask_LookNews();
-                }else {
-                    if(mFunction.getRandomBoolean()){
-                        //刷列表视频
-                        performTask_WatchVideo_list();
-                    }else {
-                        //刷小视频
-                        performTask_WatchVideo();
+                    if(!returnHome()){
+                        continue;
                     }
 
-                }
+                    //领取时段奖励
+                    performTask_TimeSlotReward();
 
-            }catch (Exception ex){
-                RxToast.error(AppName+"出错:"+ex.getMessage());
+                    //判断今日金币是否已经到达
+                    if(JudgeGoldIncomeIsMax()){
+                        break;
+                    }
+
+                    //签到
+                    SignIn();
+
+                    if(mFunction.getRandomBooleanOffsetTrue()){
+                        //看新闻
+                        performTask_LookNews();
+                    }else {
+                        if(mFunction.getRandomBoolean()){
+                            //刷列表视频
+                            performTask_WatchVideo_list();
+                        }else {
+                            //刷小视频
+                            performTask_WatchVideo();
+                        }
+
+                    }
+
+                }catch (Exception ex){
+                    RxToast.error(AppName+"出错:"+ex.getMessage());
+                }
             }
+            JudgeGoldIncomeIsMax();
+            super.CloseTask();
+        }catch (Exception ex){
+
         }
-        super.CloseTask();
+
         return false;
     }
 
@@ -438,6 +445,8 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
         //点击【我的】列表
         mGestureUtil.clickTab(5,5);
 
+        UploadIncome();
+
         //再次恢复到首页
         if(!returnHome()){
             return false;
@@ -486,6 +495,47 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
         }
         return false;
     }
+
+    //上传APP的最新收益情况
+    private Boolean UploadIncome(){
+
+        try{
+            if(!mCommonFunctionTask.judgeNodeIsHavingByText("我的金币")){
+                if(!returnHome()){
+                    return false;
+                }
+
+                mGestureUtil.clickTab(5,5);
+
+                if(!returnHome()){
+                    return false;
+                }
+
+                mGestureUtil.scroll_down_half_screen();
+
+                if(!returnHome()){
+                    return false;
+                }
+            }
+
+            float cash = 0;
+            AccessibilityNodeInfo cash_item = AccessibilityHelper.findNodeInfosByText("约");
+            if(cash_item != null){
+                String coinString = cash_item.getText().toString().replace("约","");
+                coinString = coinString.replace("元","");
+                cash = Float.valueOf(coinString.trim());
+            }
+            float rmd = cash;
+            mUploadDataUtil.postIncomeRecord(this.AppName,rmd);
+            mToast.success("收益上传:"+rmd);
+        }catch (Exception ex){
+
+        }
+
+
+        return true;
+    }
+
 
     //回归到首页，如果APP未打开，则会自行打开
     private boolean returnHome(){

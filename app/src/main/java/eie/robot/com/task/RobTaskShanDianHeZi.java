@@ -16,6 +16,7 @@ import eie.robot.com.common.mGestureUtil;
 import eie.robot.com.common.mGlobal;
 import eie.robot.com.common.mIncomeTask;
 import eie.robot.com.common.mToast;
+import eie.robot.com.common.mUploadDataUtil;
 
 public class RobTaskShanDianHeZi extends BaseRobotTask {
 
@@ -37,26 +38,32 @@ public class RobTaskShanDianHeZi extends BaseRobotTask {
      */
     @Override
     public boolean StartTask()  {
-        super.StartTask();
-        while (mCommonTask.isOpenAppTask()){
-            try {
-                //每次进行一项任务时，都先恢复到首页
-                //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
-                if(!returnHome()){
-                    continue;
+        try{
+            super.StartTask();
+            while (mCommonTask.isOpenAppTask()){
+                try {
+                    //每次进行一项任务时，都先恢复到首页
+                    //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
+                    if(!returnHome()){
+                        continue;
+                    }
+
+                    UploadIncome();
+
+                    //签到
+                    SignIn();
+
+                    //看新闻
+                    performTask_LookNews();
                 }
-
-                //签到
-                SignIn();
-
-                //看新闻
-                performTask_LookNews();
+                catch (Exception ex){
+                    mToast.error(ex.getMessage());
+                }
             }
-            catch (Exception ex){
-                mToast.error(ex.getMessage());
-            }
+            super.CloseTask();
+        }catch (Exception ex){
+
         }
-        super.CloseTask();
         return false;
     }
 
@@ -344,6 +351,56 @@ public class RobTaskShanDianHeZi extends BaseRobotTask {
         }
         return false;
     }
+
+
+    //上传APP的最新收益情况
+    private Boolean UploadIncome(){
+
+        try{
+
+            if(!mCommonFunctionTask.judgeNodeIsHavingByText("闪电币账户")){
+                if(!returnHome()){
+                    return false;
+                }
+
+                mGestureUtil.clickTab(5,4);
+
+                if(!returnHome()){
+                    return false;
+                }
+
+                mGestureUtil.scroll_down_half_screen();
+
+                if(!returnHome()){
+                    return false;
+                }
+            }
+
+            float cash = 0;
+            AccessibilityNodeInfo cash_item = AccessibilityHelper.findNodeInfosById("c.l.a:id/account_cash");
+            if(cash_item != null){
+                String coinString = cash_item.getText().toString().replace("元","");
+                cash = Float.valueOf(coinString);
+            }
+
+            float coin = 0;
+            AccessibilityNodeInfo money_item = AccessibilityHelper.findNodeInfosById("c.l.a:id/account_flash_cash");
+            if(money_item != null){
+                String coinString = money_item.getText().toString();
+                coin = Float.valueOf(coinString)/100000;
+            }
+
+            float rmd = cash + coin ;
+            mUploadDataUtil.postIncomeRecord(this.AppName,rmd);
+            mToast.success("收益上传:"+rmd);
+        }catch (Exception ex){
+
+        }
+
+
+        return true;
+    }
+
 
     //回归到首页，如果APP未打开，则会自行打开
     private boolean returnHome(){

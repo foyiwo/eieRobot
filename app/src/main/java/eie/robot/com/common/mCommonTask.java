@@ -47,7 +47,6 @@ public class mCommonTask {
         if(!mFunction.openAccessibilityService()){
             return "总任务启动失败，无障碍服务未开启";
         }
-
         //初始化设备信息
         mDeviceUtil.initDeviceInfo();
         mCommonTask.ThreadTaskOpenStatus = true;
@@ -67,35 +66,37 @@ public class mCommonTask {
                     mTasks = new ArrayList<>();
 
 
-
-
-                    //头条精选
-                    mTasks.add(new RobTaskTouTiaoJingXuan());   //已重构，检查收益准确型
-                    //中青看点
-                    mTasks.add(new RobTaskZhongQingKanDian());
-                    //优看点
-                    mTasks.add(new RobTaskYouKanDian());     //已重构
-
-                    //趣看天下
-                    mTasks.add(new RobTaskQuKanTianXia());      //已重构，检查收益数字封顶型，增加评论和随机
-                    //搜狐资讯
-                    mTasks.add(new RobTaskSouHuZiXun());        //已重构，检查收益准确型（固定的金币），5.1适配
-                    //刷宝
-                    //mTasks.add(new RobTaskShuaBao());
-                    //聚看点
-                    mTasks.add(new RobTaskJuKanDian());         //已重构，检查收益准确型（文章/视频：150/50次数）
-                    //闪电盒子
-                    mTasks.add(new RobTaskShanDianHeZi());
                     //趣头条
                     mTasks.add(new RobTaskQuTouTiao());         //已重构，5.1适配,增加了评论，随机阅读视频和文章
                     //微鲤看看
                     mTasks.add(new RobTaskWeiLiKanKan());       //已重构，检查收益准确型（文章和视频都是60分钟),5.1适配
+                    //刷宝
+                    mTasks.add(new RobTaskShuaBao());
+                    //闪电盒子
+                    mTasks.add(new RobTaskShanDianHeZi());
+                    //搜狐资讯
+                    mTasks.add(new RobTaskSouHuZiXun());        //已重构，检查收益准确型（固定的金币），5.1适配
+                    //聚看点
+                    mTasks.add(new RobTaskJuKanDian());         //已重构，检查收益准确型（文章/视频：150/50次数）
+                    //中青看点
+                    mTasks.add(new RobTaskZhongQingKanDian()); //已重构
+                    //趣看天下
+                    mTasks.add(new RobTaskQuKanTianXia());      //已重构，检查收益数字封顶型，增加评论和随机
+
+
+                    //优看点
+                    mTasks.add(new RobTaskYouKanDian());        //已重构
+                    //头条精选
+                    mTasks.add(new RobTaskTouTiaoJingXuan());   //已重构，检查收益准确型
+
 
 
                     int i = 0;
                     mTasksIndex = getTaskSort(mTasks.size());
                     while (ThreadTaskOpenStatus){
                         try{
+                            //mCommonFunctionTask.ControlWifi();
+
                             //清楚手机内存
                             if(i >= mTasks.size()){
                                 mTasksIndex = getTaskSort(mTasks.size());

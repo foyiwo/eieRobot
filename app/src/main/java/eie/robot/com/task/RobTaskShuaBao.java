@@ -17,6 +17,7 @@ import eie.robot.com.common.mGestureUtil;
 import eie.robot.com.common.mGlobal;
 import eie.robot.com.common.mIncomeTask;
 import eie.robot.com.common.mToast;
+import eie.robot.com.common.mUploadDataUtil;
 
 public class RobTaskShuaBao extends BaseRobotTask {
 
@@ -61,7 +62,6 @@ public class RobTaskShuaBao extends BaseRobotTask {
                 if(mCommonTask.isCloseAppTask()){ break; }
 
             }
-
             JudgeGoldIncomeIsMax();
             super.CloseTask();
         }catch (Exception ex){
@@ -370,6 +370,8 @@ public class RobTaskShuaBao extends BaseRobotTask {
             //点击【我的】列表
             mGestureUtil.clickTab(5,5);
 
+            UploadIncome();
+
             //再次恢复到首页
             if(!returnHome()){
                 return false;
@@ -393,6 +395,53 @@ public class RobTaskShuaBao extends BaseRobotTask {
 
         }
         return false;
+    }
+
+    //上传APP的最新收益情况
+    private Boolean UploadIncome(){
+
+        try{
+            if(!mCommonFunctionTask.judgeNodeIsHavingByText("当前余额(元)")){
+                if(!returnHome()){
+                    return false;
+                }
+
+                mGestureUtil.clickTab(5,5);
+
+                if(!returnHome()){
+                    return false;
+                }
+
+                mGestureUtil.scroll_down_half_screen();
+
+                if(!returnHome()){
+                    return false;
+                }
+            }
+
+            float cash = 0;
+            AccessibilityNodeInfo cash_item = AccessibilityHelper.findNodeInfosById("com.jm.video:id/tv_mine_money");
+            if(cash_item != null){
+                String coinString = cash_item.getText().toString();
+                cash = Float.valueOf(coinString);
+            }
+
+            float coin = 0;
+            AccessibilityNodeInfo money_item = AccessibilityHelper.findNodeInfosById("com.jm.video:id/tv_gold_num");
+            if(money_item != null){
+                String coinString = money_item.getText().toString();
+                coin = Float.valueOf(coinString)/10000;
+            }
+
+            float rmd = cash + coin ;
+            mUploadDataUtil.postIncomeRecord(this.AppName,rmd);
+            mToast.success("收益上传:"+rmd);
+        }catch (Exception ex){
+
+        }
+
+
+        return true;
     }
 
     //回归到首页，如果APP未打开，则会自行打开

@@ -17,7 +17,7 @@ public class mGlobal {
     public  static Application mApplication = null;
 
     //服务器域名
-    public  static String baseUrl = "http://www.foyiwo.com:8085";
+    public  static String baseUrl = "http://api.foyiwo.com:9093";
 
     //主Activity
     public  static QMUIFragmentActivity mNavigationBarActivity = null;

@@ -14,6 +14,7 @@ import eie.robot.com.common.mGestureUtil;
 import eie.robot.com.common.mGlobal;
 import eie.robot.com.common.mIncomeTask;
 import eie.robot.com.common.mToast;
+import eie.robot.com.common.mUploadDataUtil;
 
 public class RobTaskWeiLiKanKan extends BaseRobotTask {
 
@@ -30,38 +31,45 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
     //执行刷单任务（领取时段奖励、定时刷新视频、查看文章）
     @Override
     public boolean StartTask()  {
-        super.StartTask();
-        while (mCommonTask.isOpenAppTask()){
-            try {
-                if(mCommonTask.isCloseAppTask() || this.TodayIncomeIsFinsh){ break; }
+        try{
+            super.StartTask();
+            while (mCommonTask.isOpenAppTask()){
+                try {
+                    if(mCommonTask.isCloseAppTask() || this.TodayIncomeIsFinsh){ break; }
 
-                //每次进行一项任务时，都先恢复到首页
-                //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
-                if(!returnHome()){ continue; }
+                    //每次进行一项任务时，都先恢复到首页
+                    //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
+                    if(!returnHome()){ continue; }
 
-                //领取时段奖励
-                performTask_TimeSlotReward();
+                    //领取时段奖励
+                    performTask_TimeSlotReward();
 
-                //判断收益是否封顶（每次重启的时候查一次）
-                this.TaskCounter = this.TaskCounterDefaultValue;
-                //if(JudgeGoldIncomeIsMax()){ break; }
+                    UploadIncome();
 
-                //签到
-                SignIn();
+                    //判断收益是否封顶（每次重启的时候查一次）
+                    this.TaskCounter = this.TaskCounterDefaultValue;
+                    //if(JudgeGoldIncomeIsMax()){ break; }
 
-                if(mFunction.getRandomBooleanOffsetTrue()){
-                    //阅读文章
-                    performTask_LookNews();
-                }else {
-                    //阅读视频
-                    performTask_WatchVideo();
+                    //签到
+                    SignIn();
+
+                    if(mFunction.getRandomBooleanOffsetTrue()){
+                        //阅读文章
+                        performTask_LookNews();
+                    }else {
+                        //阅读视频
+                        performTask_WatchVideo();
+                    }
+                }
+                catch (Exception ex){
+                    mToast.error(ex.getMessage());
                 }
             }
-            catch (Exception ex){
-                mToast.error(ex.getMessage());
-            }
+            UploadIncome();
+            super.CloseTask();
+        }catch (Exception ex){
+
         }
-        super.CloseTask();
         return false;
     }
 
@@ -711,6 +719,54 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
     private void openRedPacketsEnergy(){
         mGestureUtil.clickByText("领金币");
     }
+
+    //上传APP的最新收益情况
+    private Boolean UploadIncome(){
+
+        try{
+            if(!mCommonFunctionTask.judgeNodeIsHavingByText("零钱余额")){
+                if(!returnHome()){
+                    return false;
+                }
+
+                mGestureUtil.clickTab(5,5);
+
+                if(!returnHome()){
+                    return false;
+                }
+
+                mGestureUtil.scroll_down_half_screen();
+
+                if(!returnHome()){
+                    return false;
+                }
+            }
+
+            float cash = 0;
+            AccessibilityNodeInfo cash_item = AccessibilityHelper.findNodeInfosById("cn.weli.story:id/text_residue_change");
+            if(cash_item != null){
+                String coinString = cash_item.getText().toString();
+                cash = Float.valueOf(coinString);
+            }
+
+            float coin = 0;
+            AccessibilityNodeInfo money_item = AccessibilityHelper.findNodeInfosById("cn.weli.story:id/text_today_coin");
+            if(money_item != null){
+                String coinString = money_item.getText().toString();
+                coin = Float.valueOf(coinString)/10000;
+            }
+
+            float rmd = cash + coin ;
+            mUploadDataUtil.postIncomeRecord(this.AppName,rmd);
+            mToast.success("收益上传:"+rmd);
+        }catch (Exception ex){
+
+        }
+
+
+        return true;
+    }
+
 
     //回归到首页，如果APP未打开，则会自行打开
     private boolean returnHome(){

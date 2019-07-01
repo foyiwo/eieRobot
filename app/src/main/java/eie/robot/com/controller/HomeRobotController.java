@@ -2,22 +2,13 @@ package eie.robot.com.controller;
 
 import android.content.Context;
 import android.view.View;
-import android.widget.Toast;
 
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
-import com.tamic.novate.Throwable;
-import com.tamic.novate.callback.ResponseCallback;
-import com.vondear.rxtool.view.RxToast;
 
 import butterknife.BindView;
 import eie.robot.com.R;
 import eie.robot.com.common.mCommonTask;
-import eie.robot.com.common.mDataUtil;
-import eie.robot.com.common.mDeviceUtil;
-import eie.robot.com.common.mGlobal;
-import okhttp3.Call;
-import okhttp3.ResponseBody;
 
 public class HomeRobotController extends BaseController {
 
@@ -56,30 +47,6 @@ public class HomeRobotController extends BaseController {
         });
     }
 
-
-    private void Test(){
-        mDataUtil.postIncomeRecord(null, new ResponseCallback<Object, ResponseBody>() {
-            @Override
-            public Object onHandleResponse(ResponseBody response) throws Exception {
-                return null;
-            }
-
-            @Override
-            public void onError(Object tag, Throwable e) {
-
-            }
-
-            @Override
-            public void onCancel(Object tag, Throwable e) {
-
-            }
-
-            @Override
-            public void onNext(Object tag, Call call, Object response) {
-
-            }
-        });
-    }
 
 
 

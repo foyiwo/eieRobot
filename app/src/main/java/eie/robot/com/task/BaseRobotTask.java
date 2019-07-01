@@ -48,7 +48,7 @@ public abstract class BaseRobotTask {
     //阅读计数器，用于决定阅读多少次后，前往检查收益
     int TaskCounter = 0;
     //阅读计数器的默认值，当达到该值时，前往检查收益
-    int TaskCounterDefaultValue = 8;
+    int TaskCounterDefaultValue = 5;
 
     public boolean StartTask(){
         //APP允许开始的标志，true可继续执行，false即表示准备结束
@@ -87,9 +87,6 @@ public abstract class BaseRobotTask {
 
         if(mTaskTimer.judgeTimeIsInNight()){
             mCommonTask.setAppTaskClose();
-        }
-
-        if(mCommonTask.isCloseAppTask()){
             return false;
         }
 
@@ -165,9 +162,6 @@ public abstract class BaseRobotTask {
 
         if(mTaskTimer.judgeTimeIsInNight()){
             mCommonTask.setAppTaskClose();
-        }
-
-        if(mCommonTask.isCloseAppTask()){
             return false;
         }
 
