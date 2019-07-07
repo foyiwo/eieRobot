@@ -44,8 +44,17 @@ public class RobTaskShuaBao extends BaseRobotTask {
         try {
             while (mCommonTask.isOpenAppTask()){
 
+                mCommonFunctionTask.OpenWIFI();
+
                 if(!returnHome()){
                     continue;
+                }
+
+                //签到
+                SignIn();
+
+                if(!JudgeGoldIncomeIsLegal()){
+                    break;
                 }
 
                 //判断收益是否封顶
@@ -53,8 +62,6 @@ public class RobTaskShuaBao extends BaseRobotTask {
                     break;
                 }
 
-                //签到
-                SignIn();
 
                 //看视频
                 this.performTask_WatchVideo();
@@ -76,7 +83,7 @@ public class RobTaskShuaBao extends BaseRobotTask {
     //看视频总任务
     @Override
     Boolean performTask_WatchVideo(){
-        int RefreshCount =   mFunction.getRandom_10_20()+20;
+        int RefreshCount =   mFunction.getRandom_4_8();
         while (RefreshCount > 0){
             if(mCommonTask.isCloseAppTask()){ break; }
 
@@ -96,7 +103,7 @@ public class RobTaskShuaBao extends BaseRobotTask {
     //执行刷单任务（定时刷小视频）
     private boolean performTask_WatchVideo_1(){
 
-        int VideoCount = mFunction.getRandom_6_12();
+        int VideoCount = mFunction.getRandom_2_4();
 
         while (VideoCount > 0){
 
@@ -390,11 +397,50 @@ public class RobTaskShuaBao extends BaseRobotTask {
                     return false;
                 }
             }
-
         }catch (Exception ex){
 
         }
         return false;
+    }
+
+    private Boolean JudgeGoldIncomeIsLegal(){
+        try{
+            if(!returnHome()){ return false; }
+
+            //在主界面的情况下，点击底部导航【小视频】按钮，刷新小视频
+            mGestureUtil.clickTab(5,1);
+
+            if(!returnHome()){
+                return false;
+            }
+
+            //在主界面的情况下，点击底部导航【小视频】按钮，刷新小视频
+            mGestureUtil.clickTab(5,1);
+
+            if(!returnHome()){
+                return false;
+            }
+
+            performTask_WatchVideo_1();
+
+            AccessibilityNodeInfo currentNodeInfo = AccessibilityHelper.findNodeInfosByText("当前元宝(个)");
+            if(currentNodeInfo != null){
+                mGestureUtil.click(currentNodeInfo);
+                mFunction.click_sleep();
+                mFunction.click_sleep();
+
+                AccessibilityNodeInfo node = AccessibilityHelper.findWebViewNodeInfosByText("+1");
+                if(node != null){
+                    this.TodayIncomeIsFinsh = true;
+                    mToast.success("账号被封，停止工作");
+                    return false;
+                }
+            }
+        }catch (Exception ex){
+
+        }
+
+        return true;
     }
 
     //上传APP的最新收益情况

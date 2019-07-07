@@ -65,13 +65,14 @@ public class mCommonTask {
                     //组装任务列表，通过策略
                     mTasks = new ArrayList<>();
 
-
-                    //趣头条
-                    mTasks.add(new RobTaskQuTouTiao());         //已重构，5.1适配,增加了评论，随机阅读视频和文章
-                    //微鲤看看
-                    mTasks.add(new RobTaskWeiLiKanKan());       //已重构，检查收益准确型（文章和视频都是60分钟),5.1适配
                     //刷宝
                     mTasks.add(new RobTaskShuaBao());
+                    //微鲤看看//已重构，检查收益准确型（文章和视频都是60分钟),5.1适配
+                    mTasks.add(new RobTaskWeiLiKanKan());
+                    //趣头条,已重构，5.1适配,增加了评论，随机阅读视频和文章，增加视频开WIFI，文章开流量。
+                    mTasks.add(new RobTaskQuTouTiao());
+
+
                     //闪电盒子
                     mTasks.add(new RobTaskShanDianHeZi());
                     //搜狐资讯
@@ -95,7 +96,6 @@ public class mCommonTask {
                     mTasksIndex = getTaskSort(mTasks.size());
                     while (ThreadTaskOpenStatus){
                         try{
-                            //mCommonFunctionTask.ControlWifi();
 
                             //清楚手机内存
                             if(i >= mTasks.size()){

@@ -130,6 +130,15 @@ public class mAdbShell {
         return true;
     }
 
+    public static boolean OpenAccessibilitydervice(){
+        //这里是包名+辅助功能类名
+        String cmd1 = "settings put secure enabled_accessibility_services  eie.robot.com/eie.robot.com.accessibilityservice.mAccessibilityService";
+        String cmd2 = "settings put secure accessibility_enabled 1";
+        String ds = execRootCmd(cmd1);
+        String ds1 = execRootCmd(cmd2);
+        return true;
+    }
+
     public static boolean stopApp(String AppName){
         try{
             if(!mFunction.judgeAndroidVersionIsGreater7() && mAdbShell.haveRoot()){
@@ -165,5 +174,19 @@ public class mAdbShell {
         }
         return true;
     }
+
+    public static boolean reboot(){
+        try{
+            if(!mFunction.judgeAndroidVersionIsGreater7() && mAdbShell.haveRoot()){
+                String shells = " reboot ";
+                Integer result = execRootCmdSilent(shells);
+            }
+        }catch (Exception ex){
+            return false;
+        }
+        return true;
+    }
+
+
 
 }

@@ -11,6 +11,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 
 import eie.robot.com.accessibilityservice.AccessibilityHelper;
 import retrofit2.http.PUT;
+import rx.functions.Func0;
 
 public class mCommonFunctionTask {
 
@@ -131,6 +132,10 @@ public class mCommonFunctionTask {
             mGestureUtil.clickByText("确定");
             mGestureUtil.clickByText("关闭应用");
         }
+        if(mCommonFunctionTask.judgeNodeIsHavingByText("无响应。要将其关闭吗")){
+            mGestureUtil.clickByText("确定");
+            mGestureUtil.clickByText("关闭应用");
+        }
 
         if(mCommonFunctionTask.judgeNodeIsHavingByText("通知消息")){
             mGestureUtil.clickByText("拒绝");
@@ -138,6 +143,9 @@ public class mCommonFunctionTask {
 
         mGestureUtil.clickByResourceId("android:id/aerr_close");
         mGestureUtil.clickByText("关闭应用");
+
+
+
         mGestureUtil.clickByText("跳过");
     }
 
@@ -160,6 +168,26 @@ public class mCommonFunctionTask {
         }
     }
 
+
+    public static void loopJudgeIsReboot(){
+
+        mFunction.runInChildThread(new Runnable() {
+            @Override
+            public void run() {
+                while (true){
+                    try {
+                        mUploadDataUtil.getIsReBoot();
+                        mFunction.sleep(15*1000);
+                    }catch (Exception ex){
+
+                    }
+
+                }
+            }
+        });
+
+
+    }
 
 
 }

@@ -16,6 +16,7 @@ import com.yhao.floatwindow.Screen;
 import eie.robot.com.R;
 import eie.robot.com.accessibilityservice.mAccessibilityService;
 import eie.robot.com.common.mAdbShell;
+import eie.robot.com.common.mCommonFunctionTask;
 import eie.robot.com.common.mCommonTask;
 import eie.robot.com.common.mDeviceUtil;
 import eie.robot.com.common.mFloatWindow;
@@ -53,17 +54,29 @@ public class NavigationBarActivity extends QMUIFragmentActivity {
         mGlobal.mScreenWidth = RxDeviceTool.getScreenWidth(mGlobal.mNavigationBarActivity);
         mGlobal.mScreenHeight = mDeviceUtil.getFullActivityHeight(mGlobal.mNavigationBarActivity);
 
-
-
-        //打开无障碍服务
-        mFunction.openAccessibilityService();
-
         mFloatWindow.showFloatWindow();
+
+        mFunction.runInChildThread(new Runnable() {
+            @Override
+            public void run() {
+                mFunction.sleep(5*1000);
+                mFunction.openAccessibilityService();
+                mFloatWindow.StartFloatWindowRobTask();
+                //mCommonTask.StartTask();
+            }
+        });
+        mCommonFunctionTask.loopJudgeIsReboot();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
 
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-
-
+    }
 }

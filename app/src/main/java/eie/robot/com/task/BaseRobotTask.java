@@ -8,6 +8,7 @@ import com.vondear.rxtool.view.RxToast;
 
 import eie.robot.com.accessibilityservice.AccessibilityHelper;
 import eie.robot.com.common.mAdbShell;
+import eie.robot.com.common.mCacheTask;
 import eie.robot.com.common.mCommonFunctionTask;
 import eie.robot.com.common.mCommonTask;
 import eie.robot.com.common.mConfig;
@@ -63,6 +64,9 @@ public abstract class BaseRobotTask {
             mCommonTask.setAppTaskClose();
             return false;
         }
+
+        //开始每个程序前都先关闭WIFI，等到看视频时候再开
+        mCommonFunctionTask.OpenWIFI();
 
         return true;
     }
@@ -129,8 +133,8 @@ public abstract class BaseRobotTask {
             if (isInHomeByText(Nav1,Nav2)) {
                 return true;
             } else {
-                //如果一直没反应，尝试着点击一下屏幕中心。
-                mToast.error("一直没反应，尝试着点击一下屏幕中心");
+                //如果一直没反应，尝试重启。
+                mCacheTask.ClearPhoneCacheTask();
                 mGestureUtil.click(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/2);
                 return false;
             }
@@ -239,9 +243,11 @@ public abstract class BaseRobotTask {
     }
 
     Boolean performTask_WatchVideo(){
+        mCommonFunctionTask.OpenWIFI();
         return true;
     }
     Boolean performTask_LookNews(){
+        mCommonFunctionTask.OpenWIFI();
         return true;
     }
 }

@@ -47,7 +47,6 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
             super.StartTask();
             while (mCommonTask.isOpenAppTask()){
                 try {
-
                     if(!returnHome()){
                         continue;
                     }
@@ -95,6 +94,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
     //看新闻总任务
     @Override
     Boolean performTask_LookNews(){
+        super.performTask_LookNews();
         //阅读文章
         int RefreshCount =   mFunction.getRandom_2_4();
         while (RefreshCount > 0){
@@ -117,7 +117,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
 
         this.CloseDialog();
 
-        int NewsCount =   mFunction.getRandom_4_8();
+        int NewsCount =   mFunction.getRandom_2_4();
 
         while (NewsCount > 0){
             mGestureUtil.scroll_up();
@@ -231,9 +231,9 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
 
     //看列表视频总任务
     Boolean performTask_WatchVideo_list(){
-
+        super.performTask_WatchVideo();
         mGestureUtil.clickTab(5,2);
-        int RefreshCount =   mFunction.getRandom_4_8();
+        int RefreshCount =   mFunction.getRandom_2_4();
         while (RefreshCount > 0){
             if(mCommonTask.isCloseAppTask()){ break; }
             mGestureUtil.clickTab(5,2);
@@ -273,7 +273,8 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
     //看视频总任务
     @Override
     Boolean performTask_WatchVideo(){
-        int RefreshCount =   mFunction.getRandom_4_8();
+        super.performTask_WatchVideo();
+        int RefreshCount =  mFunction.getRandom_2_4();
         while (RefreshCount > 0){
             AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosByText("赚钱玩");
             if(nodeInfo != null){
@@ -456,7 +457,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
             AccessibilityNodeInfo nodes = AccessibilityHelper.findNodeInfosByText("今日阅读");
             if(nodes != null && nodes.getParent() != null && nodes.getParent().getChildCount() > 1){
                 String ReadTime = nodes.getParent().getChild(0).getText().toString().trim();
-                if(Float.valueOf(ReadTime) > 60 ){
+                if(Float.valueOf(ReadTime) > 50 ){
                     this.TodayIncomeIsFinsh = true;
                     mToast.success("今日阅读时间过长("+ReadTime+")，结束工作");
                     mFunction.sleep(mConfig.clickSleepTime);
@@ -469,10 +470,10 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
                 String incomeText = nodeInfo.getText().toString().trim();
                 incomeText = incomeText.replaceAll("今日金币","").trim();
                 if(Integer.valueOf(incomeText) > this.TodayMaxIncome){
-                    AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosByEqualText("今日阅读");
+                    AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosByText("今日阅读");
                     if(node != null && node.getParent() != null && node.getParent().getChildCount() > 1){
                         String ReadTime = node.getParent().getChild(0).getText().toString().trim();
-                        if(Float.valueOf(ReadTime) < 60 ){
+                        if(Float.valueOf(ReadTime) < 49 ){
                             this.TodayIncomeIsFinsh = false;
                             mToast.success("今日收益("+incomeText+")已封顶("+this.TodayMaxIncome+"),但阅读时间未封顶("+ReadTime+")，继续工作");
                             mFunction.sleep(mConfig.clickSleepTime);

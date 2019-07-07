@@ -115,24 +115,26 @@ public class mFloatWindow {
                 .build();
     }
 
+    public static void StartRobTask(){
+
+        String taskRes = mCommonTask.StartTask();
+        if(taskRes.equals("true")){
+            mGlobal.viewFloatButton.findViewById(R.id.btnStartTaskAndCloseFloat).setVisibility(View.GONE);
+            mGlobal.viewFloatButton.findViewById(R.id.btnStopTask).setVisibility(View.VISIBLE);
+        }else {
+            mToast.message(taskRes);
+        }
+
+    }
+
     public static void showFloatWindow(){
-
-
 
         //开启任务
         View.OnClickListener StartRobTask = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String ss = mAdbShell.GetPackagesList();
 
-                String taskRes = mCommonTask.StartTask();
-                if(taskRes.equals("true")){
-                    mGlobal.viewFloatButton.findViewById(R.id.btnStartTaskAndCloseFloat).setVisibility(View.GONE);
-                    mGlobal.viewFloatButton.findViewById(R.id.btnStopTask).setVisibility(View.VISIBLE);
-                }else {
-                    mToast.message(taskRes);
-                }
-
+                StartRobTask();
 
             }
         };
@@ -251,6 +253,15 @@ public class mFloatWindow {
                     mGlobal.mViewRobTaskTimerSecond.setText("ex1");
                 }
 
+            }
+        });
+    }
+    //修改APP的剩余时间
+    public static void StartFloatWindowRobTask(){
+        mGlobal.mViewRobTaskTimerSecond.post(new Runnable() {
+            @Override
+            public void run() {
+                mFloatWindow.StartRobTask();
             }
         });
     }

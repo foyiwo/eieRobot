@@ -3,6 +3,7 @@ package eie.robot.com.common;
 import android.accessibilityservice.AccessibilityService;
 import android.annotation.SuppressLint;
 import android.app.Application;
+import android.content.Context;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -13,14 +14,17 @@ import com.vondear.rxtool.RxDeviceTool;
 
 public class mGlobal {
 
+    public  static String AppName = "寻转";
+
     //主Activity
     public  static Application mApplication = null;
 
     //服务器域名
-    public  static String baseUrl = "http://api.foyiwo.com:9093";
+    //public  static String baseUrl = "http://api.foyiwo.com:9093";
+    public  static String baseUrl = "http://192.168.1.11:9093";
 
     //主Activity
-    public  static QMUIFragmentActivity mNavigationBarActivity = null;
+    public  static Context mNavigationBarActivity = null;
 
     //导航栏控件
     public  static QMUITabSegment mNavigationBars = null;

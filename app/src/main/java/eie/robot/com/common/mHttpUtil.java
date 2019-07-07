@@ -18,4 +18,5 @@ public class mHttpUtil {
                 .baseUrl(baseUrl)
                 .build().json(url,jsonStr,callbak);
     }
+
 }

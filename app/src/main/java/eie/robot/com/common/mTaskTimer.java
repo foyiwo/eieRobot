@@ -76,7 +76,7 @@ public class mTaskTimer {
                                 mFunction.sleep(10*1000);
                                 continue;
                             }
-                            mTaskTimer.TaskMin =  mFunction.getRandom_10_20()+15;
+                            mTaskTimer.TaskMin =  mFunction.getRandom_10_20()+5;
                             mTaskTimer.AppTaskCounter ++;
                             while (mTaskTimer.TaskMin >= 0){
                                 mFloatWindow.EditRobTaskTimerMinText(mTaskTimer.TaskMin+"m");

@@ -43,7 +43,9 @@ public class mFunction {
                 Manifest.permission.WRITE_EXTERNAL_STORAGE, //写入外部存储
                 Manifest.permission.READ_EXTERNAL_STORAGE,  //读取外部存储
                 Manifest.permission.READ_PHONE_STATE,        //读取电话状态
-                Manifest.permission.CAMERA                    //读取电话状态
+                Manifest.permission.CAMERA,                    //读取电话状态
+                Manifest.permission.READ_LOGS,
+                Manifest.permission.SYSTEM_ALERT_WINDOW //悬浮窗权限
         };
         if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 ||ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -169,11 +171,12 @@ public class mFunction {
         return false;
     }
 
+
     //根据APP的包名打开APP
-    private static void OpenAppByPackage(String AppName){
+    public static void OpenAppByPackage(String AppName){
         String packageName = mFunction.GetAppPackageName(AppName);
         Intent intent = mGlobal.mNavigationBarActivity
-                        .getPackageManager().getLaunchIntentForPackage(packageName);
+                .getPackageManager().getLaunchIntentForPackage(packageName);
 
         if(intent == null){
             RxToast.error(mGlobal.mNavigationBarActivity, "未安装", Toast.LENGTH_LONG).show();
@@ -423,14 +426,36 @@ public class mFunction {
     }
 
     public static boolean openAccessibilityService(){
-        //先判断【辅助服务】是否启动,否则前往开始界面
-        if(!mAccessibilityService.isRunning()){
-            RxToast.info(mGlobal.mNavigationBarActivity, "Accessibility服务未启动，请选启动！", Toast.LENGTH_SHORT, true).show();
-            mFunction.openAccessibilityServiceSettings();
-            return false;
+
+        int loopCounter = 3;
+        while (loopCounter > 0){
+            if(mAccessibilityService.isRunning()){
+                return true;
+            }
+            mAdbShell.OpenAccessibilitydervice();
+            mFunction.sleep(5*1000);
+            loopCounter--;
         }
+        mFunction.openAccessibilityServiceSettings();
+        return false;
+    }
+
+    public static boolean openPhoneLock(){
+        try{
+            int loop = 3;
+            while (loop > 0){
+                mAdbShell.execRootCmdSilent(" input keyevent 224 ");
+                mFunction.click_sleep();
+                mAdbShell.execRootCmd(" input swipe 300 1000 300 500 ");
+                loop--;
+            }
+        }catch (Exception ex){
+            mToast.error_sleep(ex.getMessage());
+        }
+
         return true;
     }
+
 
     public static boolean judgeAppIsHome(String nav1,String nav2){
         //判断是否处于文章页，如果不是则退出

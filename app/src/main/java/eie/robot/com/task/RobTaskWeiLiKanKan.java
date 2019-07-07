@@ -24,6 +24,10 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
     public RobTaskWeiLiKanKan() {
         super();
         this.AppName = "微鲤看看";
+        String packname = mFunction.GetAppPackageName(this.AppName);
+        if(packname.isEmpty()){
+            this.AppName = "微鲤";
+        }
         this.TodayMaxIncome = 7000;
         this.TodayIncomeIsFinsh = false;
     }
@@ -44,11 +48,9 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
                     //领取时段奖励
                     performTask_TimeSlotReward();
 
-                    UploadIncome();
-
                     //判断收益是否封顶（每次重启的时候查一次）
                     this.TaskCounter = this.TaskCounterDefaultValue;
-                    //if(JudgeGoldIncomeIsMax()){ break; }
+                    if(JudgeGoldIncomeIsMax()){ break; }
 
                     //签到
                     SignIn();
@@ -81,7 +83,7 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
         super.performTask_WatchVideo();
         if(!returnHome()){ return false; }
 
-        int LoopCount =   mFunction.getRandom_1_3();
+        int LoopCount =  1;// mFunction.getRandom_1_3();
         while (LoopCount > 0){
             if(mCommonTask.isCloseAppTask() || this.VideoIsFinish){ break;}
 
@@ -177,7 +179,7 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
     @Override
     Boolean performTask_LookNews() {
         super.performTask_LookNews();
-        int RefreshCount =   mFunction.getRandom_1_3();
+        int RefreshCount =   1;//mFunction.getRandom_1_3();
         while (RefreshCount > 0){
             if(mCommonTask.isCloseAppTask() || this.ArticleIsFinish ){ break; }
 
@@ -572,7 +574,7 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
             }
 
 
-            int LoopCount = mFunction.getRandom_6_12();
+            int LoopCount = mFunction.getRandom_4_8();
             while (LoopCount > 0){
                 try{
                     if(mCommonTask.isCloseAppTask()){ break; }

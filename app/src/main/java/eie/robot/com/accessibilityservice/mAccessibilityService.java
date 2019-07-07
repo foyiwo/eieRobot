@@ -26,6 +26,7 @@ public class mAccessibilityService extends AccessibilityService {
     //  AccessibilityService    事件回调
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
+        mGlobal.mAccessibilityService = this;
     }
 
     @Override
@@ -60,11 +61,13 @@ public class mAccessibilityService extends AccessibilityService {
      */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public static boolean isRunning() {
+
         if (mGlobal.mAccessibilityService == null) {
-            return false;
+           return false;
         }
         AccessibilityManager accessibilityManager = (AccessibilityManager) mGlobal.mAccessibilityService.getSystemService(Context.ACCESSIBILITY_SERVICE);
         AccessibilityServiceInfo info = mGlobal.mAccessibilityService.getServiceInfo();
+
         if (info == null) {
             return false;
         }
