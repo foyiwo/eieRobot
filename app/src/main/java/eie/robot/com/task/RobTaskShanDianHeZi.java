@@ -6,6 +6,8 @@ import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.vondear.rxtool.view.RxToast;
 
+import java.util.List;
+
 import eie.robot.com.accessibilityservice.AccessibilityHelper;
 import eie.robot.com.common.mCommonFunctionTask;
 import eie.robot.com.common.mCommonTask;
@@ -21,6 +23,8 @@ import eie.robot.com.common.mUploadDataUtil;
 public class RobTaskShanDianHeZi extends BaseRobotTask {
 
     private int SizeOffset = 40;
+
+    private static int countNew = 0;
 
     /**
      * 构造函数
@@ -53,13 +57,21 @@ public class RobTaskShanDianHeZi extends BaseRobotTask {
                     //签到
                     SignIn();
 
-                    //看新闻
-                    performTask_LookNews();
+                    if(mFunction.getRandomBooleanOffsetTrue()){
+                        //看新闻
+                        performTask_LookNews();
+                    }else {
+                        //看视频
+                        performTask_WatchVideo();
+                    }
+
+
                 }
                 catch (Exception ex){
                     mToast.error(ex.getMessage());
                 }
             }
+            UploadIncome();
             super.CloseTask();
         }catch (Exception ex){
 
@@ -145,6 +157,12 @@ public class RobTaskShanDianHeZi extends BaseRobotTask {
         //点击新闻进行阅读。
         boolean clickResult = mGestureUtil.click(ArticleNode);
 
+        countNew--;
+        if(countNew > 100){
+            this.TodayIncomeIsFinsh = true;
+            return false ;
+        }
+
         //开始阅读新闻
         if (clickResult) {
             //等待反应
@@ -186,7 +204,128 @@ public class RobTaskShanDianHeZi extends BaseRobotTask {
 
     //-----------------------------------------------------------
 
+    //-----------------------------------------------------------
 
+    //看视频总任务
+    @Override
+    Boolean performTask_WatchVideo(){
+        //看视频
+        int RefreshCount =   1;//mFunction.getRandom_1_3();
+        while (RefreshCount > 0){
+            if(mCommonTask.isCloseAppTask()){ break;}
+            performTask_WatchVideo_1();
+            RefreshCount -- ;
+        }
+        return true;
+    }
+
+    //看视频子任务一
+    private boolean performTask_WatchVideo_1(){
+
+        if(!returnHome()){
+            return false;
+        }
+
+        mGestureUtil.clickTab(5,3);
+
+        //点击第三个功能列表
+
+        int NewsCount =   mFunction.getRandom_1_3();
+
+        mToast.success("视频任务");
+        while (NewsCount > 0){
+            if(mCommonTask.isCloseAppTask()){ break;}
+            //看视频
+            performTask_WatchVideo_2();
+            if(!returnHome()){
+                continue;
+            }
+            mToast.info("阅读完毕，首页滑动");
+            NewsCount -- ;
+            if(NewsCount > 0){
+                mGestureUtil.scroll_up();
+                mGestureUtil.scroll_up();
+            }
+        }
+        //刷资讯
+        return true;
+    }
+
+    //看视频子任务二
+    private boolean performTask_WatchVideo_2() {
+        //点击新闻进行阅读。
+        boolean clickResult = mGestureUtil.clickByResourceId("c.l.a:id/chatroom_online");
+
+        //开始阅读新闻
+        if (clickResult) {
+            //等待反应
+            mFunction.click_sleep();
+            //滑动次数(随机10到20)
+            int SwiperCount = mFunction.getRandom_6_12()+30;
+            mToast.info("开始看视频");
+
+            //开始滑动文章
+            while (SwiperCount > 0) {
+                if(mCommonTask.isCloseAppTask()){ break; }
+
+                this.CloseDialog();
+
+                //设置收益的最新时间
+                mIncomeTask.setLastIncomeTime();
+
+                AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById("c.l.a:id/read_view_container");
+                if(nodeInfo != null){
+                    Rect rect = new Rect();
+                    nodeInfo.getBoundsInScreen(rect);
+                    mGestureUtil.click(rect.left+rect.width()*2,rect.top+rect.height()/2);
+                }
+
+                mFunction.click_sleep();
+                SwiperCount--;
+            }
+        }
+
+        return true;
+    }
+
+    //-----------------------------------------------------------
+
+    //首页拆红包
+    private Boolean breakUpPacket(){
+        if(mFunction.getRandomBooleanOffsetTrue()){
+            return true;
+        }
+        if(!returnHome()){
+            return false;
+        }
+        mGestureUtil.clickTab(5,1);
+
+        if(!mCommonFunctionTask.judgeNodeIsHavingByText("可拆开")){
+            return false;
+        }
+        if(!mGestureUtil.clickByText("可拆开")){
+            return false;
+        }
+        if(!mCommonFunctionTask.judgeNodeIsHavingByResId("c.l.a:id/tiny_pack_gird_item")){
+            return false;
+        }
+        List<AccessibilityNodeInfo> list = AccessibilityHelper.findNodeInfosByIds("c.l.a:id/item_content");
+        if(list == null) {
+            return false;
+        }
+
+        int i = 0;
+        for (AccessibilityNodeInfo nodeInfo : list) {
+
+            if(i > (list.size()/1.5)){
+                mGestureUtil.click(nodeInfo);
+                this.CloseDialog();
+            }
+            i++;
+        }
+        mToast.success("拆红包");
+        return false;
+    }
 
     //关闭APP弹出的所有可能弹框
     private void CloseDialog(){
@@ -205,6 +344,11 @@ public class RobTaskShanDianHeZi extends BaseRobotTask {
         if(node != null){
             mGestureUtil.click(node);
         }
+        mGestureUtil.clickByText("流量播放");
+
+        mGestureUtil.clickByResourceId("c.l.a:id/btn_close");
+        mGestureUtil.clickByResourceId("c.l.a:id/red_packet_timer");
+        mGestureUtil.clickByResourceId("c.l.a:id/confirm_tv");
     }
 
     //判断今日的收益是否已经达到最大值
@@ -274,10 +418,26 @@ public class RobTaskShanDianHeZi extends BaseRobotTask {
 
     //判断新闻是否已经阅读完毕
     private boolean judgeXinWenIsFinish(){
-        AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosById("c.l.a:id/reward_text");
-        if(node != null && node.getText().toString().contains("x")){
-            String Counter = node.getText().toString().replace("x","").trim();
-            return Integer.valueOf(Counter) < 1;
+        try{
+            if(!returnHome()){
+                return false;
+            }
+            //点击【首页】列表
+            mGestureUtil.clickTab(5,1);
+
+            //再次恢复到首页
+            if(!returnHome()){
+                return false;
+            }
+
+            AccessibilityNodeInfo node = AccessibilityHelper.findNodeInfosById("c.l.a:id/reward_text");
+            if(node != null && node.getText().toString().contains("x")){
+                String Counter = node.getText().toString().replace("x","").trim();
+                return Integer.valueOf(Counter) <= 1;
+            }
+            return false;
+        }catch (Exception ex){
+
         }
         return false;
     }
@@ -354,7 +514,8 @@ public class RobTaskShanDianHeZi extends BaseRobotTask {
 
 
     //上传APP的最新收益情况
-    private Boolean UploadIncome(){
+    @Override
+    Boolean UploadIncome(){
 
         try{
 

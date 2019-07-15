@@ -20,8 +20,8 @@ public class mGlobal {
     public  static Application mApplication = null;
 
     //服务器域名
-    //public  static String baseUrl = "http://api.foyiwo.com:9093";
-    public  static String baseUrl = "http://192.168.1.11:9093";
+    public  static String baseUrl = "http://api.foyiwo.com:9093";
+    //public  static String baseUrl = "http://192.168.1.11:9093";
 
     //主Activity
     public  static Context mNavigationBarActivity = null;

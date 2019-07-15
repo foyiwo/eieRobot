@@ -128,8 +128,29 @@ public class mFunction {
         String PhoneDeskPackageName = "com.miui.home,com.huawei.android.launcher,com.zui.launcher,eie.robot.com";
 
         //开始左右滑动来查找应用进行点击
-        //左滑五次
+
+        //右滑五次
         int i = 5;
+        while (i > 0){
+            if(!PhoneDeskPackageName.contains(CurrentPackageName)){
+                //不在桌面，直接返回
+                return true;
+            }
+            if(AccessibilityHelper.getRootInActiveWindow().getPackageName().equals(packageName)){
+                //当前界面包名和应用包名一直，说明正处于该APP内
+                return true;
+            }
+            mGestureUtil.scroll_right();
+            mFunction.click_sleep();
+            nodeInfo = AccessibilityHelper.findNodeInfosByText(AppName);
+            if(nodeInfo != null){;
+                return mGestureUtil.click(nodeInfo);
+            }
+            i--;
+        }
+
+        //左滑五次
+        i = 5;
         while (i > 0){
             if(!PhoneDeskPackageName.contains(CurrentPackageName)){
                 //不在桌面，直接返回
@@ -149,25 +170,7 @@ public class mFunction {
             i--;
         }
 
-        //右滑五次
-        i = 5;
-        while (i > 0){
-            if(!PhoneDeskPackageName.contains(CurrentPackageName)){
-                //不在桌面，直接返回
-                return true;
-            }
-            if(AccessibilityHelper.getRootInActiveWindow().getPackageName().equals(packageName)){
-                //当前界面包名和应用包名一直，说明正处于该APP内
-                return true;
-            }
-            mGestureUtil.scroll_right();
-            mFunction.click_sleep();
-            nodeInfo = AccessibilityHelper.findNodeInfosByText(AppName);
-            if(nodeInfo != null){;
-                return mGestureUtil.click(nodeInfo);
-            }
-            i--;
-        }
+
         return false;
     }
 
@@ -432,8 +435,10 @@ public class mFunction {
             if(mAccessibilityService.isRunning()){
                 return true;
             }
-            mAdbShell.OpenAccessibilitydervice();
-            mFunction.sleep(5*1000);
+            if(!mFunction.judgeAndroidVersionIsGreater7()){
+                mAdbShell.OpenAccessibilitydervice();
+                mFunction.sleep(5*1000);
+            }
             loopCounter--;
         }
         mFunction.openAccessibilityServiceSettings();

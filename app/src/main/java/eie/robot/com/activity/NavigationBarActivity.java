@@ -1,29 +1,19 @@
 package eie.robot.com.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.view.animation.AccelerateInterpolator;
-import android.widget.Toast;
 
 import com.qmuiteam.qmui.arch.QMUIFragmentActivity;
 import com.vondear.rxtool.RxDeviceTool;
-import com.vondear.rxtool.view.RxToast;
-import com.yhao.floatwindow.FloatWindow;
-import com.yhao.floatwindow.MoveType;
-import com.yhao.floatwindow.Screen;
 
 import eie.robot.com.R;
-import eie.robot.com.accessibilityservice.mAccessibilityService;
-import eie.robot.com.common.mAdbShell;
 import eie.robot.com.common.mCommonFunctionTask;
-import eie.robot.com.common.mCommonTask;
 import eie.robot.com.common.mDeviceUtil;
 import eie.robot.com.common.mFloatWindow;
 import eie.robot.com.common.mFunction;
 import eie.robot.com.common.mGlobal;
 import eie.robot.com.fragment.BaseFragment;
 import eie.robot.com.fragment.HomeFragment;
+import eie.robot.com.receiver.baseReceiver;
 
 public class NavigationBarActivity extends QMUIFragmentActivity {
     @Override
@@ -65,6 +55,8 @@ public class NavigationBarActivity extends QMUIFragmentActivity {
                 //mCommonTask.StartTask();
             }
         });
+
+        baseReceiver.register(NavigationBarActivity.this);
         mCommonFunctionTask.loopJudgeIsReboot();
     }
 

@@ -76,7 +76,7 @@ public class mTaskTimer {
                                 mFunction.sleep(10*1000);
                                 continue;
                             }
-                            mTaskTimer.TaskMin =  mFunction.getRandom_10_20()+5;
+                            mTaskTimer.TaskMin =  mFunction.getRandom_10_20()+15;
                             mTaskTimer.AppTaskCounter ++;
                             while (mTaskTimer.TaskMin >= 0){
                                 mFloatWindow.EditRobTaskTimerMinText(mTaskTimer.TaskMin+"m");
@@ -171,7 +171,7 @@ public class mTaskTimer {
         int StartRamdomNumber = mFunction.getRandom_4_8();
         int EndRamdomNumber = mFunction.getRandom_4_8();
         String startTime = currentDate+" 23:00:00";
-        String endTime = currentDate+" 09:0"+EndRamdomNumber+":00";
+        String endTime = currentDate+" 08:1"+EndRamdomNumber+":00";
 
         //比较时间
         int start   = mDateUtil.compareDate(currentTime,startTime);

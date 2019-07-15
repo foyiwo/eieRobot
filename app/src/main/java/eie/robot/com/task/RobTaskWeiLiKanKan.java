@@ -41,6 +41,9 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
                 try {
                     if(mCommonTask.isCloseAppTask() || this.TodayIncomeIsFinsh){ break; }
 
+                    //上传收益记录
+                    UploadIncome();
+
                     //每次进行一项任务时，都先恢复到首页
                     //如果APP未打开，则会自行打开,如果最后还是无法打开，则跳出这次循环，重新来。
                     if(!returnHome()){ continue; }
@@ -365,14 +368,17 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
 
         //点击第二个Tab
         mGestureUtil.clickTab(5,2);
-        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById("cn.weli.story:id/tv_treasure_box");
 
+        AccessibilityNodeInfo nodeInfo = AccessibilityHelper.findNodeInfosById("cn.weli.story:id/tv_treasure_box");
         if(nodeInfo != null && nodeInfo.getText().toString().contains("+")){
             mGestureUtil.click(nodeInfo);
             mToast.success("时段奖励任务获取成功");
         }else {
             mToast.success("时段奖励任务已获取过");
         }
+
+        mGestureUtil.clickByText("领红包");
+
         this.CloseDialog();
     }
 
@@ -723,7 +729,8 @@ public class RobTaskWeiLiKanKan extends BaseRobotTask {
     }
 
     //上传APP的最新收益情况
-    private Boolean UploadIncome(){
+    @Override
+    protected Boolean UploadIncome(){
 
         try{
             if(!mCommonFunctionTask.judgeNodeIsHavingByText("零钱余额")){

@@ -451,7 +451,8 @@ public class RobTaskSouHuZiXun extends BaseRobotTask {
     }
 
     //上传APP的最新收益情况
-    private Boolean UploadIncome(){
+    @Override
+    Boolean UploadIncome(){
 
         try{
 

@@ -10,6 +10,7 @@ import android.support.v7.widget.WithHint;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import eie.robot.com.accessibilityservice.AccessibilityHelper;
+import eie.robot.com.receiver.baseReceiver;
 import retrofit2.http.PUT;
 import rx.functions.Func0;
 
@@ -112,7 +113,6 @@ public class mCommonFunctionTask {
         return loopJudgeNodeIsHavingByText(TestCount,Text);
     }
 
-
     //清理系统的各种弹框
     public static void CloseSystemBulletBox(){
 
@@ -159,15 +159,15 @@ public class mCommonFunctionTask {
 
     public static void CloseWIFI(){
         if(!mFunction.judgeAndroidVersionIsGreater7()){
-            mAdbShell.CloseWIFI();
-        }
-    }
-    public static void OpenWIFI(){
-        if(!mFunction.judgeAndroidVersionIsGreater7()){
-            mAdbShell.OpenWIFI();
+            //mAdbShell.CloseWIFI();
         }
     }
 
+    public static void OpenWIFI(){
+        if(!mFunction.judgeAndroidVersionIsGreater7()){
+            //mAdbShell.OpenWIFI();
+        }
+    }
 
     public static void loopJudgeIsReboot(){
 
@@ -176,18 +176,15 @@ public class mCommonFunctionTask {
             public void run() {
                 while (true){
                     try {
-                        mUploadDataUtil.getIsReBoot();
+                        baseReceiver.sendReBootBroadcast();
                         mFunction.sleep(15*1000);
                     }catch (Exception ex){
 
                     }
-
                 }
             }
         });
 
 
     }
-
-
 }

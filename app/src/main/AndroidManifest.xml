@@ -10,6 +10,8 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
     <application
         android:allowBackup="true"
         android:name=".eieRobotApplication"
@@ -36,7 +38,17 @@
             android:name="com.tencent.bugly.beta.ui.BetaActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|locale"
             android:theme="@android:style/Theme.Translucent" />
-
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="${applicationId}.fileProvider"
+            android:exported="false"
+            tools:replace="android:authorities"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                tools:replace="android:resource"
+                android:resource="@xml/provider_paths"/>
+        </provider>
         <!--Service列表开始-->
         <!--辅助服务，需要手动启动-->
         <service
@@ -54,8 +66,6 @@
         <receiver android:name=".receiver.BootBroadcastReceiver"  android:exported="true" android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.DATE_CHANGED" />
-                <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </receiver>
         <!--Service列表结束-->

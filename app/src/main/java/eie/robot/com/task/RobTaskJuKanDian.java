@@ -40,8 +40,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
                     if(!returnHome()){
                         continue;
                     }
-
-                    //上传数据
+                    //上传收益数据
                     UploadIncome();
 
                     //领取圣诞树奖励
@@ -441,7 +440,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
             String ArticleIncomeCounter = node.getText() == null ? node.getContentDescription().toString() : node.getText().toString();
             ArticleIncomeCounter = ArticleIncomeCounter.replace("今日奖励次数(","");
             ArticleIncomeCounter = ArticleIncomeCounter.replace("次)","");
-            if(Integer.valueOf(ArticleIncomeCounter) >= 150*mFunction.getRandom_06_08()){
+            if(Integer.valueOf(ArticleIncomeCounter) >= 48){
                 this.ArticleIsFinish = true;
             }
 
@@ -453,7 +452,7 @@ public class RobTaskJuKanDian extends BaseRobotTask {
             String VideoIncomeCounter =  node.getChild(1).getText() == null ? node.getChild(1).getContentDescription().toString() :  node.getChild(1).getText().toString();
             VideoIncomeCounter = VideoIncomeCounter.replace("今日奖励次数(","");
             VideoIncomeCounter = VideoIncomeCounter.replace("次)","");
-            if(Integer.valueOf(VideoIncomeCounter) >= 50*mFunction.getRandom_06_08()){
+            if(Integer.valueOf(VideoIncomeCounter) >= 23){
                 this.VideoIsFinish = true;
             }
 
@@ -487,31 +486,40 @@ public class RobTaskJuKanDian extends BaseRobotTask {
     //执行签到任务
     private void SignIn(){
         mGestureUtil.clickByText("一键签到");
+        mGestureUtil.clickByResourceId("com.xiangzi.jukandian:id/v2_sign_sign_button");
+        mGestureUtil.clickByResourceId("com.xiangzi.jukandian:id/v2_sign_close_button");
     }
 
     //上传APP的最新收益情况
-    private Boolean UploadIncome(){
-        if(!returnHome()){
-            return false;
+    @Override
+    Boolean UploadIncome(){
+        try{
+            if(!returnHome()){
+                return false;
+            }
+
+            mGestureUtil.clickTab(5,5);
+
+            if(!returnHome()){
+                return false;
+            }
+
+            mGestureUtil.scroll_down_half_screen();
+
+            if(!returnHome()){
+                return false;
+            }
+            String curValue = AccessibilityHelper.getNodeInfosTextByResourceId("com.xiangzi.jukandian:id/curValue");
+            String goldValue = AccessibilityHelper.getNodeInfosTextByResourceId("com.xiangzi.jukandian:id/goldValue");
+            if(!curValue.isEmpty() && !goldValue.isEmpty()){
+                float rmd = Float.valueOf(curValue) + Float.valueOf(goldValue)/10000;
+                mUploadDataUtil.postIncomeRecord(this.AppName,rmd);
+                mToast.success("收益上传:"+rmd);
+            }
+        }catch (Exception ex){
+
         }
 
-        mGestureUtil.clickTab(5,5);
-
-        if(!returnHome()){
-            return false;
-        }
-
-        mGestureUtil.scroll_down_half_screen();
-
-        if(!returnHome()){
-            return false;
-        }
-        String curValue = AccessibilityHelper.getNodeInfosTextByResourceId("com.xiangzi.jukandian:id/curValue");
-        String goldValue = AccessibilityHelper.getNodeInfosTextByResourceId("com.xiangzi.jukandian:id/goldValue");
-        if(!curValue.isEmpty() && !goldValue.isEmpty()){
-            float rmd = Float.valueOf(curValue) + Float.valueOf(goldValue)/10000;
-            mUploadDataUtil.postIncomeRecord(this.AppName,rmd);
-        }
         return true;
     }
 

@@ -30,12 +30,12 @@ public class mUploadDataUtil {
                     Subscriber<ResponseBody> callbak = new Subscriber<ResponseBody>() {
                         @Override
                         public void onCompleted() {
-                            mToast.success_sleep("数据上传成功");
+                            postLogs(appName+",收益上传成功");
                         }
 
                         @Override
                         public void onError(java.lang.Throwable e) {
-                            mToast.error_sleep("数据上传失败:"+e.getMessage());
+                            postLogs(appName+","+e.getMessage());
                         }
 
                         @Override
@@ -96,7 +96,7 @@ public class mUploadDataUtil {
 
                     FoLogsDto dto = new FoLogsDto();
                     dto.setId(0);
-                    dto.setLog(Logs);
+                    dto.setLog(RxDeviceTool.getUniqueSerialNumber()+"："+Logs);
                     Gson gson = new Gson();
                     String jsonDto = gson.toJson(dto);
                     String url = "/logs/new";
@@ -133,7 +133,6 @@ public class mUploadDataUtil {
                                 String str = responseBody.string();//获取字符串数据
                                 if(str.equals("1")){
                                     mAdbShell.reboot();
-                                    String opMessage = "数据上传成功";
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();

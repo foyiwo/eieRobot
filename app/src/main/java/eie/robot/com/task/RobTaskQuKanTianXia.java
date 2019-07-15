@@ -593,7 +593,8 @@ public class RobTaskQuKanTianXia extends BaseRobotTask {
     }
 
     //上传APP的最新收益情况
-    private Boolean UploadIncome(){
+    @Override
+    Boolean UploadIncome(){
 
         if(mCommonFunctionTask.judgeNodeIsHavingByResId("com.yanhui.qktx:id/tv_coin_count")){
             String curValue = AccessibilityHelper.getNodeInfosTextByResourceId("com.yanhui.qktx:id/tv_coin_count");

@@ -7,8 +7,8 @@ android {
         applicationId "eie.robot.com"
         minSdkVersion 21
         targetSdkVersion 24
-        versionCode 1
-        versionName "1.0"
+        versionCode 7
+        versionName "7.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     // 签名配置
@@ -19,11 +19,17 @@ android {
             keyAlias "android"
             keyPassword "android"
         }
-//        debug {
-//            storeFile file("./keystore/debug.jks")
-//        }
+        debug {
+            storeFile file('./keystore/release.jks')
+            storePassword "android"
+            keyAlias "android"
+            keyPassword "android"
+        }
     }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.release
+        }
         release {
             signingConfig signingConfigs.release
             minifyEnabled false

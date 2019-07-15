@@ -166,7 +166,7 @@ public class mAdbShell {
                 }
 //                String shells = "pm clear "+PackageName;
 //                Integer result = execRootCmdSilent(shells);
-                mToast.success("清理手机数据:"+AppName);
+                //mToast.success("清理手机数据:"+AppName);
                 mFunction.click_sleep();
             }
         }catch (Exception ex){

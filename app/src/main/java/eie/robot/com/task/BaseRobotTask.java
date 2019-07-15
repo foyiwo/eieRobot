@@ -133,8 +133,7 @@ public abstract class BaseRobotTask {
             if (isInHomeByText(Nav1,Nav2)) {
                 return true;
             } else {
-                //如果一直没反应，尝试重启。
-                mCacheTask.ClearPhoneCacheTask();
+                //如果一直没反应，尝试点击屏幕。
                 mGestureUtil.click(mGlobal.mScreenWidth/2,mGlobal.mScreenHeight/2);
                 return false;
             }
@@ -248,6 +247,9 @@ public abstract class BaseRobotTask {
     }
     Boolean performTask_LookNews(){
         mCommonFunctionTask.OpenWIFI();
+        return true;
+    }
+    Boolean UploadIncome(){
         return true;
     }
 }

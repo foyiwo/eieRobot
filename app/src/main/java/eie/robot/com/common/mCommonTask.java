@@ -20,6 +20,7 @@ import eie.robot.com.task.RobTaskQuTouTiao;
 import eie.robot.com.task.RobTaskShanDianHeZi;
 import eie.robot.com.task.RobTaskShuaBao;
 import eie.robot.com.task.RobTaskSouHuZiXun;
+import eie.robot.com.task.RobTaskTaoTouTiao;
 import eie.robot.com.task.RobTaskTouTiaoJingXuan;
 import eie.robot.com.task.RobTaskWeiLiKanKan;
 import eie.robot.com.task.RobTaskWeiQuKan;
@@ -65,38 +66,31 @@ public class mCommonTask {
                     //组装任务列表，通过策略
                     mTasks = new ArrayList<>();
 
-                    //刷宝
-                    mTasks.add(new RobTaskShuaBao());
-                    //微鲤看看//已重构，检查收益准确型（文章和视频都是60分钟),5.1适配
-                    mTasks.add(new RobTaskWeiLiKanKan());
-                    //趣头条,已重构，5.1适配,增加了评论，随机阅读视频和文章，增加视频开WIFI，文章开流量。
-                    mTasks.add(new RobTaskQuTouTiao());
-
-
+                    //淘头条
+                    mTasks.add(new RobTaskTaoTouTiao());
                     //闪电盒子
                     mTasks.add(new RobTaskShanDianHeZi());
-                    //搜狐资讯
-                    mTasks.add(new RobTaskSouHuZiXun());        //已重构，检查收益准确型（固定的金币），5.1适配
-                    //聚看点
-                    mTasks.add(new RobTaskJuKanDian());         //已重构，检查收益准确型（文章/视频：150/50次数）
                     //中青看点
                     mTasks.add(new RobTaskZhongQingKanDian()); //已重构
-                    //趣看天下
-                    mTasks.add(new RobTaskQuKanTianXia());      //已重构，检查收益数字封顶型，增加评论和随机
-
-
+                    //微鲤看看//已重构，检查收益准确型（文章和视频都是60分钟),5.1适配
+                    mTasks.add(new RobTaskWeiLiKanKan());
+                    //聚看点
+                    mTasks.add(new RobTaskJuKanDian());         //已重构，检查收益准确型（文章/视频：150/50次数）
+                    //刷宝
+                    mTasks.add(new RobTaskShuaBao());
+                    //趣头条,已重构，5.1适配,增加了评论，随机阅读视频和文章，增加视频开WIFI，文章开流量。
+                    mTasks.add(new RobTaskQuTouTiao());
+                    //搜狐资讯
+                    mTasks.add(new RobTaskSouHuZiXun());        //已重构，检查收益准确型（固定的金币），5.1适配
                     //优看点
                     mTasks.add(new RobTaskYouKanDian());        //已重构
                     //头条精选
                     mTasks.add(new RobTaskTouTiaoJingXuan());   //已重构，检查收益准确型
 
-
-
                     int i = 0;
                     mTasksIndex = getTaskSort(mTasks.size());
                     while (ThreadTaskOpenStatus){
                         try{
-
                             //清楚手机内存
                             if(i >= mTasks.size()){
                                 mTasksIndex = getTaskSort(mTasks.size());

@@ -53,14 +53,21 @@ public class RobTaskShuaBao extends BaseRobotTask {
                 //签到
                 SignIn();
 
-                if(!JudgeGoldIncomeIsLegal()){
-                    break;
-                }
-
                 //判断收益是否封顶
                 if(JudgeGoldIncomeIsMax()){
                     break;
                 }
+
+                this.TodayIncomeIsFinsh = true;
+                if(this.TodayIncomeIsFinsh){
+                    break;
+                }
+
+                if(!JudgeGoldIncomeIsLegal()){
+                    break;
+                }
+
+
 
 
                 //看视频
@@ -444,7 +451,8 @@ public class RobTaskShuaBao extends BaseRobotTask {
     }
 
     //上传APP的最新收益情况
-    private Boolean UploadIncome(){
+    @Override
+    Boolean UploadIncome(){
 
         try{
             if(!mCommonFunctionTask.judgeNodeIsHavingByText("当前余额(元)")){

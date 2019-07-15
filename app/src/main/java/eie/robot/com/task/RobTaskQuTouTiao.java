@@ -51,8 +51,11 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
                         continue;
                     }
 
+                    UploadIncome();
+
                     //领取时段奖励
                     performTask_TimeSlotReward();
+
 
                     //判断今日金币是否已经到达
                     if(JudgeGoldIncomeIsMax()){
@@ -80,6 +83,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
                     RxToast.error(AppName+"出错:"+ex.getMessage());
                 }
             }
+            UploadIncome();
             JudgeGoldIncomeIsMax();
             super.CloseTask();
         }catch (Exception ex){
@@ -446,7 +450,7 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
         //点击【我的】列表
         mGestureUtil.clickTab(5,5);
 
-        UploadIncome();
+
 
         //再次恢复到首页
         if(!returnHome()){
@@ -498,8 +502,8 @@ public class RobTaskQuTouTiao extends BaseRobotTask {
     }
 
     //上传APP的最新收益情况
-    private Boolean UploadIncome(){
-
+    @Override
+    Boolean UploadIncome(){
         try{
             if(!mCommonFunctionTask.judgeNodeIsHavingByText("我的金币")){
                 if(!returnHome()){

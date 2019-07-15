@@ -15,18 +15,33 @@ import eie.robot.com.common.mGlobal;
 import eie.robot.com.common.mUploadDataUtil;
 
 public class BootBroadcastReceiver extends BroadcastReceiver {
-    static final String ACTION = "android.intent.action.ACTION_BOOT_COMPLETED";
-    //static final String ACTION = "android.intent.action.ACTION_DATE_CHANGED";
+    static final String BOOT_COMPLETED = "android.intent.action.BOOT_COMPLETED";
+    static final String SCREEN_OFF_ACTION = "android.intent.action.SCREEN_OFF_ACTION";
+    static final String TIME_TICK_ACTION = "android.intent.action.TIME_TICK_ACTION";
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        try{
-            mUploadDataUtil.postLogs(intent.getAction());
-            //开机打开屏幕
-            mFunction.openPhoneLock();
 
-            mGlobal.mNavigationBarActivity = context;
-            mFunction.OpenAppByPackage(mGlobal.AppName);
+        try{
+
+            //mUploadDataUtil.postLogs(intent.getAction());
+            if(intent.getAction() != null
+                    && (intent.getAction().equals(BOOT_COMPLETED) || intent.getAction().equals(SCREEN_OFF_ACTION))){
+                //开机打开屏幕
+                mFunction.openPhoneLock();
+                if(mGlobal.mNavigationBarActivity == null){
+                    mGlobal.mNavigationBarActivity = context;
+                }
+                mFunction.OpenAppByPackage(mGlobal.AppName);
+            }
+
+            if(intent.getAction() != null
+                    && intent.getAction().equals(TIME_TICK_ACTION)){
+                //开机打开屏幕
+                mUploadDataUtil.getIsReBoot();
+            }
+
+
 
         }catch (Exception ex){
             mUploadDataUtil.postLogs(intent.getAction()+":"+ex.getMessage());
